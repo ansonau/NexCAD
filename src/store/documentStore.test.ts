@@ -4,7 +4,7 @@ import type { PrimitiveNode } from '../types/document';
 import { findNode, useDocumentStore } from './documentStore';
 
 beforeEach(() => {
-  useDocumentStore.setState({ doc: emptyDocument(), selection: [], past: [], future: [] });
+  useDocumentStore.setState({ doc: emptyDocument(), selection: [], past: [], future: [], dragBase: null });
 });
 
 const store = () => useDocumentStore.getState();
@@ -83,5 +83,42 @@ describe('documentStore', () => {
       });
     });
     expect(findNode(store().doc.nodes, inner.id)?.id).toBe(inner.id);
+  });
+
+  it('beginDrag 後沒有 updateTransient 不會浪費 undo 步驟', () => {
+    const node = createPrimitive('box');
+    store().addNode(node);
+    store().beginDrag();
+    store().undo();
+    expect(store().doc.nodes).toHaveLength(0);
+  });
+
+  it('undo 後 selection 不會殘留已刪除節點', () => {
+    const node = createPrimitive('box');
+    store().addNode(node);
+    expect(store().selection).toEqual([node.id]);
+    store().undo();
+    expect(store().selection).toEqual([]);
+  });
+
+  it('removeSelected 可刪除群組內的子節點', () => {
+    const inner = createPrimitive('box');
+    store().mutate('add group', (d) => {
+      d.nodes.push({
+        type: 'group',
+        id: 'g2',
+        name: 'g',
+        role: 'solid',
+        transform: { position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] },
+        visible: true,
+        locked: false,
+        children: [inner],
+      });
+    });
+    store().setSelection([inner.id]);
+    store().removeSelected();
+    expect(findNode(store().doc.nodes, inner.id)).toBeUndefined();
+    expect(store().doc.nodes).toHaveLength(1);
+    expect(store().selection).toEqual([]);
   });
 });
