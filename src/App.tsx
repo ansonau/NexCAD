@@ -1,3 +1,18 @@
+import { PropertyCard } from './components/PropertyCard';
+import { Toolbar } from './components/Toolbar';
+import { Viewport } from './components/Viewport';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+
 export default function App() {
-  return <div className="p-8 text-slate-600">NexCAD — 建置中</div>;
+  useKeyboardShortcuts();
+  return (
+    <div className="relative h-full w-full overflow-hidden bg-slate-50">
+      <Viewport />
+      <Toolbar />
+      <PropertyCard />
+      <div className="absolute left-4 top-4 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-sm font-medium text-slate-700 shadow-lg backdrop-blur">
+        NexCAD
+      </div>
+    </div>
+  );
 }
