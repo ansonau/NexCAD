@@ -25,4 +25,6 @@ export interface GeometryKernel {
   transform(s: Solid, t: Transform): Solid;
   toMesh(s: Solid): MeshData;
   volume(s: Solid): number;
+  /** 釋放自上次呼叫以來建立的所有 Solid（求值批次結束後呼叫；舊把手隨即失效） */
+  releaseAll(): void;
 }

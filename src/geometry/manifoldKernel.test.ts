@@ -54,4 +54,10 @@ describe('ManifoldKernel', () => {
     expect(mesh.indices.length / 3).toBe(12);
     expect(mesh.positions.length % 3).toBe(0);
   });
+
+  it('releaseAll 後可以繼續建立新的 Solid', () => {
+    kernel.volume(kernel.box(10, 10, 10));
+    kernel.releaseAll();
+    expect(kernel.volume(kernel.box(10, 10, 10))).toBeCloseTo(1000, 3);
+  });
 });

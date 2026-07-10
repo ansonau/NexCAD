@@ -16,6 +16,9 @@ const SEGMENTS = 48;
 export class ManifoldKernel implements GeometryKernel {
   private wasm!: ManifoldToplevel;
 
+  /** 自上次 releaseAll 以來建立的所有 WASM Manifold（arena 模式） */
+  private allocated: Manifold[] = [];
+
   async init(): Promise<void> {
     this.wasm = await Module();
     this.wasm.setup();
@@ -25,32 +28,42 @@ export class ManifoldKernel implements GeometryKernel {
     return this.wasm.Manifold;
   }
 
+  /** 登記 WASM 物件，待 releaseAll 時統一 .delete() */
+  private track(m: Manifold): Manifold {
+    this.allocated.push(m);
+    return m;
+  }
+
   box(width: number, depth: number, height: number): Solid {
-    return wrap(this.M.cube([width, depth, height]).translate([-width / 2, -depth / 2, 0]));
+    const cube = this.track(this.M.cube([width, depth, height]));
+    return wrap(this.track(cube.translate([-width / 2, -depth / 2, 0])));
   }
 
   cylinder(radius: number, height: number): Solid {
-    return wrap(this.M.cylinder(height, radius, radius, SEGMENTS));
+    return wrap(this.track(this.M.cylinder(height, radius, radius, SEGMENTS)));
   }
 
   sphere(radius: number): Solid {
-    return wrap(this.M.sphere(radius, SEGMENTS).translate([0, 0, radius]));
+    const sphere = this.track(this.M.sphere(radius, SEGMENTS));
+    return wrap(this.track(sphere.translate([0, 0, radius])));
   }
 
   cone(radiusBottom: number, radiusTop: number, height: number): Solid {
-    return wrap(this.M.cylinder(height, radiusBottom, radiusTop, SEGMENTS));
+    return wrap(this.track(this.M.cylinder(height, radiusBottom, radiusTop, SEGMENTS)));
   }
 
   union(a: Solid, b: Solid): Solid {
-    return wrap(un(a).add(un(b)));
+    return wrap(this.track(un(a).add(un(b))));
   }
 
   difference(a: Solid, b: Solid): Solid {
-    return wrap(un(a).subtract(un(b)));
+    return wrap(this.track(un(a).subtract(un(b))));
   }
 
   transform(s: Solid, t: Transform): Solid {
-    return wrap(un(s).scale(t.scale).rotate(t.rotation).translate(t.position));
+    const scaled = this.track(un(s).scale(t.scale));
+    const rotated = this.track(scaled.rotate(t.rotation));
+    return wrap(this.track(rotated.translate(t.position)));
   }
 
   toMesh(s: Solid): MeshData {
@@ -76,5 +89,12 @@ export class ManifoldKernel implements GeometryKernel {
 
   volume(s: Solid): number {
     return un(s).volume();
+  }
+
+  releaseAll(): void {
+    for (const m of this.allocated) {
+      m.delete();
+    }
+    this.allocated = [];
   }
 }
