@@ -53,7 +53,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     const { doc, past } = get();
     const next = structuredClone(doc);
     fn(next);
-    set({ doc: next, past: [...past.slice(-MAX_HISTORY + 1), doc], future: [] });
+    set({ doc: next, past: [...past.slice(-MAX_HISTORY + 1), doc], future: [], dragBase: null });
   },
 
   undo: () => {
