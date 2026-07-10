@@ -65,6 +65,13 @@ describe('evaluate', () => {
     expect(v).toBeLessThan(648);
   });
 
+  it('只有 hole 的文件：export 回傳 null，render 仍顯示 hole 形狀', () => {
+    const out = evaluateForRender([drillHole()], kernel);
+    expect(out).toHaveLength(1);
+    expect(out[0].role).toBe('hole');
+    expect(evaluateForExport([drillHole()], kernel)).toBeNull();
+  });
+
   it('空文件回傳 null', () => {
     expect(evaluateForExport([], kernel)).toBeNull();
   });

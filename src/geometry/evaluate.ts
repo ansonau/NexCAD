@@ -50,17 +50,26 @@ export function combineScope(nodes: SceneNode[], kernel: GeometryKernel): Solid 
 /** 渲染用：每個頂層節點一個 mesh。solid 被同層 hole 減料；hole 回傳自身形狀 */
 export function evaluateForRender(nodes: SceneNode[], kernel: GeometryKernel): EvaluatedNode[] {
   const out: EvaluatedNode[] = [];
-  const holeNodes = nodes.filter((n) => n.visible && n.role === 'hole');
+  // 每個 hole 只建一次 Solid（Manifold 布林運算不會消耗輸入，把手可重複使用）
+  const holeSolids = new Map<string, Solid>();
+  for (const n of nodes) {
+    if (n.visible && n.role === 'hole') {
+      const s = buildSolid(n, kernel);
+      if (s) holeSolids.set(n.id, s);
+    }
+  }
   for (const node of nodes) {
     if (!node.visible) continue;
-    let s = buildSolid(node, kernel);
-    if (!s) continue;
-    if (node.role === 'solid') {
-      for (const h of holeNodes) {
-        const hs = buildSolid(h, kernel);
-        if (hs) s = kernel.difference(s, hs);
+    let s: Solid | null;
+    if (node.role === 'hole') {
+      s = holeSolids.get(node.id) ?? null;
+    } else {
+      s = buildSolid(node, kernel);
+      if (s) {
+        for (const h of holeSolids.values()) s = kernel.difference(s, h);
       }
     }
+    if (!s) continue;
     out.push({ nodeId: node.id, role: node.role, mesh: kernel.toMesh(s) });
   }
   return out;
