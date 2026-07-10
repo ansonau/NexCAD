@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import type { PrimitiveNode, SceneNode } from '../types/document';
 
@@ -111,16 +112,20 @@ function NumberField({
   onChange: (v: number) => void;
   min?: number;
 }) {
+  const [draft, setDraft] = useState<string | null>(null);
   return (
     <label className="block">
       <span className="text-xs text-slate-400">{label}</span>
       <input
         type="number"
         className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm text-slate-800"
-        value={value}
+        value={draft ?? value}
         min={min}
         step={1}
+        onFocus={() => setDraft(String(value))}
+        onBlur={() => setDraft(null)}
         onChange={(e) => {
+          setDraft(e.target.value);
           const v = Number.parseFloat(e.target.value);
           if (!Number.isNaN(v) && (min === undefined || v >= min)) onChange(v);
         }}
