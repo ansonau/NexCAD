@@ -13,6 +13,7 @@ import type { LucideIcon } from 'lucide-react';
 import { getGeometryClient } from '../geometry/client';
 import { writeBinaryStl } from '../export/stl';
 import { useDocumentStore } from '../store/documentStore';
+import { useToastStore } from '../store/toastStore';
 import { createPrimitive } from '../types/document';
 import type { PrimitiveKind } from '../types/document';
 
@@ -46,7 +47,7 @@ export function Toolbar() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '匯出失敗');
+      useToastStore.getState().show(err instanceof Error ? err.message : '匯出失敗');
     } finally {
       setExporting(false);
     }
