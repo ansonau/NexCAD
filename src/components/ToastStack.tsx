@@ -5,7 +5,11 @@ export function ToastStack() {
   const dismiss = useToastStore((s) => s.dismiss);
   if (toasts.length === 0) return null;
   return (
-    <div className="absolute bottom-20 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
+    <div
+      role="alert"
+      aria-live="assertive"
+      className="absolute bottom-20 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2"
+    >
       {toasts.map((t) => (
         <button
           key={t.id}
