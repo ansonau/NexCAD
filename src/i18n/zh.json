@@ -41,6 +41,7 @@
     "import": "匯入 .nexcad",
     "exportFile": "匯出 .nexcad",
     "importFailed": "匯入失敗：檔案格式不正確",
+    "unknownParts": "匯入的專案包含未知零件：{{ids}}（已略過顯示）",
     "untitled": "未命名專案",
     "empty": "還沒有專案"
   },

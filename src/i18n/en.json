@@ -41,6 +41,7 @@
     "import": "Import .nexcad",
     "exportFile": "Export .nexcad",
     "importFailed": "Import failed: invalid file format",
+    "unknownParts": "Imported project contains unknown parts: {{ids}} (not displayed)",
     "untitled": "Untitled project",
     "empty": "No projects yet"
   },

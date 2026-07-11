@@ -8,10 +8,12 @@ import {
   type ProjectRecord,
 } from '../persistence/db';
 import { parseNexcadFile, serializeNexcadFile } from '../persistence/nexcadFile';
+import { getPartDefinition } from '../parts/library';
 import { useDocumentStore } from '../store/documentStore';
 import { useProjectStore } from '../store/projectStore';
 import { useToastStore } from '../store/toastStore';
 import { emptyDocument, newId } from '../types/document';
+import type { SceneNode } from '../types/document';
 
 function loadDocIntoStore(doc: ProjectRecord['doc'], id: string): void {
   useDocumentStore.setState({
@@ -44,6 +46,15 @@ export function ProjectsPanel() {
     if (open) void listProjects().then(setProjects);
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
   const openProject = async (record: ProjectRecord) => {
     await persistCurrent();
     loadDocIntoStore(record.doc, record.id);
@@ -62,6 +73,12 @@ export function ProjectsPanel() {
   const removeProject = async (record: ProjectRecord) => {
     if (!window.confirm(t('projects.deleteConfirm', { name: record.name }))) return;
     await deleteProject(record.id);
+    if (record.id === currentId) {
+      const id = newId();
+      const doc = emptyDocument(t('projects.untitled'));
+      loadDocIntoStore(doc, id);
+      await saveProject({ id, name: doc.name, updatedAt: Date.now(), doc });
+    }
     setProjects(await listProjects());
   };
 
@@ -79,6 +96,17 @@ export function ProjectsPanel() {
   const importFile = async (file: File) => {
     try {
       const doc = parseNexcadFile(await file.text());
+      const missing = new Set<string>();
+      const scan = (nodes: SceneNode[]) => {
+        for (const n of nodes) {
+          if (n.type === 'part' && !getPartDefinition(n.partId)) missing.add(n.partId);
+          if (n.type === 'group') scan(n.children);
+        }
+      };
+      scan(doc.nodes);
+      if (missing.size > 0) {
+        useToastStore.getState().show(t('projects.unknownParts', { ids: [...missing].join(', ') }));
+      }
       await persistCurrent();
       const id = newId();
       loadDocIntoStore(doc, id);
@@ -112,6 +140,9 @@ export function ProjectsPanel() {
           onClick={() => setOpen(false)}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('projects.title')}
             className="max-h-[70vh] w-96 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
