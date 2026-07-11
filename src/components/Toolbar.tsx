@@ -11,10 +11,8 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getGeometryClient } from '../geometry/client';
-import { writeBinaryStl } from '../export/stl';
+import { ExportDialog } from './ExportDialog';
 import { useDocumentStore } from '../store/documentStore';
-import { useToastStore } from '../store/toastStore';
 import { createPrimitive } from '../types/document';
 import type { PrimitiveKind } from '../types/document';
 
@@ -34,52 +32,33 @@ export function Toolbar() {
   const selection = useDocumentStore((s) => s.selection);
   const canUndo = useDocumentStore((s) => s.past.length > 0);
   const canRedo = useDocumentStore((s) => s.future.length > 0);
-  const [exporting, setExporting] = useState(false);
-
-  const exportStl = async () => {
-    setExporting(true);
-    try {
-      const { doc } = useDocumentStore.getState();
-      const mesh = await getGeometryClient().requestExport(doc.nodes);
-      const blob = new Blob([writeBinaryStl(mesh)], { type: 'model/stl' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${doc.name}.stl`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      const message = err instanceof Error && err.message === 'EXPORT_EMPTY'
-        ? t('errors.exportEmpty')
-        : t('errors.exportFailed');
-      useToastStore.getState().show(message);
-    } finally {
-      setExporting(false);
-    }
-  };
+  const [showExport, setShowExport] = useState(false);
 
   return (
-    <div className="absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-slate-200 bg-white/90 p-1.5 shadow-lg backdrop-blur">
-      {PRIMITIVES.map((p) => (
-        <ToolButton key={p.kind} title={t(p.label)} onClick={() => addNode(createPrimitive(p.kind))}>
-          <p.icon size={20} />
+    <>
+      <div className="absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-slate-200 bg-white/90 p-1.5 shadow-lg backdrop-blur">
+        {PRIMITIVES.map((p) => (
+          <ToolButton key={p.kind} title={t(p.label)} onClick={() => addNode(createPrimitive(p.kind))}>
+            <p.icon size={20} />
+          </ToolButton>
+        ))}
+        <Divider />
+        <ToolButton title={t('toolbar.undo')} onClick={undo} disabled={!canUndo}>
+          <Undo2 size={20} />
         </ToolButton>
-      ))}
-      <Divider />
-      <ToolButton title={t('toolbar.undo')} onClick={undo} disabled={!canUndo}>
-        <Undo2 size={20} />
-      </ToolButton>
-      <ToolButton title={t('toolbar.redo')} onClick={redo} disabled={!canRedo}>
-        <Redo2 size={20} />
-      </ToolButton>
-      <ToolButton title={t('toolbar.delete')} onClick={removeSelected} disabled={selection.length === 0}>
-        <Trash2 size={20} />
-      </ToolButton>
-      <Divider />
-      <ToolButton title={t('toolbar.export')} onClick={exportStl} disabled={exporting}>
-        <Download size={20} />
-      </ToolButton>
-    </div>
+        <ToolButton title={t('toolbar.redo')} onClick={redo} disabled={!canRedo}>
+          <Redo2 size={20} />
+        </ToolButton>
+        <ToolButton title={t('toolbar.delete')} onClick={removeSelected} disabled={selection.length === 0}>
+          <Trash2 size={20} />
+        </ToolButton>
+        <Divider />
+        <ToolButton title={t('toolbar.export')} onClick={() => setShowExport(true)}>
+          <Download size={20} />
+        </ToolButton>
+      </div>
+      {showExport && <ExportDialog onClose={() => setShowExport(false)} />}
+    </>
   );
 }
 
