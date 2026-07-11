@@ -29,7 +29,8 @@
     "board": "Boards",
     "sensor": "Sensors & displays",
     "power": "Motion & power",
-    "component": "Small parts"
+    "component": "Small parts",
+    "noResults": "No matching parts"
   },
   "projects": {
     "title": "Projects",

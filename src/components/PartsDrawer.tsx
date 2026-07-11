@@ -61,6 +61,7 @@ export function PartsDrawer() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('drawer.search')}
+              aria-label={t('drawer.search')}
               className="h-11 w-32 bg-transparent text-sm text-slate-700 outline-none"
             />
           </div>
@@ -73,6 +74,9 @@ export function PartsDrawer() {
           </button>
         </div>
       </div>
+      {parts.length === 0 && (
+        <p className="p-6 text-center text-sm text-slate-400">{t('drawer.noResults')}</p>
+      )}
       <div className="grid max-h-56 grid-cols-2 gap-2 overflow-y-auto p-4 sm:grid-cols-3 md:grid-cols-4">
         {parts.map((p) => (
           <button

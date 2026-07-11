@@ -29,7 +29,8 @@
     "board": "開發板",
     "sensor": "感測器與顯示",
     "power": "動力與電源",
-    "component": "小型元件"
+    "component": "小型元件",
+    "noResults": "找不到符合的零件"
   },
   "projects": {
     "title": "專案",
