@@ -1,19 +1,53 @@
-import { LanguageToggle } from './components/LanguageToggle';
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PartsDrawer } from './components/PartsDrawer';
 import { PropertyCard } from './components/PropertyCard';
+import { LanguageToggle } from './components/LanguageToggle';
 import { ToastStack } from './components/ToastStack';
 import { Toolbar } from './components/Toolbar';
 import { Viewport } from './components/Viewport';
+import { useAutosave } from './hooks/useAutosave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { listProjects, saveProject } from './persistence/db';
+import { useDocumentStore } from './store/documentStore';
+import { useProjectStore } from './store/projectStore';
+import { emptyDocument, newId } from './types/document';
 
 export default function App() {
   useKeyboardShortcuts();
+  useAutosave();
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    void (async () => {
+      if (useProjectStore.getState().projectId) return;
+      const projects = await listProjects();
+      if (projects.length > 0) {
+        const latest = projects[0];
+        useDocumentStore.setState({
+          doc: latest.doc,
+          selection: [],
+          past: [],
+          future: [],
+          dragBase: null,
+        });
+        useProjectStore.getState().setProjectId(latest.id);
+      } else {
+        const id = newId();
+        const doc = emptyDocument(t('projects.untitled'));
+        useDocumentStore.setState({ doc, selection: [], past: [], future: [], dragBase: null });
+        useProjectStore.getState().setProjectId(id);
+        await saveProject({ id, name: doc.name, updatedAt: Date.now(), doc });
+      }
+    })();
+  }, [t]);
+
   return (
     <div className="relative h-full w-full overflow-hidden bg-slate-50">
       <Viewport />
       <Toolbar />
-      <PartsDrawer />
       <PropertyCard />
+      <PartsDrawer />
       <ToastStack />
       <div className="absolute right-4 top-4">
         <LanguageToggle />
