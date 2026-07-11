@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPrimitive, emptyDocument, identityTransform, newId } from './document';
+import { createPartNode, createPrimitive, emptyDocument, identityTransform, newId } from './document';
 
 describe('document model', () => {
   it('createPrimitive 套用該形狀的預設參數', () => {
@@ -34,5 +34,13 @@ describe('document model', () => {
     const ids = new Set(Array.from({ length: 1000 }, () => newId()));
     expect(ids.size).toBe(1000);
     expect(newId()).toMatch(/^n_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+  });
+
+  it('createPartNode 建立零件節點', () => {
+    const node = createPartNode('arduino-uno', 'Arduino Uno R3');
+    expect(node.type).toBe('part');
+    expect(node.partId).toBe('arduino-uno');
+    expect(node.role).toBe('solid');
+    expect(node.transform).toEqual(identityTransform());
   });
 });

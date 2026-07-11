@@ -4,7 +4,7 @@ import { Grid, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { getGeometryClient } from '../geometry/client';
 import type { NodeMeshPayload } from '../geometry/protocol';
-import { useDocumentStore } from '../store/documentStore';
+import { findNode, useDocumentStore } from '../store/documentStore';
 import { useToastStore } from '../store/toastStore';
 import { SelectionGizmo } from './SelectionGizmo';
 
@@ -50,6 +50,7 @@ export function Viewport() {
             key={m.nodeId}
             payload={m}
             selected={selection.includes(m.nodeId)}
+            isPart={findNode(doc.nodes, m.nodeId)?.type === 'part'}
             onSelect={() => setSelection([m.nodeId])}
           />
         ))}
@@ -66,10 +67,12 @@ export function Viewport() {
 function SceneMesh({
   payload,
   selected,
+  isPart,
   onSelect,
 }: {
   payload: NodeMeshPayload;
   selected: boolean;
+  isPart: boolean;
   onSelect: () => void;
 }) {
   const geometry = useMemo(() => {
@@ -92,7 +95,7 @@ function SceneMesh({
       }}
     >
       <meshStandardMaterial
-        color={isHole ? '#ef4444' : selected ? '#3b82f6' : '#9db4d0'}
+        color={isHole ? '#ef4444' : selected ? '#3b82f6' : isPart ? '#2e7d5b' : '#9db4d0'}
         transparent={isHole}
         opacity={isHole ? 0.45 : 1}
         roughness={0.6}

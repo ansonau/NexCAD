@@ -31,7 +31,12 @@ export interface GroupNode extends NodeCommon {
   children: SceneNode[];
 }
 
-export type SceneNode = PrimitiveNode | GroupNode;
+export interface PartNode extends NodeCommon {
+  type: 'part';
+  partId: string;
+}
+
+export type SceneNode = PrimitiveNode | GroupNode | PartNode;
 
 export interface NexcadDocument {
   version: 1;
@@ -75,6 +80,24 @@ export function createPrimitive(
     locked: false,
     kind,
     params: { ...PRIMITIVE_DEFAULTS[kind] },
+    ...overrides,
+  };
+}
+
+export function createPartNode(
+  partId: string,
+  name: string,
+  overrides: Partial<Omit<PartNode, 'type' | 'partId'>> = {},
+): PartNode {
+  return {
+    type: 'part',
+    id: newId(),
+    name,
+    role: 'solid',
+    transform: identityTransform(),
+    visible: true,
+    locked: false,
+    partId,
     ...overrides,
   };
 }

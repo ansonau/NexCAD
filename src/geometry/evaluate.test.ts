@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { createPrimitive, identityTransform, newId } from '../types/document';
+import { createPartNode, createPrimitive, identityTransform, newId } from '../types/document';
 import type { GroupNode } from '../types/document';
 import { evaluateForExport, evaluateForRender } from './evaluate';
 import { ManifoldKernel } from './manifoldKernel';
@@ -74,5 +74,19 @@ describe('evaluate', () => {
 
   it('空文件回傳 null', () => {
     expect(evaluateForExport([], kernel)).toBeNull();
+  });
+
+  it('part 節點可求值（體積 > 0）', () => {
+    const node = createPartNode('breadboard-half', 'bb');
+    const solid = evaluateForExport([node], kernel);
+    expect(solid).not.toBeNull();
+    expect(kernel.volume(solid!)).toBeGreaterThan(30000);
+  });
+
+  it('未知 partId 的節點被略過而非拋錯', () => {
+    const ghost = createPartNode('does-not-exist', 'ghost');
+    expect(evaluateForExport([ghost], kernel)).toBeNull();
+    const withPlate = evaluateForExport([plate(), ghost], kernel);
+    expect(kernel.volume(withPlate!)).toBeCloseTo(800, 3);
   });
 });

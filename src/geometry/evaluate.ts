@@ -1,3 +1,5 @@
+import { getPartDefinition } from '../parts/library';
+import { buildPartSolid } from '../parts/partGeometry';
 import type { NodeRole, SceneNode } from '../types/document';
 import type { GeometryKernel, MeshData, Solid } from './kernel';
 
@@ -25,6 +27,9 @@ function buildSolid(node: SceneNode, kernel: GeometryKernel): Solid | null {
         base = kernel.cone(p.radiusBottom, p.radiusTop, p.height);
         break;
     }
+  } else if (node.type === 'part') {
+    const def = getPartDefinition(node.partId);
+    base = def ? buildPartSolid(def, kernel) : null;
   } else {
     base = combineScope(node.children, kernel);
   }
