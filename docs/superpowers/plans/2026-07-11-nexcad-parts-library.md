@@ -361,7 +361,7 @@ git commit -m "feat: add toast notifications for geometry and export errors"
 ### Task 3: 零件定義 schema（zod）
 
 **Files:**
-- Modify: `package.json`（新增 `"zod": "^3.25.0"` 至 dependencies，執行 `npm install zod`）
+- Modify: `package.json`（新增 `"zod": "^4.4.3"` 至 dependencies（實際安裝 v4，已驗證相容），執行 `npm install zod`）
 - Create: `src/parts/schema.ts`
 - Test: `src/parts/schema.test.ts`
 
@@ -2263,7 +2263,8 @@ const primitiveNodeSchema = z.object({
   ...nodeCommonShape,
   type: z.literal('primitive'),
   kind: z.enum(['box', 'cylinder', 'sphere', 'cone']),
-  params: z.record(z.number()),
+  // zod v4 的 record 需要明確的 key schema
+  params: z.record(z.string(), z.number()),
 });
 
 const partNodeSchema = z.object({
