@@ -1,4 +1,5 @@
 import { LanguageToggle } from './components/LanguageToggle';
+import { PartsDrawer } from './components/PartsDrawer';
 import { PropertyCard } from './components/PropertyCard';
 import { ToastStack } from './components/ToastStack';
 import { Toolbar } from './components/Toolbar';
@@ -11,6 +12,7 @@ export default function App() {
     <div className="relative h-full w-full overflow-hidden bg-slate-50">
       <Viewport />
       <Toolbar />
+      <PartsDrawer />
       <PropertyCard />
       <ToastStack />
       <div className="absolute right-4 top-4">
