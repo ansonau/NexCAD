@@ -32,6 +32,20 @@ describe('PART_LIBRARY', () => {
     expect(getPartDefinition('nope')).toBeUndefined();
   });
 
+  it('clearanceHeight 不低於實際幾何最高點', () => {
+    for (const part of PART_LIBRARY) {
+      const bodyTop = part.body.size[2];
+      const highest = part.body.blocks.reduce(
+        (max, block) => Math.max(max, bodyTop + block.position[2] + block.size[2]),
+        bodyTop,
+      );
+      expect(
+        part.clearanceHeight,
+        `${part.id} 的 clearanceHeight ${part.clearanceHeight} 低於幾何最高點 ${highest}`,
+      ).toBeGreaterThanOrEqual(highest - 1e-9);
+    }
+  });
+
   it('安裝孔都落在主體範圍內（z=0 的孔）', () => {
     for (const part of PART_LIBRARY) {
       const [l, w] = part.body.size;

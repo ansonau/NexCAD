@@ -56,7 +56,7 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
       { x: 20.3, y: 7.6, diameter: 1.8 },
     ],
     ports: [{ face: 'west', shape: 'rect', x: 0, z: 0, w: 9, h: 5, label: 'USB' }],
-    clearanceHeight: 10,
+    clearanceHeight: 10.1,
   },
   {
     id: 'esp32-devkit',
@@ -79,7 +79,7 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
       { x: 23.5, y: 10.5, diameter: 3 },
     ],
     ports: [{ face: 'west', shape: 'rect', x: 0, z: 0, w: 9, h: 5, label: 'USB' }],
-    clearanceHeight: 9,
+    clearanceHeight: 10.1,
   },
   {
     id: 'raspberry-pi-4',
@@ -197,7 +197,7 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
       { x: 11.5, y: 11.75, diameter: 2 },
     ],
     ports: [{ face: 'top', shape: 'rect', x: 0, z: -1.5, w: 26, h: 15, label: '螢幕視窗' }],
-    clearanceHeight: 4,
+    clearanceHeight: 4.2,
   },
   {
     id: 'lcd1602',
@@ -282,7 +282,7 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
       { x: 24.5, y: 5, diameter: 4.5, z: 36.6 },
     ],
     ports: [{ face: 'top', shape: 'circle', x: 10.3, z: 0, w: 8, h: 8, label: '轉軸開孔' }],
-    clearanceHeight: 46,
+    clearanceHeight: 46.9,
   },
   {
     id: 'tt-motor',
