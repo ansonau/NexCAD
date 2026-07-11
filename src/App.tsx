@@ -10,7 +10,7 @@ export default function App() {
       <Viewport />
       <Toolbar />
       <PropertyCard />
-      <div className="absolute left-4 top-4 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-sm font-medium text-slate-700 shadow-lg backdrop-blur">
+      <div className="absolute bottom-4 left-4 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-sm font-medium text-slate-700 shadow-lg backdrop-blur">
         NexCAD
       </div>
     </div>
