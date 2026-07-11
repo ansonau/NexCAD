@@ -1,0 +1,61 @@
+{
+  "toolbar": {
+    "box": "方塊",
+    "cylinder": "圓柱",
+    "sphere": "球體",
+    "cone": "圓錐",
+    "undo": "復原",
+    "redo": "重做",
+    "delete": "刪除",
+    "export": "匯出 STL"
+  },
+  "property": {
+    "name": "名稱",
+    "solid": "實體",
+    "hole": "孔",
+    "size": "尺寸 (mm)",
+    "position": "位置 (mm)",
+    "width": "寬",
+    "depth": "深",
+    "height": "高",
+    "radius": "半徑",
+    "radiusBottom": "底半徑",
+    "radiusTop": "頂半徑"
+  },
+  "drawer": {
+    "title": "零件庫",
+    "search": "搜尋零件",
+    "close": "收合",
+    "board": "開發板",
+    "sensor": "感測器與顯示",
+    "power": "動力與電源",
+    "component": "小型元件"
+  },
+  "projects": {
+    "title": "專案",
+    "open": "開啟",
+    "delete": "刪除",
+    "deleteConfirm": "確定刪除專案「{{name}}」？此動作無法復原。",
+    "new": "新專案",
+    "import": "匯入 .nexcad",
+    "exportFile": "匯出 .nexcad",
+    "importFailed": "匯入失敗：檔案格式不正確",
+    "untitled": "未命名專案",
+    "empty": "還沒有專案"
+  },
+  "export": {
+    "title": "匯出 STL",
+    "dimensions": "模型尺寸",
+    "triangles": "三角形數",
+    "warnings": "列印提醒",
+    "thinFeature": "「{{name}}」有小於 1mm 的尺寸，可能過薄無法列印",
+    "tooLarge": "模型超過 250mm，可能超出列印範圍",
+    "cancel": "取消",
+    "download": "下載 STL"
+  },
+  "errors": {
+    "geometry": "幾何運算失敗，已保留上一個有效狀態",
+    "exportEmpty": "沒有可匯出的實體",
+    "exportFailed": "匯出失敗"
+  }
+}

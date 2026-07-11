@@ -10,6 +10,7 @@ import {
   Undo2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getGeometryClient } from '../geometry/client';
 import { writeBinaryStl } from '../export/stl';
 import { useDocumentStore } from '../store/documentStore';
@@ -18,13 +19,14 @@ import { createPrimitive } from '../types/document';
 import type { PrimitiveKind } from '../types/document';
 
 const PRIMITIVES: { kind: PrimitiveKind; label: string; icon: LucideIcon }[] = [
-  { kind: 'box', label: '方塊', icon: Box },
-  { kind: 'cylinder', label: '圓柱', icon: Cylinder },
-  { kind: 'sphere', label: '球體', icon: Circle },
-  { kind: 'cone', label: '圓錐', icon: Cone },
+  { kind: 'box', label: 'toolbar.box', icon: Box },
+  { kind: 'cylinder', label: 'toolbar.cylinder', icon: Cylinder },
+  { kind: 'sphere', label: 'toolbar.sphere', icon: Circle },
+  { kind: 'cone', label: 'toolbar.cone', icon: Cone },
 ];
 
 export function Toolbar() {
+  const { t } = useTranslation();
   const addNode = useDocumentStore((s) => s.addNode);
   const undo = useDocumentStore((s) => s.undo);
   const redo = useDocumentStore((s) => s.redo);
@@ -47,7 +49,10 @@ export function Toolbar() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      useToastStore.getState().show(err instanceof Error ? err.message : '匯出失敗');
+      const message = err instanceof Error && err.message === 'EXPORT_EMPTY'
+        ? t('errors.exportEmpty')
+        : t('errors.exportFailed');
+      useToastStore.getState().show(message);
     } finally {
       setExporting(false);
     }
@@ -56,22 +61,22 @@ export function Toolbar() {
   return (
     <div className="absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-slate-200 bg-white/90 p-1.5 shadow-lg backdrop-blur">
       {PRIMITIVES.map((p) => (
-        <ToolButton key={p.kind} title={p.label} onClick={() => addNode(createPrimitive(p.kind))}>
+        <ToolButton key={p.kind} title={t(p.label)} onClick={() => addNode(createPrimitive(p.kind))}>
           <p.icon size={20} />
         </ToolButton>
       ))}
       <Divider />
-      <ToolButton title="復原" onClick={undo} disabled={!canUndo}>
+      <ToolButton title={t('toolbar.undo')} onClick={undo} disabled={!canUndo}>
         <Undo2 size={20} />
       </ToolButton>
-      <ToolButton title="重做" onClick={redo} disabled={!canRedo}>
+      <ToolButton title={t('toolbar.redo')} onClick={redo} disabled={!canRedo}>
         <Redo2 size={20} />
       </ToolButton>
-      <ToolButton title="刪除" onClick={removeSelected} disabled={selection.length === 0}>
+      <ToolButton title={t('toolbar.delete')} onClick={removeSelected} disabled={selection.length === 0}>
         <Trash2 size={20} />
       </ToolButton>
       <Divider />
-      <ToolButton title="匯出 STL" onClick={exportStl} disabled={exporting}>
+      <ToolButton title={t('toolbar.export')} onClick={exportStl} disabled={exporting}>
         <Download size={20} />
       </ToolButton>
     </div>

@@ -4,6 +4,7 @@ import { Grid, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { getGeometryClient } from '../geometry/client';
 import type { NodeMeshPayload } from '../geometry/protocol';
+import i18n from '../i18n';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import { useToastStore } from '../store/toastStore';
 import { SelectionGizmo } from './SelectionGizmo';
@@ -18,8 +19,8 @@ export function Viewport() {
     const client = getGeometryClient();
     client.onMeshes = setMeshes;
     client.onError = (message) => {
-      console.warn('幾何運算失敗：', message);
-      useToastStore.getState().show(`幾何運算失敗，已保留上一個有效狀態（${message}）`);
+      console.warn('geometry error:', message);
+      useToastStore.getState().show(`${i18n.t('errors.geometry')}（${message}）`);
     };
   }, []);
 

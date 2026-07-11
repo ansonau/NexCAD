@@ -1,19 +1,21 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import type { PrimitiveNode, SceneNode } from '../types/document';
 
 const PARAM_LABELS: Record<string, string> = {
-  width: '寬',
-  depth: '深',
-  height: '高',
-  radius: '半徑',
-  radiusBottom: '底半徑',
-  radiusTop: '頂半徑',
+  width: 'property.width',
+  depth: 'property.depth',
+  height: 'property.height',
+  radius: 'property.radius',
+  radiusBottom: 'property.radiusBottom',
+  radiusTop: 'property.radiusTop',
 };
 
 const AXIS_LABELS = ['X', 'Y', 'Z'] as const;
 
 export function PropertyCard() {
+  const { t } = useTranslation();
   const selection = useDocumentStore((s) => s.selection);
   const doc = useDocumentStore((s) => s.doc);
   const updateNode = useDocumentStore((s) => s.updateNode);
@@ -27,11 +29,11 @@ export function PropertyCard() {
         className="mb-3 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm font-medium text-slate-800"
         value={node.name}
         onChange={(e) => updateNode(node.id, (n) => void (n.name = e.target.value))}
-        aria-label="名稱"
+        aria-label={t('property.name')}
       />
       <RoleToggle node={node} onChange={(role) => updateNode(node.id, (n) => void (n.role = role))} />
       {node.type === 'primitive' && <ParamFields node={node} updateNode={updateNode} />}
-      <p className="mb-1 mt-3 text-xs text-slate-400">位置 (mm)</p>
+      <p className="mb-1 mt-3 text-xs text-slate-400">{t('property.position')}</p>
       <div className="grid grid-cols-3 gap-2">
         {AXIS_LABELS.map((axis, i) => (
           <NumberField
@@ -55,6 +57,7 @@ function RoleToggle({
   node: SceneNode;
   onChange: (role: 'solid' | 'hole') => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mb-3 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
       {(['solid', 'hole'] as const).map((role) => (
@@ -66,7 +69,7 @@ function RoleToggle({
             node.role === role ? 'bg-white font-medium text-slate-800 shadow-sm' : 'text-slate-500'
           }`}
         >
-          {role === 'solid' ? '實體' : '孔'}
+          {role === 'solid' ? t('property.solid') : t('property.hole')}
         </button>
       ))}
     </div>
@@ -80,14 +83,15 @@ function ParamFields({
   node: PrimitiveNode;
   updateNode: (id: string, fn: (n: SceneNode) => void) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <>
-      <p className="mb-1 text-xs text-slate-400">尺寸 (mm)</p>
+      <p className="mb-1 text-xs text-slate-400">{t('property.size')}</p>
       <div className="grid grid-cols-2 gap-2">
         {Object.entries(node.params).map(([key, value]) => (
           <NumberField
             key={key}
-            label={PARAM_LABELS[key] ?? key}
+            label={t(PARAM_LABELS[key] ?? key)}
             value={value}
             min={key === 'radiusTop' ? 0 : 0.1}
             onChange={(v) =>

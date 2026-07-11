@@ -67,8 +67,8 @@ describe('GeometryClient', () => {
     const worker = new FakeWorker();
     const client = new GeometryClient(worker);
     const promise = client.requestExport(nodes());
-    worker.respond({ id: worker.posted[0].id, ok: false, error: '沒有可匯出的實體' });
-    await expect(promise).rejects.toThrow('沒有可匯出的實體');
+    worker.respond({ id: worker.posted[0].id, ok: false, error: 'EXPORT_EMPTY' });
+    await expect(promise).rejects.toThrow('EXPORT_EMPTY');
   });
 
   it('evaluate 錯誤時呼叫 onError 並繼續處理排隊中的請求', () => {

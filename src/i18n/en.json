@@ -1,0 +1,61 @@
+{
+  "toolbar": {
+    "box": "Box",
+    "cylinder": "Cylinder",
+    "sphere": "Sphere",
+    "cone": "Cone",
+    "undo": "Undo",
+    "redo": "Redo",
+    "delete": "Delete",
+    "export": "Export STL"
+  },
+  "property": {
+    "name": "Name",
+    "solid": "Solid",
+    "hole": "Hole",
+    "size": "Size (mm)",
+    "position": "Position (mm)",
+    "width": "Width",
+    "depth": "Depth",
+    "height": "Height",
+    "radius": "Radius",
+    "radiusBottom": "Bottom radius",
+    "radiusTop": "Top radius"
+  },
+  "drawer": {
+    "title": "Parts",
+    "search": "Search parts",
+    "close": "Close",
+    "board": "Boards",
+    "sensor": "Sensors & displays",
+    "power": "Motion & power",
+    "component": "Small parts"
+  },
+  "projects": {
+    "title": "Projects",
+    "open": "Open",
+    "delete": "Delete",
+    "deleteConfirm": "Delete project \"{{name}}\"? This can't be undone.",
+    "new": "New project",
+    "import": "Import .nexcad",
+    "exportFile": "Export .nexcad",
+    "importFailed": "Import failed: invalid file format",
+    "untitled": "Untitled project",
+    "empty": "No projects yet"
+  },
+  "export": {
+    "title": "Export STL",
+    "dimensions": "Model size",
+    "triangles": "Triangles",
+    "warnings": "Print warnings",
+    "thinFeature": "\"{{name}}\" has a dimension under 1mm and may be too thin to print",
+    "tooLarge": "Model exceeds 250mm and may not fit the print bed",
+    "cancel": "Cancel",
+    "download": "Download STL"
+  },
+  "errors": {
+    "geometry": "Geometry operation failed; the last valid state was kept",
+    "exportEmpty": "Nothing to export",
+    "exportFailed": "Export failed"
+  }
+}

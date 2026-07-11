@@ -25,7 +25,7 @@ self.onmessage = async (e: MessageEvent<GeometryRequest>) => {
       );
     } else {
       const solid = evaluateForExport(req.nodes, kernel);
-      if (!solid) throw new Error('沒有可匯出的實體');
+      if (!solid) throw new Error('EXPORT_EMPTY');
       const mesh = kernel.toMesh(solid);
       post(
         { id: req.id, ok: true, type: 'export', positions: mesh.positions, indices: mesh.indices },
