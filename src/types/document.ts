@@ -54,6 +54,9 @@ export const PRIMITIVE_DEFAULTS: Record<PrimitiveKind, Record<string, number>> =
 let idCounter = 0;
 
 export function newId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `n_${crypto.randomUUID()}`;
+  }
   idCounter += 1;
   return `n_${Date.now().toString(36)}_${idCounter}`;
 }

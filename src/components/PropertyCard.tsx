@@ -61,6 +61,7 @@ function RoleToggle({
         <button
           key={role}
           onClick={() => onChange(role)}
+          aria-pressed={node.role === role}
           className={`rounded-lg py-1.5 text-sm ${
             node.role === role ? 'bg-white font-medium text-slate-800 shadow-sm' : 'text-slate-500'
           }`}
