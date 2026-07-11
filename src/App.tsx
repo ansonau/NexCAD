@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PartsDrawer } from './components/PartsDrawer';
 import { PropertyCard } from './components/PropertyCard';
 import { LanguageToggle } from './components/LanguageToggle';
+import { ProjectsPanel } from './components/ProjectsPanel';
 import { ToastStack } from './components/ToastStack';
 import { Toolbar } from './components/Toolbar';
 import { Viewport } from './components/Viewport';
@@ -51,6 +52,7 @@ export default function App() {
   return (
     <div className="relative h-full w-full overflow-hidden bg-slate-50">
       <Viewport />
+      <ProjectsPanel />
       <Toolbar />
       <PropertyCard />
       <PartsDrawer />
