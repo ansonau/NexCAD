@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { TransformControls } from '@react-three/drei';
 import * as THREE from 'three';
+import { collectHoleWorldPositions, snapToHoles } from '../geometry/holeSnap';
 import { findNode, useDocumentStore } from '../store/documentStore';
+import type { Vec3 } from '../types/document';
 
 const snap = (v: number) => Math.round(v);
 
@@ -11,6 +13,7 @@ export function SelectionGizmo() {
   const beginDrag = useDocumentStore((s) => s.beginDrag);
   const updateTransient = useDocumentStore((s) => s.updateTransient);
   const proxyRef = useRef<THREE.Object3D>(null!);
+  const holesRef = useRef<Vec3[]>([]);
 
   const selected = selection.length === 1 ? findNode(doc.nodes, selection[0]) : undefined;
 
@@ -24,8 +27,9 @@ export function SelectionGizmo() {
 
   const commitPosition = () => {
     const p = proxyRef.current.position;
+    const snapped = snapToHoles([snap(p.x), snap(p.y), snap(p.z)], holesRef.current);
     updateTransient(selected.id, (n) => {
-      n.transform.position = [snap(p.x), snap(p.y), snap(p.z)];
+      n.transform.position = snapped;
     });
   };
 
@@ -37,7 +41,13 @@ export function SelectionGizmo() {
         mode="translate"
         translationSnap={1}
         size={0.8}
-        onMouseDown={() => beginDrag()}
+        onMouseDown={() => {
+          holesRef.current = collectHoleWorldPositions(
+            useDocumentStore.getState().doc.nodes,
+            selected.id,
+          );
+          beginDrag();
+        }}
         onObjectChange={commitPosition}
       />
     </>
