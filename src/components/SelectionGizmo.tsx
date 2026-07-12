@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { TransformControls } from '@react-three/drei';
+import { createPortal, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { collectHoleWorldPositions, snapToHoles } from '../geometry/holeSnap';
 import { findNode, useDocumentStore } from '../store/documentStore';
@@ -14,6 +15,7 @@ export function SelectionGizmo() {
   const updateTransient = useDocumentStore((s) => s.updateTransient);
   const proxyRef = useRef<THREE.Object3D>(null!);
   const holesRef = useRef<Vec3[]>([]);
+  const scene = useThree((s) => s.scene);
 
   const selected = selection.length === 1 ? findNode(doc.nodes, selection[0]) : undefined;
 
@@ -33,23 +35,32 @@ export function SelectionGizmo() {
     });
   };
 
+  // TransformControls 疊加把手位置的視覺元件在建立時會把「世界座標」直接寫入自身區域的
+  // local position；proxy 位在有旋轉的 CAD→three.js 座標群組內，若 TransformControls 也
+  // 巢狀在同一個群組裡，該旋轉會被套用兩次，導致把手畫面位置與物體實際位置對不上。
+  // 用 portal 把 TransformControls 傳送到場景根層級（無旋轉）即可讓視覺位置正確，
+  // 同時 `object` 仍指向巢狀在旋轉群組內的 proxy，拖曳運算的父層旋轉修正不受影響。
   return (
     <>
       <object3D ref={proxyRef} />
-      <TransformControls
-        object={proxyRef}
-        mode="translate"
-        translationSnap={1}
-        size={0.8}
-        onMouseDown={() => {
-          holesRef.current = collectHoleWorldPositions(
-            useDocumentStore.getState().doc.nodes,
-            selected.id,
-          );
-          beginDrag();
-        }}
-        onObjectChange={commitPosition}
-      />
+      {createPortal(
+        <TransformControls
+          object={proxyRef}
+          mode="translate"
+          space="local"
+          translationSnap={1}
+          size={0.8}
+          onMouseDown={() => {
+            holesRef.current = collectHoleWorldPositions(
+              useDocumentStore.getState().doc.nodes,
+              selected.id,
+            );
+            beginDrag();
+          }}
+          onObjectChange={commitPosition}
+        />,
+        scene,
+      )}
     </>
   );
 }
