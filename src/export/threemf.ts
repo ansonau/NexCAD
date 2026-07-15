@@ -12,13 +12,21 @@ const RELS = `<?xml version="1.0" encoding="UTF-8"?>
 <Relationship Id="rel0" Target="/3D/3dmodel.model" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>
 </Relationships>`;
 
+// mesh.positions is a Float32Array; naive String(float32) stringifies the full
+// imprecise decimal expansion (e.g. "7.333000183105469"), bloating the XML for
+// any non-integer coordinate (fillets, rounded corners). 6dp is well beyond
+// float32's ~7 significant digits of precision and matches millimeter-scale CAD needs.
+function formatCoord(n: number): string {
+  return Number(n.toFixed(6)).toString();
+}
+
 function buildModelXml(mesh: MeshData): string {
   const vertexCount = mesh.positions.length / 3;
   const vertices: string[] = new Array(vertexCount);
   for (let i = 0; i < vertexCount; i++) {
-    const x = mesh.positions[i * 3];
-    const y = mesh.positions[i * 3 + 1];
-    const z = mesh.positions[i * 3 + 2];
+    const x = formatCoord(mesh.positions[i * 3]);
+    const y = formatCoord(mesh.positions[i * 3 + 1]);
+    const z = formatCoord(mesh.positions[i * 3 + 2]);
     vertices[i] = `<vertex x="${x}" y="${y}" z="${z}"/>`;
   }
   const triCount = mesh.indices.length / 3;
