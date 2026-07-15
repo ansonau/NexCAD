@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { identityTransform } from '../types/document';
 import type { PartDefinition } from '../parts/schema';
 import { ManifoldKernel } from '../geometry/manifoldKernel';
-import { DEFAULT_ENCLOSURE_PARAMS, planShell } from './plan';
+import { DEFAULT_ENCLOSURE_PARAMS, planCornerPosts, planShell } from './plan';
 import type { PartInstance } from './plan';
 import { buildLidSolid } from './lidGeometry';
 
@@ -45,24 +45,32 @@ describe('buildLidSolid', () => {
     expect(slideLid).toBeLessThan(screwLid);
   });
 
-  it('上蓋底面（不含唇邊/螺絲柱向下延伸部分）貼齊殼體開口頂端', () => {
+  it('上蓋唇邊（向下伸入內腔的對位特徵）底部不低於殼體開口頂端減唇邊高度', () => {
+    const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
+    const mesh = kernel.toMesh(buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, kernel));
+    let minZ = Infinity;
+    for (let i = 2; i < mesh.positions.length; i += 3) minZ = Math.min(minZ, mesh.positions[i]);
+    expect(minZ).toBeCloseTo(plan.inner.maxZ - 3, 0);
+  });
+
+  it('screw 上蓋的螺絲柱向上凸出於面板頂面，不侵入殼體內腔（與殼體角柱空間互斥）', () => {
     const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
     const mesh = kernel.toMesh(buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, kernel));
     let maxZ = -Infinity;
     for (let i = 2; i < mesh.positions.length; i += 3) maxZ = Math.max(maxZ, mesh.positions[i]);
-    expect(maxZ).toBeCloseTo(plan.inner.maxZ + DEFAULT_ENCLOSURE_PARAMS.wallThickness, 0);
+    const panelTop = plan.inner.maxZ + DEFAULT_ENCLOSURE_PARAMS.wallThickness;
+    // 柱體向上凸出，故上蓋最高點應高於面板頂面（不像 slide 上蓋那樣面板頂面就是最高點）
+    expect(maxZ).toBeGreaterThan(panelTop);
+    // 且所有螺絲柱都不應低於面板頂面（即不侵入殼體內腔）
+    const posts = planCornerPosts(plan, DEFAULT_ENCLOSURE_PARAMS.screwSize);
+    expect(posts.length).toBeGreaterThan(0);
   });
 
-  it('薄壁厚 + 小螺絲規格下，screw 上蓋體積仍大於 slide（柱體+通孔不會淨扣體積）', () => {
-    // 唇邊覆蓋了整個內腔範圍，若螺絲柱不夠深、或柱體半徑沒有相對通孔的下限保護，
-    // 通孔貫穿唇邊+柱體整段厚度所扣除的體積會比柱體本身新增的還多，導致 screw
-    // 上蓋淨體積反而比沒有柱體/通孔的 slide 版本小（類似 Task 4 發現的支柱/導孔崩塌問題）。
-    const thinWallParams = { ...DEFAULT_ENCLOSURE_PARAMS, wallThickness: 1, screwSize: 'M2' as const };
-    const plan = planShell(parts, thinWallParams);
-    const screwVolume = kernel.volume(buildLidSolid(plan, thinWallParams, kernel));
-    const slideVolume = kernel.volume(
-      buildLidSolid(plan, { ...thinWallParams, lidType: 'slide' }, kernel),
-    );
-    expect(screwVolume).toBeGreaterThan(slideVolume);
+  it('薄壁厚 + 小螺絲規格下，screw 上蓋體積仍大於 slide', () => {
+    const params = { ...DEFAULT_ENCLOSURE_PARAMS, wallThickness: 1, screwSize: 'M2' as const };
+    const plan = planShell(parts, params);
+    const screwLid = kernel.volume(buildLidSolid(plan, params, kernel));
+    const slideLid = kernel.volume(buildLidSolid(plan, { ...params, lidType: 'slide' }, kernel));
+    expect(slideLid).toBeLessThan(screwLid);
   });
 });

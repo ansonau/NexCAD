@@ -6,10 +6,7 @@ import type { EnclosureParams, ShellPlan } from './plan';
 const noRotScale = { rotation: [0, 0, 0] as [number, number, number], scale: [1, 1, 1] as [number, number, number] };
 const LIP_MARGIN = 0.4;
 const LIP_HEIGHT = 3;
-// 螺絲柱必須明顯比唇邊深（唇邊已覆蓋整個內腔範圍），柱體才能在唇邊底部以下
-// 貢獻真正「新增」的材料；否則通孔會貫穿唇邊+柱體整段厚度，扣除的體積比柱體
-// 本身新增的還多，導致 screw 上蓋淨體積反而比 slide 版本小（見下方詳細說明）。
-const POST_HEIGHT = 8;
+const POST_HEIGHT = 4;
 
 function buildLip(plan: ShellPlan, wallThickness: number, height: number, kernel: GeometryKernel, panelZ: number): Solid {
   const { inner, cornerRadius } = plan;
@@ -46,23 +43,22 @@ export function buildLidSolid(plan: ShellPlan, params: EnclosureParams, kernel: 
 
   if (params.lidType === 'screw') {
     const throughRadius = pilotDiameter(params.screwSize, 'through') / 2;
-    // 柱體不可深到穿出內腔底部（避免在極淺殼體下鑽穿到殼體外），但至少要保留
-    // LIP_HEIGHT+1 的深度，讓柱體在唇邊底部以下仍有實質新增材料（見下方說明）。
-    const postHeight = Math.min(POST_HEIGHT, Math.max(LIP_HEIGHT + 1, plan.inner.maxZ - plan.inner.minZ));
     for (const p of planCornerPosts(plan, params.screwSize)) {
-      // 柱體半徑至少要包住通孔再加上一圈壁厚，否則在薄壁厚（或通孔本身較粗的螺絲規格）
-      // 情況下，通孔會比柱體本身還粗：差集運算不只鑽穿柱體，還會往外啃食柱體周圍
-      // 原本就存在的面板/唇邊材料，造成淨體積不增反減（與 Task 4 的支柱/導孔崩塌問題同類）。
-      const postRadius = Math.max(p.pilotDiameter / 2 + params.wallThickness, throughRadius + params.wallThickness);
-      const post = kernel.transform(kernel.cylinder(postRadius, postHeight), {
-        position: [p.x, p.y, panelZ - postHeight],
+      // 螺絲柱向上凸出於面板頂面（z >= panelZ），刻意與殼體本身的角柱（z <= inner.maxZ = panelZ）
+      // 的空間互斥，兩者在合模面對接而不互相佔用，避免上蓋無法真正貼合殼體開口。
+      const postRadius = Math.max(pilotDiameter(params.screwSize, 'selfTap') / 2, throughRadius) + params.wallThickness;
+      const post = kernel.transform(kernel.cylinder(postRadius, POST_HEIGHT), {
+        position: [p.x, p.y, panelZ + panelH],
         ...noRotScale,
       });
       lid = kernel.union(lid, post);
-      const through = kernel.transform(
-        kernel.cylinder(throughRadius, panelH + postHeight + 2),
-        { position: [p.x, p.y, panelZ - postHeight - 1], ...noRotScale },
-      );
+      // 通孔從柱體頂端貫穿到唇邊底端，讓螺絲軸全程無阻，並在合模面與殼體導孔對接
+      const throughTop = panelZ + panelH + POST_HEIGHT + 1;
+      const throughBottom = panelZ - LIP_HEIGHT - 1;
+      const through = kernel.transform(kernel.cylinder(throughRadius, throughTop - throughBottom), {
+        position: [p.x, p.y, throughBottom],
+        ...noRotScale,
+      });
       lid = kernel.difference(lid, through);
     }
   }
