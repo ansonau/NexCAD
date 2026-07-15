@@ -37,9 +37,9 @@ export function buildShellSolid(
   let shell = kernel.difference(outerSolid, cavitySolid);
 
   for (const s of standoffs) {
-    // 支柱至少要有 pilotDepth 高度，才能容納導孔的螺絲攻牙深度；
-    // 否則當零件貼齊內腔底（topZ 等於 inner.minZ）時，支柱會完全埋在原本
-    // 就存在的底板厚度內，導孔反而會貫穿底板外皮（削弱結構、體積淨減少）。
+    // 支柱至少要有 pilotDepth 高度，才能容納導孔的螺絲攻牙深度；否則當零件貼齊
+    // 內腔底（topZ 等於 inner.minZ）時，支柱會完全埋在原本就存在的底板厚度內，
+    // union 不會新增任何體積。
     const standoffHeight = Math.max(s.topZ - plan.floorZ, s.pilotDepth);
     if (standoffHeight <= 0) continue;
     const standoffRadius = s.pilotDiameter / 2 + wallThickness;
@@ -48,8 +48,11 @@ export function buildShellSolid(
       ...noRotScale,
     });
     shell = kernel.union(shell, post);
-    const pilot = kernel.transform(kernel.cylinder(s.pilotDiameter / 2, s.pilotDepth + 1), {
-      position: [s.x, s.y, s.topZ - s.pilotDepth],
+    // 導孔下緣夾在 inner.minZ（內腔地板）：避免鑽穿殼體外底面的實心外皮，
+    // 保留底板的結構完整性（不論支柱鎖點多接近地板）。
+    const pilotBottom = Math.max(s.topZ - s.pilotDepth, plan.inner.minZ);
+    const pilot = kernel.transform(kernel.cylinder(s.pilotDiameter / 2, s.topZ - pilotBottom + 1), {
+      position: [s.x, s.y, pilotBottom],
       ...noRotScale,
     });
     shell = kernel.difference(shell, pilot);
