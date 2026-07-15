@@ -1,8 +1,9 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createPartNode, createPrimitive, identityTransform, newId } from '../types/document';
-import type { GroupNode } from '../types/document';
+import type { GroupNode, SceneNode } from '../types/document';
 import { evaluateForExport, evaluateForRender } from './evaluate';
 import { ManifoldKernel } from './manifoldKernel';
+import { getPartDefinition } from '../parts/library';
 
 const kernel = new ManifoldKernel();
 
@@ -88,5 +89,52 @@ describe('evaluate', () => {
     expect(evaluateForExport([ghost], kernel)).toBeNull();
     const withPlate = evaluateForExport([plate(), ghost], kernel);
     expect(kernel.volume(withPlate!)).toBeCloseTo(800, 3);
+  });
+
+  it('enclosure 節點（base）可求值出實心殼體', () => {
+    const boardDef = getPartDefinition('arduino-nano')!;
+    const enclosureNode: SceneNode = {
+      type: 'enclosure',
+      id: newId(),
+      name: '外殼底座',
+      role: 'solid',
+      transform: identityTransform(),
+      visible: true,
+      locked: false,
+      part: 'base',
+      params: {
+        wallThickness: 2,
+        clearanceMargin: 3,
+        cornerRadius: 3,
+        lidType: 'open',
+        screwSize: 'M3',
+      },
+      sourceParts: [{ nodeId: 'x', partId: boardDef.id, transform: identityTransform() }],
+    };
+    const solid = evaluateForExport([enclosureNode], kernel);
+    expect(solid).not.toBeNull();
+    expect(kernel.volume(solid!)).toBeGreaterThan(0);
+  });
+
+  it('enclosure 節點找不到任何來源零件定義時回傳 null（被略過而非拋錯）', () => {
+    const ghost2: SceneNode = {
+      type: 'enclosure',
+      id: newId(),
+      name: '外殼底座',
+      role: 'solid',
+      transform: identityTransform(),
+      visible: true,
+      locked: false,
+      part: 'base',
+      params: {
+        wallThickness: 2,
+        clearanceMargin: 3,
+        cornerRadius: 3,
+        lidType: 'open',
+        screwSize: 'M3',
+      },
+      sourceParts: [{ nodeId: 'x', partId: 'does-not-exist', transform: identityTransform() }],
+    };
+    expect(evaluateForExport([ghost2], kernel)).toBeNull();
   });
 });

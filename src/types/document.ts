@@ -36,7 +36,30 @@ export interface PartNode extends NodeCommon {
   partId: string;
 }
 
-export type SceneNode = PrimitiveNode | GroupNode | PartNode;
+export type ScrewSizeLiteral = 'M2' | 'M2.5' | 'M3' | 'M4';
+
+export interface EnclosureParams {
+  wallThickness: number;
+  clearanceMargin: number;
+  cornerRadius: number;
+  lidType: 'screw' | 'slide' | 'open';
+  screwSize: ScrewSizeLiteral;
+}
+
+export interface EnclosureSourcePart {
+  nodeId: string;
+  partId: string;
+  transform: Transform;
+}
+
+export interface EnclosureNode extends NodeCommon {
+  type: 'enclosure';
+  part: 'base' | 'lid';
+  params: EnclosureParams;
+  sourceParts: EnclosureSourcePart[];
+}
+
+export type SceneNode = PrimitiveNode | GroupNode | PartNode | EnclosureNode;
 
 export interface NexcadDocument {
   version: 1;

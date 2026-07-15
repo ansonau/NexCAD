@@ -43,4 +43,26 @@ describe('document model', () => {
     expect(node.role).toBe('solid');
     expect(node.transform).toEqual(identityTransform());
   });
+
+  it('EnclosureNode 是合法的 SceneNode', () => {
+    const node: import('./document').EnclosureNode = {
+      type: 'enclosure',
+      id: newId(),
+      name: '外殼底座',
+      role: 'solid',
+      transform: identityTransform(),
+      visible: true,
+      locked: false,
+      part: 'base',
+      params: {
+        wallThickness: 2,
+        clearanceMargin: 3,
+        cornerRadius: 3,
+        lidType: 'screw',
+        screwSize: 'M3',
+      },
+      sourceParts: [],
+    };
+    expect(node.type).toBe('enclosure');
+  });
 });

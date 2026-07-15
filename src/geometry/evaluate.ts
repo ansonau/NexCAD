@@ -2,6 +2,7 @@ import { getPartDefinition } from '../parts/library';
 import { buildPartSolid } from '../parts/partGeometry';
 import type { NodeRole, SceneNode } from '../types/document';
 import type { GeometryKernel, MeshData, Solid } from './kernel';
+import { buildEnclosureNodeSolid } from '../enclosure/generate';
 
 export interface EvaluatedNode {
   nodeId: string;
@@ -30,6 +31,8 @@ function buildSolid(node: SceneNode, kernel: GeometryKernel): Solid | null {
   } else if (node.type === 'part') {
     const def = getPartDefinition(node.partId);
     base = def ? buildPartSolid(def, kernel) : null;
+  } else if (node.type === 'enclosure') {
+    base = buildEnclosureNodeSolid(node, kernel);
   } else {
     base = combineScope(node.children, kernel);
   }

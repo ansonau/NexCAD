@@ -3,6 +3,9 @@ import type { ScrewSize } from './screws';
 import type { PartDefinition } from '../parts/schema';
 import type { Transform } from '../types/document';
 
+export type { EnclosureParams } from '../types/document';
+import type { EnclosureParams } from '../types/document';
+
 const DEG = Math.PI / 180;
 
 export interface PartInstance {
@@ -18,14 +21,6 @@ export interface Bounds3 {
   maxY: number;
   minZ: number;
   maxZ: number;
-}
-
-export interface EnclosureParams {
-  wallThickness: number;
-  clearanceMargin: number;
-  cornerRadius: number;
-  lidType: 'screw' | 'slide' | 'open';
-  screwSize: ScrewSize;
 }
 
 export const DEFAULT_ENCLOSURE_PARAMS: EnclosureParams = {
