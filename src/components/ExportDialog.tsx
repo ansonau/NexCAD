@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { analyzeMesh, collectThinFeatures, MAX_PRINT_MM, type MeshStats } from '../export/analyze';
 import { writeBinaryStl } from '../export/stl';
+import { writeThreeMf } from '../export/threemf';
 import { getGeometryClient } from '../geometry/client';
 import type { MeshData } from '../geometry/kernel';
 import { useDocumentStore } from '../store/documentStore';
@@ -11,6 +12,7 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const [mesh, setMesh] = useState<MeshData | null>(null);
   const [stats, setStats] = useState<MeshStats | null>(null);
+  const [format, setFormat] = useState<'stl' | '3mf'>('stl');
 
   // 開啟時只請求一次；onClose/t 為短生命週期擷取，勿加入依賴（會重複請求）
   useEffect(() => {
@@ -35,11 +37,13 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
   const download = () => {
     if (!mesh) return;
     const { doc } = useDocumentStore.getState();
-    const blob = new Blob([writeBinaryStl(mesh)], { type: 'model/stl' });
+    const buffer = format === 'stl' ? writeBinaryStl(mesh) : writeThreeMf(mesh);
+    const mime = format === 'stl' ? 'model/stl' : 'model/3mf';
+    const blob = new Blob([buffer], { type: mime });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${doc.name}.stl`;
+    a.download = `${doc.name}.${format}`;
     a.click();
     URL.revokeObjectURL(url);
     onClose();
@@ -64,6 +68,17 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <p className="mb-3 text-sm font-medium text-slate-800">{t('export.title')}</p>
+        <label className="mb-3 block">
+          <span className="text-xs text-slate-400">{t('export.format')}</span>
+          <select
+            className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+            value={format}
+            onChange={(e) => setFormat(e.target.value as 'stl' | '3mf')}
+          >
+            <option value="stl">STL</option>
+            <option value="3mf">3MF</option>
+          </select>
+        </label>
         {stats && (
           <div className="mb-3 space-y-1 text-sm text-slate-600">
             <p>

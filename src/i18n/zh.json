@@ -46,7 +46,8 @@
     "empty": "還沒有專案"
   },
   "export": {
-    "title": "匯出 STL",
+    "title": "匯出模型",
+    "format": "檔案格式",
     "dimensions": "模型尺寸",
     "triangles": "三角形數",
     "warnings": "列印提醒",

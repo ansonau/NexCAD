@@ -46,7 +46,8 @@
     "empty": "No projects yet"
   },
   "export": {
-    "title": "Export STL",
+    "title": "Export model",
+    "format": "File format",
     "dimensions": "Model size",
     "triangles": "Triangles",
     "warnings": "Print warnings",
