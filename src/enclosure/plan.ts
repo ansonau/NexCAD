@@ -56,6 +56,7 @@ export function partWorldBounds(part: PartInstance): Bounds3 {
 }
 
 export function combinedBounds(parts: PartInstance[]): Bounds3 {
+  if (parts.length === 0) throw new Error('combinedBounds: parts 不可為空');
   const boxes = parts.map(partWorldBounds);
   return {
     minX: Math.min(...boxes.map((b) => b.minX)),

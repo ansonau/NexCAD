@@ -60,6 +60,10 @@ describe('combinedBounds', () => {
     expect(b.minX).toBeCloseTo(-20, 6);
     expect(b.maxX).toBeCloseTo(120, 6);
   });
+
+  it('空陣列時拋出明確錯誤，而非回傳 Infinity 邊界', () => {
+    expect(() => combinedBounds([])).toThrow();
+  });
 });
 
 describe('planShell', () => {
