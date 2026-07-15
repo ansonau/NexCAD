@@ -55,6 +55,20 @@
     "cancel": "取消",
     "download": "下載 STL"
   },
+  "enclosure": {
+    "title": "產生外殼",
+    "wallThickness": "壁厚 (mm)",
+    "clearanceMargin": "淨空邊距 (mm)",
+    "cornerRadius": "圓角半徑 (mm)",
+    "lidType": "上蓋類型",
+    "lidScrew": "螺絲上蓋",
+    "lidSlide": "滑蓋",
+    "lidOpen": "開放式",
+    "screwSize": "螺絲規格",
+    "generate": "產生外殼",
+    "regenerate": "重新產生",
+    "noParts": "場景中沒有零件，無法產生外殼"
+  },
   "errors": {
     "geometry": "幾何運算失敗，已保留上一個有效狀態",
     "exportEmpty": "沒有可匯出的實體",

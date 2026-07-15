@@ -55,6 +55,20 @@
     "cancel": "Cancel",
     "download": "Download STL"
   },
+  "enclosure": {
+    "title": "Generate enclosure",
+    "wallThickness": "Wall thickness (mm)",
+    "clearanceMargin": "Clearance margin (mm)",
+    "cornerRadius": "Corner radius (mm)",
+    "lidType": "Lid type",
+    "lidScrew": "Screw-on lid",
+    "lidSlide": "Slide lid",
+    "lidOpen": "Open",
+    "screwSize": "Screw size",
+    "generate": "Generate enclosure",
+    "regenerate": "Regenerate",
+    "noParts": "No parts in the scene to enclose"
+  },
   "errors": {
     "geometry": "Geometry operation failed; the last valid state was kept",
     "exportEmpty": "Nothing to export",

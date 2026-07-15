@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { regenerateEnclosure } from '../enclosure/actions';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import type { PrimitiveNode, SceneNode } from '../types/document';
 
@@ -33,6 +35,15 @@ export function PropertyCard() {
       />
       <RoleToggle node={node} onChange={(role) => updateNode(node.id, (n) => void (n.role = role))} />
       {node.type === 'primitive' && <ParamFields node={node} updateNode={updateNode} />}
+      {node.type === 'enclosure' && (
+        <button
+          onClick={() => regenerateEnclosure(node.id)}
+          className="mb-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-100"
+        >
+          <RefreshCw size={16} />
+          {t('enclosure.regenerate')}
+        </button>
+      )}
       <p className="mb-1 mt-3 text-xs text-slate-400">{t('property.position')}</p>
       <div className="grid grid-cols-3 gap-2">
         {AXIS_LABELS.map((axis, i) => (

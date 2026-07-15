@@ -5,12 +5,14 @@ import {
   Cone,
   Cylinder,
   Download,
+  PackageOpen,
   Redo2,
   Trash2,
   Undo2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { EnclosurePanel } from './EnclosurePanel';
 import { ExportDialog } from './ExportDialog';
 import { useDocumentStore } from '../store/documentStore';
 import { createPrimitive } from '../types/document';
@@ -33,6 +35,7 @@ export function Toolbar() {
   const canUndo = useDocumentStore((s) => s.past.length > 0);
   const canRedo = useDocumentStore((s) => s.future.length > 0);
   const [showExport, setShowExport] = useState(false);
+  const [showEnclosure, setShowEnclosure] = useState(false);
 
   return (
     <>
@@ -53,11 +56,16 @@ export function Toolbar() {
           <Trash2 size={20} />
         </ToolButton>
         <Divider />
+        <ToolButton title={t('enclosure.title')} onClick={() => setShowEnclosure(true)}>
+          <PackageOpen size={20} />
+        </ToolButton>
+        <Divider />
         <ToolButton title={t('toolbar.export')} onClick={() => setShowExport(true)}>
           <Download size={20} />
         </ToolButton>
       </div>
       {showExport && <ExportDialog onClose={() => setShowExport(false)} />}
+      {showEnclosure && <EnclosurePanel onClose={() => setShowEnclosure(false)} />}
     </>
   );
 }
