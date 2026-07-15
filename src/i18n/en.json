@@ -69,6 +69,19 @@
     "regenerate": "Regenerate",
     "noParts": "No parts in the scene to enclose"
   },
+  "tools": {
+    "title": "Screw tools",
+    "screwHole": "Place screw hole",
+    "projectHoles": "Project hole positions",
+    "size": "Size",
+    "style": "Style",
+    "throughStyle": "Through",
+    "selfTapStyle": "Self-tap",
+    "countersinkStyle": "Countersink",
+    "add": "Add",
+    "projectNeedsSelection": "Select exactly one part and one plate first",
+    "projected": "Projected {{count}} screw holes"
+  },
   "errors": {
     "geometry": "Geometry operation failed; the last valid state was kept",
     "exportEmpty": "Nothing to export",

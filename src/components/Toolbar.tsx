@@ -9,11 +9,13 @@ import {
   Redo2,
   Trash2,
   Undo2,
+  Wrench,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { EnclosurePanel } from './EnclosurePanel';
 import { ExportDialog } from './ExportDialog';
+import { ScrewToolsMenu } from './ScrewToolsMenu';
 import { useDocumentStore } from '../store/documentStore';
 import { createPrimitive } from '../types/document';
 import type { PrimitiveKind } from '../types/document';
@@ -36,6 +38,7 @@ export function Toolbar() {
   const canRedo = useDocumentStore((s) => s.future.length > 0);
   const [showExport, setShowExport] = useState(false);
   const [showEnclosure, setShowEnclosure] = useState(false);
+  const [showTools, setShowTools] = useState(false);
 
   return (
     <>
@@ -59,6 +62,9 @@ export function Toolbar() {
         <ToolButton title={t('enclosure.title')} onClick={() => setShowEnclosure(true)}>
           <PackageOpen size={20} />
         </ToolButton>
+        <ToolButton title={t('tools.title')} onClick={() => setShowTools(true)}>
+          <Wrench size={20} />
+        </ToolButton>
         <Divider />
         <ToolButton title={t('toolbar.export')} onClick={() => setShowExport(true)}>
           <Download size={20} />
@@ -66,6 +72,7 @@ export function Toolbar() {
       </div>
       {showExport && <ExportDialog onClose={() => setShowExport(false)} />}
       {showEnclosure && <EnclosurePanel onClose={() => setShowEnclosure(false)} />}
+      {showTools && <ScrewToolsMenu onClose={() => setShowTools(false)} />}
     </>
   );
 }

@@ -15,6 +15,7 @@ interface DocumentState {
   redo: () => void;
   setSelection: (ids: string[]) => void;
   addNode: (node: SceneNode) => void;
+  addNodes: (nodes: SceneNode[]) => void;
   updateNode: (id: string, fn: (node: SceneNode) => void) => void;
   removeSelected: () => void;
   beginDrag: () => void;
@@ -89,6 +90,14 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
       d.nodes.push(node);
     });
     set({ selection: [node.id] });
+  },
+
+  addNodes: (nodes) => {
+    if (nodes.length === 0) return;
+    get().mutate('新增節點', (d) => {
+      d.nodes.push(...nodes);
+    });
+    set({ selection: nodes.map((n) => n.id) });
   },
 
   updateNode: (id, fn) =>

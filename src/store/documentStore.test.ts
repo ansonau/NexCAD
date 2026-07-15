@@ -121,4 +121,14 @@ describe('documentStore', () => {
     expect(store().doc.nodes).toHaveLength(1);
     expect(store().selection).toEqual([]);
   });
+
+  it('addNodes 一次加入多個節點並整體選取，佔一步 undo', () => {
+    const a = createPrimitive('box');
+    const b = createPrimitive('cylinder');
+    store().addNodes([a, b]);
+    expect(store().doc.nodes).toHaveLength(2);
+    expect(store().selection.sort()).toEqual([a.id, b.id].sort());
+    store().undo();
+    expect(store().doc.nodes).toHaveLength(0);
+  });
 });

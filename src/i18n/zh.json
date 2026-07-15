@@ -69,6 +69,19 @@
     "regenerate": "重新產生",
     "noParts": "場景中沒有零件，無法產生外殼"
   },
+  "tools": {
+    "title": "螺絲工具",
+    "screwHole": "放置螺絲孔",
+    "projectHoles": "投影孔位",
+    "size": "規格",
+    "style": "孔型",
+    "throughStyle": "通孔",
+    "selfTapStyle": "自攻",
+    "countersinkStyle": "沉頭",
+    "add": "加入",
+    "projectNeedsSelection": "請先選取一個零件與一個板件（恰好兩個節點）",
+    "projected": "已投影 {{count}} 個螺絲孔"
+  },
   "errors": {
     "geometry": "幾何運算失敗，已保留上一個有效狀態",
     "exportEmpty": "沒有可匯出的實體",

@@ -52,7 +52,18 @@ export function Viewport() {
             payload={m}
             selected={selection.includes(m.nodeId)}
             isPart={findNode(doc.nodes, m.nodeId)?.type === 'part'}
-            onSelect={() => setSelection([m.nodeId])}
+            onSelect={(shiftKey) => {
+              if (shiftKey) {
+                const current = useDocumentStore.getState().selection;
+                setSelection(
+                  current.includes(m.nodeId)
+                    ? current.filter((id) => id !== m.nodeId)
+                    : [...current, m.nodeId],
+                );
+              } else {
+                setSelection([m.nodeId]);
+              }
+            }}
           />
         ))}
         <SelectionGizmo />
@@ -74,7 +85,7 @@ function SceneMesh({
   payload: NodeMeshPayload;
   selected: boolean;
   isPart: boolean;
-  onSelect: () => void;
+  onSelect: (shiftKey: boolean) => void;
 }) {
   const geometry = useMemo(() => {
     const g = new THREE.BufferGeometry();
@@ -92,7 +103,7 @@ function SceneMesh({
       geometry={geometry}
       onClick={(e) => {
         e.stopPropagation();
-        onSelect();
+        onSelect(e.shiftKey);
       }}
     >
       <meshStandardMaterial
