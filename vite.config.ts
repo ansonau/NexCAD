@@ -6,5 +6,5 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   worker: { format: 'es' },
   optimizeDeps: { exclude: ['manifold-3d'] },
-  test: { environment: 'node' },
+  test: { environment: 'node', exclude: ['**/node_modules/**', '**/e2e/**'] },
 });
