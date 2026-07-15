@@ -25,7 +25,9 @@ test('建立零件、產生外殼、匯出 STL', async ({ page }) => {
 
   // 匯出 STL：攔截下載事件確認檔案真的產生
   await page.getByTitle(zh.toolbar.export).click();
-  const downloadButton = page.getByRole('button', { name: zh.export.download });
+  const downloadButton = page.getByRole('button', {
+    name: zh.export.download.replace('{{format}}', 'STL'),
+  });
   await expect(downloadButton).toBeEnabled({ timeout: 15_000 });
   const downloadPromise = page.waitForEvent('download');
   await downloadButton.click();

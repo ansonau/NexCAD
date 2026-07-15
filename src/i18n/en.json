@@ -54,7 +54,7 @@
     "thinFeature": "\"{{name}}\" has a dimension under 1mm and may be too thin to print",
     "tooLarge": "Model exceeds 250mm and may not fit the print bed",
     "cancel": "Cancel",
-    "download": "Download STL"
+    "download": "Download {{format}}"
   },
   "enclosure": {
     "title": "Generate enclosure",

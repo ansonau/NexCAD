@@ -54,7 +54,7 @@
     "thinFeature": "「{{name}}」有小於 1mm 的尺寸，可能過薄無法列印",
     "tooLarge": "模型超過 250mm，可能超出列印範圍",
     "cancel": "取消",
-    "download": "下載 STL"
+    "download": "下載 {{format}}"
   },
   "enclosure": {
     "title": "產生外殼",

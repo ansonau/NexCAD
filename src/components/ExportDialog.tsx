@@ -112,7 +112,7 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
             disabled={!mesh}
             className="h-11 rounded-xl bg-slate-800 px-4 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-40"
           >
-            {t('export.download')}
+            {t('export.download', { format: format.toUpperCase() })}
           </button>
         </div>
       </div>
