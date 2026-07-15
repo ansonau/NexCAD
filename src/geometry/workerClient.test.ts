@@ -82,4 +82,46 @@ describe('GeometryClient', () => {
     expect(onError).toHaveBeenCalledWith('boom');
     expect(worker.posted).toHaveLength(2);
   });
+
+  it('replaceWorker 後重送最近一次 evaluate 請求', () => {
+    const worker = new FakeWorker();
+    const client = new GeometryClient(worker);
+    client.requestEvaluate(nodes());
+    worker.respond({ id: worker.posted[0].id, ok: true, type: 'evaluate', meshes: [] });
+
+    const worker2 = new FakeWorker();
+    client.replaceWorker(worker2);
+
+    expect(worker2.posted).toHaveLength(1);
+    expect(worker2.posted[0].type).toBe('evaluate');
+  });
+
+  it('replaceWorker 前沒有任何 evaluate 請求時不會送出多餘請求', () => {
+    const worker = new FakeWorker();
+    const client = new GeometryClient(worker);
+    const worker2 = new FakeWorker();
+    client.replaceWorker(worker2);
+    expect(worker2.posted).toHaveLength(0);
+  });
+
+  it('replaceWorker 時讓所有進行中的 export promise reject', async () => {
+    const worker = new FakeWorker();
+    const client = new GeometryClient(worker);
+    const promise = client.requestExport(nodes());
+    const worker2 = new FakeWorker();
+    client.replaceWorker(worker2);
+    await expect(promise).rejects.toThrow('WORKER_RESTARTED');
+  });
+
+  it('replaceWorker 後新 worker 的訊息會被正確處理', () => {
+    const worker = new FakeWorker();
+    const client = new GeometryClient(worker);
+    const onMeshes = vi.fn();
+    client.onMeshes = onMeshes;
+    const worker2 = new FakeWorker();
+    client.replaceWorker(worker2);
+    client.requestEvaluate(nodes());
+    worker2.respond({ id: worker2.posted[0].id, ok: true, type: 'evaluate', meshes: [] });
+    expect(onMeshes).toHaveBeenCalledWith([]);
+  });
 });

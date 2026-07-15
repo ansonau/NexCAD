@@ -19,6 +19,7 @@ export class GeometryClient {
   private nextId = 1;
   private evaluating = false;
   private pendingNodes: SceneNode[] | null = null;
+  private lastSentNodes: SceneNode[] | null = null;
   private exports = new Map<number, PendingExport>();
 
   constructor(private worker: WorkerLike) {
@@ -31,6 +32,7 @@ export class GeometryClient {
       return;
     }
     this.evaluating = true;
+    this.lastSentNodes = nodes;
     this.worker.postMessage({ id: this.nextId++, type: 'evaluate', nodes });
   }
 
@@ -40,6 +42,21 @@ export class GeometryClient {
       this.exports.set(id, { resolve, reject });
       this.worker.postMessage({ id, type: 'export', nodes });
     });
+  }
+
+  /** Worker 崩潰時呼叫：換上新 worker，讓進行中的 export 失敗，並重送最近一次 evaluate 請求 */
+  replaceWorker(worker: WorkerLike): void {
+    for (const pending of this.exports.values()) {
+      pending.reject(new Error('WORKER_RESTARTED'));
+    }
+    this.exports.clear();
+    this.worker = worker;
+    worker.onmessage = (e) => this.handle(e.data);
+    this.evaluating = false;
+    const nodes = this.pendingNodes ?? this.lastSentNodes;
+    this.pendingNodes = null;
+    this.lastSentNodes = null;
+    if (nodes) this.requestEvaluate(nodes);
   }
 
   private handle(res: GeometryResponse): void {
