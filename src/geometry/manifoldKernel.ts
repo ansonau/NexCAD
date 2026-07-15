@@ -1,5 +1,5 @@
 import Module from 'manifold-3d';
-import type { Manifold, ManifoldToplevel } from 'manifold-3d';
+import type { CrossSection, Manifold, ManifoldToplevel } from 'manifold-3d';
 import type { Transform } from '../types/document';
 import type { GeometryKernel, MeshData, Solid } from './kernel';
 
@@ -19,6 +19,9 @@ export class ManifoldKernel implements GeometryKernel {
   /** 自上次 releaseAll 以來建立的所有 WASM Manifold（arena 模式） */
   private allocated: Manifold[] = [];
 
+  /** 自上次 releaseAll 以來建立的所有 WASM CrossSection（2D，獨立於 Manifold 的記憶體池） */
+  private allocated2D: CrossSection[] = [];
+
   async init(): Promise<void> {
     this.wasm = await Module();
     this.wasm.setup();
@@ -34,9 +37,30 @@ export class ManifoldKernel implements GeometryKernel {
     return m;
   }
 
+  private track2D(c: CrossSection): CrossSection {
+    this.allocated2D.push(c);
+    return c;
+  }
+
   box(width: number, depth: number, height: number): Solid {
     const cube = this.track(this.M.cube([width, depth, height]));
     return wrap(this.track(cube.translate([-width / 2, -depth / 2, 0])));
+  }
+
+  /** 底面中心原點，垂直邊圓角的長方體；cornerRadius<=0 時等同 box() */
+  roundedBox(width: number, depth: number, height: number, cornerRadius: number): Solid {
+    if (cornerRadius <= 0) return this.box(width, depth, height);
+    const cx = width / 2 - cornerRadius;
+    const cy = depth / 2 - cornerRadius;
+    const CS = this.wasm.CrossSection;
+    const corners = [
+      this.track2D(this.track2D(CS.circle(cornerRadius, SEGMENTS)).translate([cx, cy])),
+      this.track2D(this.track2D(CS.circle(cornerRadius, SEGMENTS)).translate([-cx, cy])),
+      this.track2D(this.track2D(CS.circle(cornerRadius, SEGMENTS)).translate([-cx, -cy])),
+      this.track2D(this.track2D(CS.circle(cornerRadius, SEGMENTS)).translate([cx, -cy])),
+    ];
+    const profile = this.track2D(CS.hull(corners));
+    return wrap(this.track(profile.extrude(height)));
   }
 
   cylinder(radius: number, height: number): Solid {
@@ -96,5 +120,9 @@ export class ManifoldKernel implements GeometryKernel {
       m.delete();
     }
     this.allocated = [];
+    for (const c of this.allocated2D) {
+      c.delete();
+    }
+    this.allocated2D = [];
   }
 }

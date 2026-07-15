@@ -60,4 +60,32 @@ describe('ManifoldKernel', () => {
     kernel.releaseAll();
     expect(kernel.volume(kernel.box(10, 10, 10))).toBeCloseTo(1000, 3);
   });
+
+  it('roundedBox cornerRadius<=0 時體積等同 box', () => {
+    const v1 = kernel.volume(kernel.roundedBox(20, 10, 5, 0));
+    const v2 = kernel.volume(kernel.box(20, 10, 5));
+    expect(v1).toBeCloseTo(v2, 3);
+  });
+
+  it('roundedBox 體積小於同尺寸方盒（四角被削掉）', () => {
+    const rounded = kernel.volume(kernel.roundedBox(20, 20, 10, 5));
+    const sharp = kernel.volume(kernel.box(20, 20, 10));
+    // 理論值：(20*20 - (4-π)*5²) * 10
+    const expected = (20 * 20 - (4 - Math.PI) * 25) * 10;
+    expect(rounded).toBeLessThan(sharp);
+    expect(rounded).toBeGreaterThan(expected * 0.9);
+    expect(rounded).toBeLessThan(expected * 1.1);
+  });
+
+  it('roundedBox 底面中心原點、垂直邊圓角但頂底為平面矩形', () => {
+    const mesh = kernel.toMesh(kernel.roundedBox(20, 20, 10, 5));
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+    for (let i = 2; i < mesh.positions.length; i += 3) {
+      minZ = Math.min(minZ, mesh.positions[i]);
+      maxZ = Math.max(maxZ, mesh.positions[i]);
+    }
+    expect(minZ).toBeCloseTo(0, 1);
+    expect(maxZ).toBeCloseTo(10, 1);
+  });
 });

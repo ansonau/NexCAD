@@ -17,6 +17,8 @@ export interface Solid {
 export interface GeometryKernel {
   init(): Promise<void>;
   box(width: number, depth: number, height: number): Solid;
+  /** 底面中心原點，垂直邊圓角的長方體；cornerRadius<=0 時等同 box() */
+  roundedBox(width: number, depth: number, height: number, cornerRadius: number): Solid;
   cylinder(radius: number, height: number): Solid;
   sphere(radius: number): Solid;
   cone(radiusBottom: number, radiusTop: number, height: number): Solid;
