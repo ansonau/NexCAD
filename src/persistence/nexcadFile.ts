@@ -38,8 +38,32 @@ const groupNodeSchema: z.ZodType<GroupNode> = z.lazy(() =>
   }),
 );
 
+const enclosureNodeSchema = z.object({
+  ...nodeCommonShape,
+  type: z.literal('enclosure'),
+  part: z.enum(['base', 'lid']),
+  params: z.object({
+    wallThickness: z.number(),
+    clearanceMargin: z.number(),
+    cornerRadius: z.number(),
+    lidType: z.enum(['screw', 'slide', 'open']),
+    screwSize: z.enum(['M2', 'M2.5', 'M3', 'M4']),
+  }),
+  sourceParts: z.array(
+    z.object({
+      nodeId: z.string(),
+      partId: z.string(),
+      transform: z.object({
+        position: vec3Schema,
+        rotation: vec3Schema,
+        scale: vec3Schema,
+      }),
+    }),
+  ),
+});
+
 const sceneNodeSchema: z.ZodType<SceneNode> = z.lazy(() =>
-  z.union([primitiveNodeSchema, partNodeSchema, groupNodeSchema]),
+  z.union([primitiveNodeSchema, partNodeSchema, groupNodeSchema, enclosureNodeSchema]),
 );
 
 const documentSchema = z.object({
