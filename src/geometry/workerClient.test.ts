@@ -124,4 +124,26 @@ describe('GeometryClient', () => {
     worker2.respond({ id: worker2.posted[0].id, ok: true, type: 'evaluate', meshes: [] });
     expect(onMeshes).toHaveBeenCalledWith([]);
   });
+
+  it('replaceWorker 時排隊中的 pendingNodes 優先於進行中的 lastSentNodes，且不會兩者都送出', () => {
+    const worker = new FakeWorker();
+    const client = new GeometryClient(worker);
+    const nodesA = nodes();
+    const nodesB = nodes();
+
+    // 第一次 evaluate 送出後尚未收到回應（evaluating 維持 true，lastSentNodes = nodesA）
+    client.requestEvaluate(nodesA);
+    expect(worker.posted).toHaveLength(1);
+
+    // 仍在 evaluating 時又送出第二次，應排入 pendingNodes = nodesB，而不會立即送出
+    client.requestEvaluate(nodesB);
+    expect(worker.posted).toHaveLength(1);
+
+    const worker2 = new FakeWorker();
+    client.replaceWorker(worker2);
+
+    expect(worker2.posted).toHaveLength(1);
+    expect(worker2.posted[0].nodes).toBe(nodesB);
+    expect(worker2.posted[0].nodes).not.toBe(nodesA);
+  });
 });
