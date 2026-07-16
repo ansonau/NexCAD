@@ -9,6 +9,8 @@ import { useToastStore } from '../store/toastStore';
 export function EnclosurePanel({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const [params, setParams] = useState<EnclosureParams>(DEFAULT_ENCLOSURE_PARAMS);
+  const [paddingTouched, setPaddingTouched] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const set = <K extends keyof EnclosureParams>(key: K, value: EnclosureParams[K]) =>
     setParams((p) => ({ ...p, [key]: value }));
@@ -43,7 +45,13 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
           <NumberField
             label={t('enclosure.wallThickness')}
             value={params.wallThickness}
-            onChange={(v) => set('wallThickness', v)}
+            onChange={(v) =>
+              setParams((p) => ({
+                ...p,
+                wallThickness: v,
+                standoffWallPadding: paddingTouched ? p.standoffWallPadding : v,
+              }))
+            }
           />
           <NumberField
             label={t('enclosure.clearanceMargin')}
@@ -82,6 +90,29 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
             ))}
           </select>
         </label>
+        <button
+          onClick={() => setAdvancedOpen((o) => !o)}
+          className="mb-2 text-xs text-slate-500 underline"
+        >
+          {t('enclosure.advanced')}
+        </button>
+        {advancedOpen && (
+          <div className="mb-3 grid grid-cols-2 gap-2">
+            <NumberField
+              label={t('enclosure.standoffWallPadding')}
+              value={params.standoffWallPadding}
+              onChange={(v) => {
+                setPaddingTouched(true);
+                set('standoffWallPadding', v);
+              }}
+            />
+            <OptionalNumberField
+              label={t('enclosure.pilotDepthOverride')}
+              value={params.pilotDepthOverride}
+              onChange={(v) => set('pilotDepthOverride', v)}
+            />
+          </div>
+        )}
         <p className="mb-3 text-xs text-slate-500">{t(scopeKey, { count: scopeCount })}</p>
         <div className="flex justify-end gap-2">
           <button
@@ -140,6 +171,41 @@ function NumberField({
           setDraft(e.target.value);
           const v = Number.parseFloat(e.target.value);
           if (!Number.isNaN(v) && v >= 0) onChange(v);
+        }}
+      />
+    </label>
+  );
+}
+
+function OptionalNumberField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | undefined;
+  onChange: (v: number | undefined) => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  return (
+    <label className="block">
+      <span className="text-xs text-slate-400">{label}</span>
+      <input
+        type="number"
+        className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm text-slate-800"
+        value={draft ?? (value === undefined ? '' : value)}
+        min={0.5}
+        step={0.5}
+        onFocus={() => setDraft(value === undefined ? '' : String(value))}
+        onBlur={() => setDraft(null)}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          if (e.target.value === '') {
+            onChange(undefined);
+            return;
+          }
+          const v = Number.parseFloat(e.target.value);
+          if (!Number.isNaN(v) && v > 0) onChange(v);
         }}
       />
     </label>

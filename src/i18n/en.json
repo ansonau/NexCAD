@@ -70,7 +70,10 @@
     "regenerate": "Regenerate",
     "noParts": "No parts in the scene to enclose",
     "scopeSelected": "Will include {{count}} selected part(s)",
-    "scopeAll": "Will include all {{count}} visible part(s)"
+    "scopeAll": "Will include all {{count}} visible part(s)",
+    "advanced": "Advanced",
+    "standoffWallPadding": "Standoff wall padding (mm)",
+    "pilotDepthOverride": "Pilot depth (mm, blank = auto)"
   },
   "tools": {
     "title": "Screw tools",
