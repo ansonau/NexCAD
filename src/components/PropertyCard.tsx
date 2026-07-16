@@ -3,7 +3,7 @@ import { RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { regenerateEnclosure } from '../enclosure/actions';
 import { findNode, useDocumentStore } from '../store/documentStore';
-import type { PrimitiveNode, SceneNode } from '../types/document';
+import type { EnclosureNode, EnclosureParams, PrimitiveNode, SceneNode } from '../types/document';
 
 const PARAM_LABELS: Record<string, string> = {
   width: 'property.width',
@@ -36,13 +36,16 @@ export function PropertyCard() {
       <RoleToggle node={node} onChange={(role) => updateNode(node.id, (n) => void (n.role = role))} />
       {node.type === 'primitive' && <ParamFields node={node} updateNode={updateNode} />}
       {node.type === 'enclosure' && (
-        <button
-          onClick={() => regenerateEnclosure(node.id)}
-          className="mb-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-100"
-        >
-          <RefreshCw size={16} />
-          {t('enclosure.regenerate')}
-        </button>
+        <>
+          <button
+            onClick={() => regenerateEnclosure(node.id)}
+            className="mb-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-100"
+          >
+            <RefreshCw size={16} />
+            {t('enclosure.regenerate')}
+          </button>
+          <EnclosureParamFields node={node} />
+        </>
       )}
       <p className="mb-1 mt-3 text-xs text-slate-400">{t('property.position')}</p>
       <div className="grid grid-cols-3 gap-2">
@@ -113,6 +116,77 @@ function ParamFields({
           />
         ))}
       </div>
+    </>
+  );
+}
+
+function EnclosureParamFields({ node }: { node: EnclosureNode }) {
+  const { t } = useTranslation();
+  const updateNode = useDocumentStore((s) => s.updateNode);
+
+  const setParam = <K extends keyof EnclosureParams>(key: K, value: EnclosureParams[K]) => {
+    updateNode(node.id, (n) => {
+      if (n.type === 'enclosure') n.params = { ...n.params, [key]: value };
+    });
+    regenerateEnclosure(node.id);
+  };
+
+  const p = node.params;
+  return (
+    <>
+      <p className="mb-1 mt-3 text-xs text-slate-400">{t('enclosure.params')}</p>
+      <div className="grid grid-cols-2 gap-2">
+        <NumberField
+          label={t('enclosure.wallThickness')}
+          value={p.wallThickness}
+          min={0.5}
+          onChange={(v) => setParam('wallThickness', v)}
+        />
+        <NumberField
+          label={t('enclosure.clearanceMargin')}
+          value={p.clearanceMargin}
+          min={0}
+          onChange={(v) => setParam('clearanceMargin', v)}
+        />
+        <NumberField
+          label={t('enclosure.cornerRadius')}
+          value={p.cornerRadius}
+          min={0}
+          onChange={(v) => setParam('cornerRadius', v)}
+        />
+        <NumberField
+          label={t('enclosure.standoffWallPadding')}
+          value={p.standoffWallPadding}
+          min={0.5}
+          onChange={(v) => setParam('standoffWallPadding', v)}
+        />
+      </div>
+      <label className="mt-2 block">
+        <span className="text-xs text-slate-400">{t('enclosure.lidType')}</span>
+        <select
+          className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+          value={p.lidType}
+          onChange={(e) => setParam('lidType', e.target.value as EnclosureParams['lidType'])}
+        >
+          <option value="screw">{t('enclosure.lidScrew')}</option>
+          <option value="slide">{t('enclosure.lidSlide')}</option>
+          <option value="open">{t('enclosure.lidOpen')}</option>
+        </select>
+      </label>
+      <label className="mt-2 block">
+        <span className="text-xs text-slate-400">{t('enclosure.screwSize')}</span>
+        <select
+          className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+          value={p.screwSize}
+          onChange={(e) => setParam('screwSize', e.target.value as EnclosureParams['screwSize'])}
+        >
+          {(['M2', 'M2.5', 'M3', 'M4'] as const).map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </label>
     </>
   );
 }

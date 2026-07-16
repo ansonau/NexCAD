@@ -73,7 +73,8 @@
     "scopeAll": "Will include all {{count}} visible part(s)",
     "advanced": "Advanced",
     "standoffWallPadding": "Standoff wall padding (mm)",
-    "pilotDepthOverride": "Pilot depth (mm, blank = auto)"
+    "pilotDepthOverride": "Pilot depth (mm, blank = auto)",
+    "params": "Enclosure parameters"
   },
   "tools": {
     "title": "Screw tools",
