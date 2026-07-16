@@ -101,6 +101,7 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
             <NumberField
               label={t('enclosure.standoffWallPadding')}
               value={params.standoffWallPadding}
+              min={0.5}
               onChange={(v) => {
                 setPaddingTouched(true);
                 set('standoffWallPadding', v);
@@ -150,10 +151,12 @@ function NumberField({
   label,
   value,
   onChange,
+  min = 0,
 }: {
   label: string;
   value: number;
   onChange: (v: number) => void;
+  min?: number;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
   return (
@@ -163,14 +166,14 @@ function NumberField({
         type="number"
         className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm text-slate-800"
         value={draft ?? value}
-        min={0}
+        min={min}
         step={0.5}
         onFocus={() => setDraft(String(value))}
         onBlur={() => setDraft(null)}
         onChange={(e) => {
           setDraft(e.target.value);
           const v = Number.parseFloat(e.target.value);
-          if (!Number.isNaN(v) && v >= 0) onChange(v);
+          if (!Number.isNaN(v) && v >= min) onChange(v);
         }}
       />
     </label>
