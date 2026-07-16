@@ -25,6 +25,28 @@ export function createScrewHoleNode(size: ScrewSize, style: HoleStyle): SceneNod
     });
   }
 
+  if (style === 'socketHead') {
+    const pilot = createPrimitive('cylinder', {
+      params: { radius: spec.throughDiameter / 2, height: PILOT_HALF_HEIGHT * 2 },
+    });
+    pilot.transform.position = [0, 0, -PILOT_HALF_HEIGHT];
+    const head = createPrimitive('cylinder', {
+      params: { radius: spec.socketHeadDiameter / 2, height: spec.socketHeadDepth },
+    });
+    head.transform.position = [0, 0, PILOT_HALF_HEIGHT];
+    const group: GroupNode = {
+      type: 'group',
+      id: newId(),
+      name: `${size} 杯頭沉孔`,
+      role: 'hole',
+      transform: identityTransform(),
+      visible: true,
+      locked: false,
+      children: [pilot, head],
+    };
+    return group;
+  }
+
   const pilot = createPrimitive('cylinder', {
     params: { radius: spec.selfTapDiameter / 2, height: PILOT_HALF_HEIGHT * 2 },
   });

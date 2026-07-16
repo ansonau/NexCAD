@@ -25,4 +25,29 @@ describe('createScrewHoleNode', () => {
       'cone',
     ]);
   });
+
+  it('socketHead 樣式產生含通孔與圓柱沉孔兩個子節點的群組，role 為 hole', () => {
+    const node = createScrewHoleNode('M3', 'socketHead');
+    expect(node.type).toBe('group');
+    expect(node.role).toBe('hole');
+    if (node.type !== 'group') return;
+    expect(node.children).toHaveLength(2);
+    expect(node.children.map((c) => c.type === 'primitive' && c.kind)).toEqual([
+      'cylinder',
+      'cylinder',
+    ]);
+    const [pilot, head] = node.children;
+    expect(pilot.type === 'primitive' && pilot.params.radius).toBeCloseTo(
+      SCREW_TABLE.M3.throughDiameter / 2,
+      6,
+    );
+    expect(head.type === 'primitive' && head.params.radius).toBeCloseTo(
+      SCREW_TABLE.M3.socketHeadDiameter / 2,
+      6,
+    );
+    expect(head.type === 'primitive' && head.params.height).toBeCloseTo(
+      SCREW_TABLE.M3.socketHeadDepth,
+      6,
+    );
+  });
 });
