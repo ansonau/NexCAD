@@ -44,6 +44,10 @@ export interface EnclosureParams {
   cornerRadius: number;
   lidType: 'screw' | 'slide' | 'open';
   screwSize: ScrewSizeLiteral;
+  /** 支柱半徑 = 導孔半徑 + 此值 */
+  standoffWallPadding: number;
+  /** 自攻導孔深度；未設定時用查表預設（6mm） */
+  pilotDepthOverride?: number;
 }
 
 export interface EnclosureSourcePart {

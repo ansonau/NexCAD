@@ -42,13 +42,17 @@ const enclosureNodeSchema = z.object({
   ...nodeCommonShape,
   type: z.literal('enclosure'),
   part: z.enum(['base', 'lid']),
-  params: z.object({
-    wallThickness: z.number(),
-    clearanceMargin: z.number(),
-    cornerRadius: z.number(),
-    lidType: z.enum(['screw', 'slide', 'open']),
-    screwSize: z.enum(['M2', 'M2.5', 'M3', 'M4']),
-  }),
+  params: z
+    .object({
+      wallThickness: z.number(),
+      clearanceMargin: z.number(),
+      cornerRadius: z.number(),
+      lidType: z.enum(['screw', 'slide', 'open']),
+      screwSize: z.enum(['M2', 'M2.5', 'M3', 'M4']),
+      standoffWallPadding: z.number().optional(),
+      pilotDepthOverride: z.number().positive().optional(),
+    })
+    .transform((p) => ({ ...p, standoffWallPadding: p.standoffWallPadding ?? p.wallThickness })),
   sourceParts: z.array(
     z.object({
       nodeId: z.string(),

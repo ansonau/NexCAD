@@ -55,6 +55,14 @@ describe('buildShellSolid', () => {
     expect(mesh.indices.length % 3).toBe(0);
   });
 
+  it('standoffWallPadding 增大時支柱更粗、總體積更大', () => {
+    const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
+    const standoffs = planStandoffs(parts, DEFAULT_ENCLOSURE_PARAMS.screwSize);
+    const thin = buildShellSolid(plan, DEFAULT_ENCLOSURE_PARAMS.wallThickness, standoffs, kernel, 1.5);
+    const thick = buildShellSolid(plan, DEFAULT_ENCLOSURE_PARAMS.wallThickness, standoffs, kernel, 4);
+    expect(kernel.volume(thick)).toBeGreaterThan(kernel.volume(thin));
+  });
+
   it('支柱鎖點貼近地板時，導孔不會鑽穿殼體外底面', () => {
     const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
     const standoffs = planStandoffs(parts, DEFAULT_ENCLOSURE_PARAMS.screwSize);

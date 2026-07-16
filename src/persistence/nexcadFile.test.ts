@@ -38,12 +38,42 @@ describe('nexcadFile', () => {
         cornerRadius: 3,
         lidType: 'screw',
         screwSize: 'M3',
+        standoffWallPadding: 2,
       },
       sourceParts: [{ nodeId: newId(), partId: 'arduino-uno', transform: identityTransform() }],
     };
     doc.nodes = [createPartNode('arduino-uno', 'Uno'), enclosure];
     const parsed = parseNexcadFile(serializeNexcadFile(doc));
     expect(parsed).toEqual(doc);
+  });
+
+  it('舊版 enclosure params 無 standoffWallPadding 時以 wallThickness 補上', () => {
+    const doc = emptyDocument('舊檔');
+    const enclosure: EnclosureNode = {
+      type: 'enclosure',
+      id: newId(),
+      name: '外殼底座',
+      role: 'solid',
+      transform: identityTransform(),
+      visible: true,
+      locked: false,
+      part: 'base',
+      params: {
+        wallThickness: 2.5,
+        clearanceMargin: 3,
+        cornerRadius: 3,
+        lidType: 'screw',
+        screwSize: 'M3',
+        standoffWallPadding: 2.5,
+      },
+      sourceParts: [],
+    };
+    doc.nodes = [enclosure];
+    const json = JSON.parse(serializeNexcadFile(doc));
+    delete json.nodes[0].params.standoffWallPadding; // 模擬舊檔
+    const parsed = parseNexcadFile(JSON.stringify(json));
+    const node = parsed.nodes[0];
+    expect(node.type === 'enclosure' ? node.params.standoffWallPadding : NaN).toBe(2.5);
   });
 
   it('拒絕非 JSON', () => {

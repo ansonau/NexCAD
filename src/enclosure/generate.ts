@@ -27,11 +27,20 @@ export function buildEnclosureNodeSolid(node: EnclosureNode, kernel: GeometryKer
     return buildLidSolid(plan, node.params, kernel);
   }
 
+  const pilotDepth = node.params.pilotDepthOverride;
   const standoffs = [
-    ...planStandoffs(parts, node.params.screwSize),
-    ...(node.params.lidType === 'screw' ? planCornerPosts(plan, node.params.screwSize) : []),
+    ...planStandoffs(parts, node.params.screwSize, pilotDepth),
+    ...(node.params.lidType === 'screw'
+      ? planCornerPosts(plan, node.params.screwSize, pilotDepth)
+      : []),
   ];
-  let shell = buildShellSolid(plan, node.params.wallThickness, standoffs, kernel);
+  let shell = buildShellSolid(
+    plan,
+    node.params.wallThickness,
+    standoffs,
+    kernel,
+    node.params.standoffWallPadding,
+  );
   shell = cutPorts(shell, plan.outer, planPortCutouts(parts), kernel);
   return shell;
 }

@@ -60,6 +60,7 @@ describe('document model', () => {
         cornerRadius: 3,
         lidType: 'screw',
         screwSize: 'M3',
+        standoffWallPadding: 2,
       },
       sourceParts: [],
     };

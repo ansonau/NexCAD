@@ -100,6 +100,11 @@ describe('planStandoffs', () => {
     expect(standoffs[0].x).toBeCloseTo(10 - 15, 6);
     expect(standoffs[0].topZ).toBeCloseTo(5, 6);
   });
+
+  it('可覆寫導孔深度', () => {
+    const standoffs = planStandoffs([instance()], 'M3', 9);
+    expect(standoffs.every((s) => s.pilotDepth === 9)).toBe(true);
+  });
 });
 
 describe('planCornerPosts', () => {
@@ -112,5 +117,11 @@ describe('planCornerPosts', () => {
       expect(p.x).toBeGreaterThan(plan.outer.minX);
       expect(p.x).toBeLessThan(plan.outer.maxX);
     }
+  });
+
+  it('可覆寫導孔深度', () => {
+    const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
+    const posts = planCornerPosts(plan, 'M3', 9);
+    expect(posts.every((p) => p.pilotDepth === 9)).toBe(true);
   });
 });

@@ -12,6 +12,7 @@ export function buildShellSolid(
   wallThickness: number,
   standoffs: StandoffPlan[],
   kernel: GeometryKernel,
+  standoffWallPadding: number = wallThickness,
 ): Solid {
   const { outer, inner, cornerRadius } = plan;
 
@@ -42,7 +43,7 @@ export function buildShellSolid(
     // union 不會新增任何體積。
     const standoffHeight = Math.max(s.topZ - plan.floorZ, s.pilotDepth);
     if (standoffHeight <= 0) continue;
-    const standoffRadius = s.pilotDiameter / 2 + wallThickness;
+    const standoffRadius = s.pilotDiameter / 2 + standoffWallPadding;
     const post = kernel.transform(kernel.cylinder(standoffRadius, standoffHeight), {
       position: [s.x, s.y, plan.floorZ],
       ...noRotScale,

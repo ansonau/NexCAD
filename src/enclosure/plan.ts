@@ -29,6 +29,7 @@ export const DEFAULT_ENCLOSURE_PARAMS: EnclosureParams = {
   cornerRadius: 3,
   lidType: 'screw',
   screwSize: 'M3',
+  standoffWallPadding: 2,
 };
 
 /** 零件在世界座標下的包覆範圍（只考慮 Z 軸旋轉） */
@@ -111,7 +112,11 @@ export interface StandoffPlan {
 const PILOT_DEPTH = 6;
 
 /** 每個零件的每個安裝孔 → 世界座標支柱規劃 */
-export function planStandoffs(parts: PartInstance[], screwSize: ScrewSize): StandoffPlan[] {
+export function planStandoffs(
+  parts: PartInstance[],
+  screwSize: ScrewSize,
+  pilotDepth: number = PILOT_DEPTH,
+): StandoffPlan[] {
   const out: StandoffPlan[] = [];
   for (const part of parts) {
     const angle = part.transform.rotation[2] * DEG;
@@ -124,7 +129,7 @@ export function planStandoffs(parts: PartInstance[], screwSize: ScrewSize): Stan
         y: py + hole.x * sin + hole.y * cos,
         topZ: pz + (hole.z ?? 0),
         pilotDiameter: pilotDiameter(screwSize, 'selfTap'),
-        pilotDepth: PILOT_DEPTH,
+        pilotDepth,
       });
     }
   }
@@ -132,7 +137,11 @@ export function planStandoffs(parts: PartInstance[], screwSize: ScrewSize): Stan
 }
 
 /** 外殼四個角落的上蓋鎖點支柱，頂部對齊殼體開口（內腔頂） */
-export function planCornerPosts(plan: ShellPlan, screwSize: ScrewSize): StandoffPlan[] {
+export function planCornerPosts(
+  plan: ShellPlan,
+  screwSize: ScrewSize,
+  pilotDepth: number = PILOT_DEPTH,
+): StandoffPlan[] {
   const inset = plan.cornerRadius + 3;
   const xs = [plan.outer.minX + inset, plan.outer.maxX - inset];
   const ys = [plan.outer.minY + inset, plan.outer.maxY - inset];
@@ -144,7 +153,7 @@ export function planCornerPosts(plan: ShellPlan, screwSize: ScrewSize): Standoff
         y,
         topZ: plan.inner.maxZ,
         pilotDiameter: pilotDiameter(screwSize, 'selfTap'),
-        pilotDepth: PILOT_DEPTH,
+        pilotDepth,
       });
     }
   }

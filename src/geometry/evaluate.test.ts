@@ -108,6 +108,7 @@ describe('evaluate', () => {
         cornerRadius: 3,
         lidType: 'open',
         screwSize: 'M3',
+        standoffWallPadding: 2,
       },
       sourceParts: [{ nodeId: 'x', partId: boardDef.id, transform: identityTransform() }],
     };
@@ -132,6 +133,7 @@ describe('evaluate', () => {
         cornerRadius: 3,
         lidType: 'open',
         screwSize: 'M3',
+        standoffWallPadding: 2,
       },
       sourceParts: [{ nodeId: 'x', partId: 'does-not-exist', transform: identityTransform() }],
     };
