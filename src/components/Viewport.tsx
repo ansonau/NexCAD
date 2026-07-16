@@ -31,7 +31,7 @@ export function Viewport() {
   return (
     <Canvas
       className="touch-none"
-      camera={{ position: [120, 100, 120], fov: 45, near: 0.1, far: 5000 }}
+      camera={{ position: [115, 115, 115], fov: 45, near: 0.1, far: 5000 }}
       onPointerMissed={() => setSelection([])}
     >
       <color attach="background" args={['#f7f8fa']} />
