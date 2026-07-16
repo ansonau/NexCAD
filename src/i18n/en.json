@@ -68,7 +68,9 @@
     "screwSize": "Screw size",
     "generate": "Generate enclosure",
     "regenerate": "Regenerate",
-    "noParts": "No parts in the scene to enclose"
+    "noParts": "No parts in the scene to enclose",
+    "scopeSelected": "Will include {{count}} selected part(s)",
+    "scopeAll": "Will include all {{count}} visible part(s)"
   },
   "tools": {
     "title": "Screw tools",

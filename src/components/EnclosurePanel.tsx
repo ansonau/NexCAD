@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { generateEnclosure } from '../enclosure/actions';
 import { DEFAULT_ENCLOSURE_PARAMS } from '../enclosure/plan';
-import type { EnclosureParams } from '../types/document';
+import type { EnclosureParams, SceneNode } from '../types/document';
 import { useDocumentStore } from '../store/documentStore';
 import { useToastStore } from '../store/toastStore';
 
@@ -13,11 +13,15 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
   const set = <K extends keyof EnclosureParams>(key: K, value: EnclosureParams[K]) =>
     setParams((p) => ({ ...p, [key]: value }));
 
+  const selection = useDocumentStore((s) => s.selection);
+  const doc = useDocumentStore((s) => s.doc);
+  const allParts = collectVisibleParts(doc.nodes);
+  const selectedParts = allParts.filter((id) => selection.includes(id));
+  const scopeCount = selectedParts.length > 0 ? selectedParts.length : allParts.length;
+  const scopeKey = selectedParts.length > 0 ? 'enclosure.scopeSelected' : 'enclosure.scopeAll';
+
   const generate = () => {
-    const hasParts = useDocumentStore
-      .getState()
-      .doc.nodes.some((n) => n.type === 'part' && n.visible);
-    if (!hasParts) {
+    if (allParts.length === 0) {
       useToastStore.getState().show(t('enclosure.noParts'));
       return;
     }
@@ -78,6 +82,7 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
             ))}
           </select>
         </label>
+        <p className="mb-3 text-xs text-slate-500">{t(scopeKey, { count: scopeCount })}</p>
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
@@ -95,6 +100,19 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   );
+}
+
+function collectVisibleParts(nodes: SceneNode[]): string[] {
+  const out: string[] = [];
+  const visit = (list: SceneNode[]) => {
+    for (const n of list) {
+      if (!n.visible) continue;
+      if (n.type === 'part') out.push(n.id);
+      else if (n.type === 'group') visit(n.children);
+    }
+  };
+  visit(nodes);
+  return out;
 }
 
 function NumberField({

@@ -68,7 +68,9 @@
     "screwSize": "螺絲規格",
     "generate": "產生外殼",
     "regenerate": "重新產生",
-    "noParts": "場景中沒有零件，無法產生外殼"
+    "noParts": "場景中沒有零件，無法產生外殼",
+    "scopeSelected": "將包含選取的 {{count}} 個零件",
+    "scopeAll": "將包含全部 {{count}} 個可見零件"
   },
   "tools": {
     "title": "螺絲工具",
