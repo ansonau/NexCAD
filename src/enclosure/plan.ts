@@ -24,12 +24,12 @@ export interface Bounds3 {
 }
 
 export const DEFAULT_ENCLOSURE_PARAMS: EnclosureParams = {
-  wallThickness: 2,
+  wallThickness: 3,
   clearanceMargin: 3,
   cornerRadius: 3,
   lidType: 'screw',
   screwSize: 'M3',
-  standoffWallPadding: 2,
+  standoffWallPadding: 3,
 };
 
 /** 零件在世界座標下的包覆範圍（只考慮 Z 軸旋轉） */
