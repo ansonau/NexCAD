@@ -34,6 +34,38 @@ describe('generateEnclosure', () => {
     const nodes = useDocumentStore.getState().doc.nodes.filter((n) => n.type === 'enclosure');
     expect(nodes).toHaveLength(1);
   });
+
+  it('選取中含 part 節點時，外殼只包含選取的零件', () => {
+    const store = useDocumentStore.getState();
+    const a = createPartNode('arduino-uno', 'A');
+    const b = createPartNode('arduino-nano', 'B');
+    store.addNode(a);
+    store.addNode(b);
+    store.setSelection([a.id]);
+    generateEnclosure(DEFAULT_ENCLOSURE_PARAMS);
+    const enclosures = useDocumentStore
+      .getState()
+      .doc.nodes.filter((n) => n.type === 'enclosure');
+    expect(enclosures.length).toBeGreaterThan(0);
+    for (const e of enclosures) {
+      if (e.type !== 'enclosure') continue;
+      expect(e.sourceParts.map((s) => s.nodeId)).toEqual([a.id]);
+    }
+  });
+
+  it('選取中無 part 節點時，外殼包含全部可見零件', () => {
+    const store = useDocumentStore.getState();
+    const a = createPartNode('arduino-uno', 'A');
+    const b = createPartNode('arduino-nano', 'B');
+    store.addNode(a);
+    store.addNode(b);
+    store.setSelection([]);
+    generateEnclosure(DEFAULT_ENCLOSURE_PARAMS);
+    const base = useDocumentStore
+      .getState()
+      .doc.nodes.find((n) => n.type === 'enclosure');
+    expect(base && base.type === 'enclosure' ? base.sourceParts : []).toHaveLength(2);
+  });
 });
 
 describe('regenerateEnclosure', () => {

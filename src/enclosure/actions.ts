@@ -34,10 +34,16 @@ function makeEnclosureNode(
   };
 }
 
-/** 依文件中目前所有可見零件節點產生外殼（base，以及非 open 時的 lid）。無零件時不動作 */
+/**
+ * 產生外殼（base，以及非 open 時的 lid）。
+ * selection 內含 part 節點時只包含選取的零件；否則包含全部可見零件。無零件時不動作。
+ */
 export function generateEnclosure(params: EnclosureParams): void {
   const store = useDocumentStore.getState();
-  const sourceParts = collectPartSnapshots(store.doc.nodes);
+  const all = collectPartSnapshots(store.doc.nodes);
+  const selectedIds = new Set(store.selection);
+  const selected = all.filter((s) => selectedIds.has(s.nodeId));
+  const sourceParts = selected.length > 0 ? selected : all;
   if (sourceParts.length === 0) return;
   store.addNode(makeEnclosureNode('base', params, sourceParts));
   if (params.lidType !== 'open') {
