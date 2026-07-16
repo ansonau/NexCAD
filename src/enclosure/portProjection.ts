@@ -75,7 +75,7 @@ export function planPortCutouts(parts: PartInstance[]): PortCutoutPlan[] {
       out.push({
         wall,
         u: horizontal,
-        v: pz + bodyT + port.z,
+        v: pz + bodyT + port.z + port.h / 2,
         w: port.w + TOLERANCE_MM * 2,
         h: port.h + TOLERANCE_MM * 2,
         shape: port.shape,

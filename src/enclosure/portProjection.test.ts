@@ -60,6 +60,26 @@ describe('planPortCutouts', () => {
     const part: PartInstance = { def: onlyTop, transform: identityTransform() };
     expect(planPortCutouts([part])).toHaveLength(0);
   });
+
+  it('開孔中心 = 零件頂面 + port.z + port.h/2（port.z 為接口底邊）', () => {
+    const part: PartInstance = {
+      def: {
+        id: 'test-part',
+        name: 'Test',
+        nameZh: '測試',
+        category: 'board',
+        body: { size: [40, 20, 1.6], blocks: [] },
+        mountingHoles: [],
+        ports: [{ face: 'west', shape: 'rect', x: 0, z: 2, w: 8, h: 6 }],
+        clearanceHeight: 10,
+      },
+      transform: { position: [0, 0, 5], rotation: [0, 0, 0], scale: [1, 1, 1] },
+    };
+    const cutouts = planPortCutouts([part]);
+    expect(cutouts).toHaveLength(1);
+    // 頂面 = 5 + 1.6 = 6.6；底邊 = 6.6 + 2 = 8.6；中心 = 8.6 + 3 = 11.6
+    expect(cutouts[0].v).toBeCloseTo(11.6);
+  });
 });
 
 describe('cutPorts', () => {

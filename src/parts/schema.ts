@@ -29,7 +29,7 @@ export const partPortSchema = z.object({
   shape: z.enum(['rect', 'circle']),
   /** 沿該面的水平偏移（top 面時為板面 x 偏移） */
   x: z.number(),
-  /** 自主體頂面起算的垂直偏移（top 面時為板面 y 偏移） */
+  /** 接口底邊距主體頂面的高度（top 面時為板面 y 偏移） */
   z: z.number(),
   w: z.number().positive(),
   h: z.number().positive(),
