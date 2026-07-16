@@ -92,7 +92,7 @@ describe('buildShellSolid', () => {
 
     const probeVolumeAt = (x: number, y: number, z: number) => {
       const probe = kernel.transform(kernel.box(0.5, 0.5, 0.5), {
-        position: [x - 0.25, y - 0.25, z],
+        position: [x, y, z],
         rotation: [0, 0, 0],
         scale: [1, 1, 1],
       });
@@ -100,7 +100,7 @@ describe('buildShellSolid', () => {
       return kernel.volume(intersection);
     };
 
-    // 倒角環斜面中點：半徑 postRadius + wall*0.5、高 rootZ + wall*0.25 → 應為實心
+    // 倒角環斜面中點：半徑 postRadius + wall*0.25、高 rootZ + wall*0.25 → 應為實心
     const inside = probeVolumeAt(s.x + postRadius + wall * 0.25, s.y, rootZ + wall * 0.25);
     expect(inside).toBeGreaterThan(0);
     // 同半徑、高於倒角環頂（rootZ + wall*1.5）→ 柱外應為空
