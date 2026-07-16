@@ -22,6 +22,19 @@ describe('SCREW_TABLE', () => {
       );
     }
   });
+
+  it('杯頭沉孔直徑大於通孔、深度為正且隨規格遞增', () => {
+    for (const spec of Object.values(SCREW_TABLE)) {
+      expect(spec.socketHeadDiameter).toBeGreaterThan(spec.throughDiameter);
+      expect(spec.socketHeadDepth).toBeGreaterThan(0);
+    }
+    const order: (keyof typeof SCREW_TABLE)[] = ['M2', 'M2.5', 'M3', 'M4'];
+    for (let i = 1; i < order.length; i++) {
+      expect(SCREW_TABLE[order[i]].socketHeadDiameter).toBeGreaterThan(
+        SCREW_TABLE[order[i - 1]].socketHeadDiameter,
+      );
+    }
+  });
 });
 
 describe('pilotDiameter', () => {
@@ -32,5 +45,9 @@ describe('pilotDiameter', () => {
   it('selfTap 與 countersink 都回傳自攻導孔直徑（沉頭錐面另外處理）', () => {
     expect(pilotDiameter('M3', 'selfTap')).toBe(SCREW_TABLE.M3.selfTapDiameter);
     expect(pilotDiameter('M3', 'countersink')).toBe(SCREW_TABLE.M3.selfTapDiameter);
+  });
+
+  it('socketHead 回傳通孔直徑（螺桿穿過、頭部沉孔另外處理）', () => {
+    expect(pilotDiameter('M3', 'socketHead')).toBe(SCREW_TABLE.M3.throughDiameter);
   });
 });
