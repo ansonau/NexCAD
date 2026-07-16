@@ -106,4 +106,22 @@ describe('buildLidSolid', () => {
     const belowBore = probeAt(p.x + rMid, p.y, postTop - boreDepth - 0.6);
     expect(intersectionVolume(lid, belowBore)).toBeGreaterThan(0);
   });
+
+  it('M4 + 薄壁（wallThickness=1）下，沉孔半徑被 clamp，柱體外壁仍保留實心（不會被整個挖空）', () => {
+    const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const, screwSize: 'M4' as const, wallThickness: 1 };
+    const plan = planShell(parts, params);
+    const lid = buildLidSolid(plan, params, kernel);
+    const spec = SCREW_TABLE[params.screwSize];
+    const p = planCornerPosts(plan, params.screwSize)[0];
+    const panelZ = plan.inner.maxZ;
+    const postTop = panelZ + params.wallThickness + 4; // POST_HEIGHT = 4
+    const throughRadius = spec.throughDiameter / 2;
+    const postRadius = Math.max(spec.selfTapDiameter / 2, throughRadius) + params.wallThickness;
+    // 未 clamp 時 socketHeadDiameter/2 (3.7) > postRadius (3.25)，柱體會被整個挖空；
+    // clamp 後應在 postRadius 內側保留至少 0.3mm 殘壁。探測點取在殘壁中點，
+    // 且沉孔深度會 clamp 到滿柱高（4mm），故整個柱高範圍都要驗證。
+    const probeRadius = postRadius - 0.15;
+    const nearWall = probeAt(p.x + probeRadius, p.y, postTop - 2);
+    expect(intersectionVolume(lid, nearWall)).toBeGreaterThan(0);
+  });
 });

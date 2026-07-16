@@ -65,8 +65,12 @@ export function buildLidSolid(plan: ShellPlan, params: EnclosureParams, kernel: 
       // clamp 恆常觸發，沉孔深度上限即柱高本身）。
       const spec = SCREW_TABLE[params.screwSize];
       const boreDepth = Math.min(spec.socketHeadDepth, POST_HEIGHT);
+      // 沉孔半徑 clamp：薄壁 + 大螺絲規格（如 M4 配 wallThickness < 1.45mm）下，
+      // 未夾制的沉孔半徑可能 >= postRadius，導致柱體被整個挖空。保留至少 0.3mm
+      // 殘壁，並下限不小於通孔半徑（沉孔本應包住通孔，不應比通孔還窄）。
+      const boreRadius = Math.max(throughRadius, Math.min(spec.socketHeadDiameter / 2, postRadius - 0.3));
       const bore = kernel.transform(
-        kernel.cylinder(spec.socketHeadDiameter / 2, boreDepth + 1),
+        kernel.cylinder(boreRadius, boreDepth + 1),
         {
           position: [p.x, p.y, panelZ + panelH + POST_HEIGHT - boreDepth],
           ...noRotScale,
