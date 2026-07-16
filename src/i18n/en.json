@@ -85,6 +85,7 @@
     "throughStyle": "Through",
     "selfTapStyle": "Self-tap",
     "countersinkStyle": "Countersink",
+    "socketHeadStyle": "Socket head counterbore",
     "add": "Add",
     "projectNeedsSelection": "Select exactly one part and one plate first",
     "projected": "Projected {{count}} screw holes"

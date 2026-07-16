@@ -8,6 +8,7 @@ import { useToastStore } from '../store/toastStore';
 
 const SIZES: ScrewSize[] = ['M2', 'M2.5', 'M3', 'M4'];
 const STYLES: { value: HoleStyle; key: string }[] = [
+  { value: 'socketHead', key: 'tools.socketHeadStyle' },
   { value: 'through', key: 'tools.throughStyle' },
   { value: 'selfTap', key: 'tools.selfTapStyle' },
   { value: 'countersink', key: 'tools.countersinkStyle' },
@@ -16,7 +17,7 @@ const STYLES: { value: HoleStyle; key: string }[] = [
 export function ScrewToolsMenu({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const [size, setSize] = useState<ScrewSize>('M3');
-  const [style, setStyle] = useState<HoleStyle>('through');
+  const [style, setStyle] = useState<HoleStyle>('socketHead');
   const addNode = useDocumentStore((s) => s.addNode);
   const addNodes = useDocumentStore((s) => s.addNodes);
 

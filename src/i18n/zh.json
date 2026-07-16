@@ -85,6 +85,7 @@
     "throughStyle": "通孔",
     "selfTapStyle": "自攻",
     "countersinkStyle": "沉頭",
+    "socketHeadStyle": "杯頭沉孔",
     "add": "加入",
     "projectNeedsSelection": "請先選取一個零件與一個板件（恰好兩個節點）",
     "projected": "已投影 {{count}} 個螺絲孔"
