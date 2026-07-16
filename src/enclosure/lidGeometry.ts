@@ -1,5 +1,5 @@
 import type { GeometryKernel, Solid } from '../geometry/kernel';
-import { pilotDiameter } from './screws';
+import { pilotDiameter, SCREW_TABLE } from './screws';
 import { planCornerPosts } from './plan';
 import type { EnclosureParams, ShellPlan } from './plan';
 
@@ -60,6 +60,19 @@ export function buildLidSolid(plan: ShellPlan, params: EnclosureParams, kernel: 
         ...noRotScale,
       });
       lid = kernel.difference(lid, through);
+      // 杯頭沉孔：從柱頂向下挖，讓螺絲頭嵌入柱內不外露。深度 clamp 在柱高以內，
+      // 避免沉孔貫穿柱子進入面板／合模面（M4 的 socketHeadDepth=4.3 已超過柱高 4，
+      // clamp 恆常觸發，沉孔深度上限即柱高本身）。
+      const spec = SCREW_TABLE[params.screwSize];
+      const boreDepth = Math.min(spec.socketHeadDepth, POST_HEIGHT);
+      const bore = kernel.transform(
+        kernel.cylinder(spec.socketHeadDiameter / 2, boreDepth + 1),
+        {
+          position: [p.x, p.y, panelZ + panelH + POST_HEIGHT - boreDepth],
+          ...noRotScale,
+        },
+      );
+      lid = kernel.difference(lid, bore);
     }
   }
 

@@ -1,10 +1,12 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { identityTransform } from '../types/document';
 import type { PartDefinition } from '../parts/schema';
+import type { Solid } from '../geometry/kernel';
 import { ManifoldKernel } from '../geometry/manifoldKernel';
 import { DEFAULT_ENCLOSURE_PARAMS, planCornerPosts, planShell } from './plan';
 import type { PartInstance } from './plan';
 import { buildLidSolid } from './lidGeometry';
+import { SCREW_TABLE } from './screws';
 
 const kernel = new ManifoldKernel();
 
@@ -24,6 +26,19 @@ const boardDef: PartDefinition = {
 };
 
 const parts: PartInstance[] = [{ def: boardDef, transform: identityTransform() }];
+
+/** 以 (x,y,z) 為中心的 0.4mm 立方 probe；box() 原點在底面中心，故 z 需下移半邊長 */
+function probeAt(x: number, y: number, z: number): Solid {
+  return kernel.transform(kernel.box(0.4, 0.4, 0.4), {
+    position: [x, y, z - 0.2],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1],
+  });
+}
+
+function intersectionVolume(solid: Solid, probe: Solid): number {
+  return kernel.volume(kernel.difference(probe, kernel.difference(probe, solid)));
+}
 
 describe('buildLidSolid', () => {
   it('screw 上蓋體積大於面板本身（含唇邊與螺絲柱，扣除通孔仍為正）', () => {
@@ -72,5 +87,23 @@ describe('buildLidSolid', () => {
     const screwLid = kernel.volume(buildLidSolid(plan, params, kernel));
     const slideLid = kernel.volume(buildLidSolid(plan, { ...params, lidType: 'slide' }, kernel));
     expect(slideLid).toBeLessThan(screwLid);
+  });
+
+  it('screw 上蓋柱頂有杯頭沉孔（沉孔範圍空心、沉孔壁實心）', () => {
+    const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const };
+    const plan = planShell(parts, params);
+    const lid = buildLidSolid(plan, params, kernel);
+    const spec = SCREW_TABLE[params.screwSize];
+    const p = planCornerPosts(plan, params.screwSize)[0];
+    const panelZ = plan.inner.maxZ;
+    const postTop = panelZ + params.wallThickness + 4; // POST_HEIGHT = 4
+    const boreDepth = Math.min(spec.socketHeadDepth, 4);
+    // 沉孔內、通孔外（半徑介於 throughRadius 與 socketHeadRadius 之間）→ 應為空
+    const rMid = (spec.throughDiameter / 2 + spec.socketHeadDiameter / 2) / 2;
+    const inBore = probeAt(p.x + rMid, p.y, postTop - boreDepth / 2);
+    expect(intersectionVolume(lid, inBore)).toBe(0);
+    // 同半徑、沉孔底以下（柱體實心區）→ 應為實心
+    const belowBore = probeAt(p.x + rMid, p.y, postTop - boreDepth - 0.6);
+    expect(intersectionVolume(lid, belowBore)).toBeGreaterThan(0);
   });
 });
