@@ -30,7 +30,7 @@
 **D3 — `buildShellSolid` 依 standoff 是否帶 peg 資訊分支。**
 每根 standoff：
 - 螺絲模式（現行）：長柱到 `standoffHeight`，柱頂鑽 `pilotDiameter` 自攻導孔（完全不變）。
-- peg 模式：長**實心**柱到孔平面 `topZ`（`standoffHeight = max(topZ - floorZ, MIN_POST_HEIGHT)`，不鑽導孔），再從 `topZ` 向上長一段定位圓柱：直徑 `pegDiameter = max(holeDiameter - PEG_CLEARANCE, 0.5)`、高度 `PEG_HEIGHT`。
+- peg 模式：長**實心**柱到孔平面 `topZ`（`standoffHeight = topZ - floorZ`，無最低高度要求——沒有螺絲要攻牙，不像螺絲模式需保留 `pilotDepth` 餘量；`<= 0` 時整支柱連同定位柱一併跳過，不鑽導孔），再從 `topZ` 向上長一段定位圓柱：直徑 `pegDiameter = max(holeDiameter - PEG_CLEARANCE, 0.5)`、高度 `PEG_HEIGHT`。
 判斷用 standoff 上的欄位（例如 `mountingStyle: MountingStyle` 直接放進 `StandoffPlan`），不從全域 params 傳第二條路徑，避免 `buildShellSolid` 簽名再長。
 常數：`PEG_CLEARANCE = 0.2`（FDM 孔會縮，定位柱略小於孔徑求可插入的鬆配）、`PEG_HEIGHT = 4`（插入深度，夠定位又不易頂穿薄件）。皆加 `ponytail:` 註解標示可調上限，未來要開成參數再說。
 
