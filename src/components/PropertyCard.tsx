@@ -222,6 +222,21 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
         </select>
       </label>
       {p.lidType === 'screw' && (
+        <label className="mt-2 block">
+          <span className="text-xs text-slate-400">{t('enclosure.screwLidProfile')}</span>
+          <select
+            className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+            value={p.screwLidProfile ?? 'flatRecessed'}
+            onChange={(e) =>
+              setParam('screwLidProfile', e.target.value as EnclosureParams['screwLidProfile'])
+            }
+          >
+            <option value="flatExposed">{t('enclosure.lidFlatExposed')}</option>
+            <option value="flatRecessed">{t('enclosure.lidFlatRecessed')}</option>
+          </select>
+        </label>
+      )}
+      {p.lidType === 'screw' && (
         <label className="mt-2 flex items-center gap-2 text-xs text-slate-500">
           <input
             type="checkbox"

@@ -126,6 +126,21 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
               </select>
             </label>
             {params.lidType === 'screw' && (
+              <label className="col-span-2 block">
+                <span className="text-xs text-slate-400">{t('enclosure.screwLidProfile')}</span>
+                <select
+                  className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+                  value={params.screwLidProfile ?? 'flatRecessed'}
+                  onChange={(e) =>
+                    set('screwLidProfile', e.target.value as EnclosureParams['screwLidProfile'])
+                  }
+                >
+                  <option value="flatExposed">{t('enclosure.lidFlatExposed')}</option>
+                  <option value="flatRecessed">{t('enclosure.lidFlatRecessed')}</option>
+                </select>
+              </label>
+            )}
+            {params.lidType === 'screw' && (
               <label className="col-span-2 flex items-center gap-2 text-xs text-slate-500">
                 <input
                   type="checkbox"

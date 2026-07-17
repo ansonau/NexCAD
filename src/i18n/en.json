@@ -80,6 +80,9 @@
     "mountingStyle": "Part mounting style",
     "mountingScrew": "Screw standoff",
     "mountingPeg": "Locating peg",
+    "screwLidProfile": "Screw lid profile",
+    "lidFlatExposed": "Flat, head exposed",
+    "lidFlatRecessed": "Flat, head recessed",
     "params": "Enclosure parameters"
   },
   "tools": {
