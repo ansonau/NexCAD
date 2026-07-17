@@ -11,9 +11,9 @@
 
 ## 2. store 層：碰撞警告
 
-- [ ] 2.1 `src/enclosure/actions.ts` 的 `generateEnclosure`/`regenerateEnclosure` 加碰撞偵測（D4）：screw 上蓋類型時算一次 `planCornerPosts`，`collided` 為真則呼叫 `useToastStore`
-- [ ] 2.2 i18n 新增 `enclosure.collisionWarning` key（zh/en，`src/i18n/zh.json`、`src/i18n/en.json`）
-- [ ] 2.3 單元測試：`src/enclosure/actions.test.ts` 驗證碰撞情境觸發 toast、無碰撞不觸發
+- [x] 2.1 `src/enclosure/actions.ts` 的 `generateEnclosure`/`regenerateEnclosure` 加碰撞偵測（D4）：screw 上蓋類型時算一次 `planCornerPosts`，`collided` 為真則呼叫 `useToastStore`
+- [x] 2.2 i18n 新增 `enclosure.collisionWarning` key（zh/en，`src/i18n/zh.json`、`src/i18n/en.json`）
+- [x] 2.3 單元測試：`src/enclosure/actions.test.ts` 驗證碰撞情境觸發 toast、無碰撞不觸發。順手修 `src/i18n/index.ts`：`actions.ts` 直接 import i18n 單例在 node 測試環境下 `localStorage` 未定義會炸掉，加 `typeof` 防護（瀏覽器行為不變）。
 
 ## 3. PropertyCard：外殼過期提示
 
