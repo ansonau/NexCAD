@@ -187,4 +187,30 @@ describe('planCornerPosts', () => {
       expect(posts[i].y).toBeCloseTo(naive[i].y, 6);
     }
   });
+
+  it('搜尋上限不可讓角柱中心超出殼體 outer 邊界（code review 發現的迴歸測試）', () => {
+    // DEFAULT_ENCLOSURE_PARAMS 下 outer X=[-26,26] Y=[-16,16]，角柱 (20,10)。
+    // inset = cornerRadius(3)+3 = 6 → 該角柱到 outer.maxX/maxY 的實際餘裕僅 6，
+    // 但舊版 limit = floor(min(width,depth)/4) = 8，與餘裕完全脫鉤。
+    // 建構一個零件，使其 bounding box 恰好需要 offset=7 才能脫離碰撞（見審查發現的反例）：
+    // X=[-100,22] Y=[5,15] → 角柱在 x 方向的舊版搜尋會停在 offsetX=7（post.x=27），超出 outer.maxX=26。
+    const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
+    const collidingPart: PartInstance = {
+      def: { ...boardDef, body: { size: [122, 10, 2], blocks: [] } },
+      transform: { ...identityTransform(), position: [-39, 10, 0] },
+    };
+    const posts = planCornerPosts(plan, 'M3', [collidingPart]);
+
+    for (const p of posts) {
+      expect(p.x).toBeGreaterThanOrEqual(plan.outer.minX);
+      expect(p.x).toBeLessThanOrEqual(plan.outer.maxX);
+      expect(p.y).toBeGreaterThanOrEqual(plan.outer.minY);
+      expect(p.y).toBeLessThanOrEqual(plan.outer.maxY);
+    }
+
+    // 該角落（20,10）在修正後的搜尋範圍內無解（水平/垂直方向皆被 outer 邊界限制在 6mm 內，
+    // 不足以脫離此零件），必須誠實回報 collided，而非把支柱悄悄推到殼體外。
+    const targetCorner = posts.find((p) => p.x > 0 && p.y > 0)!;
+    expect(targetCorner.collided).toBe(true);
+  });
 });

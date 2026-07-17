@@ -205,15 +205,20 @@ export function planCornerPosts(
       if (collidesWithAnyPart(x0, y0, collisionRadius, boxes)) {
         const dirX = Math.sign(x0 - centerX);
         const dirY = Math.sign(y0 - centerY);
+        // 搜尋上限不可讓支柱中心超出殼體自身的 outer 邊界（見 code review 發現）
+        const headroomX = dirX > 0 ? plan.outer.maxX - x0 : dirX < 0 ? x0 - plan.outer.minX : 0;
+        const headroomY = dirY > 0 ? plan.outer.maxY - y0 : dirY < 0 ? y0 - plan.outer.minY : 0;
+        const limitX = Math.min(limit, Math.max(0, Math.floor(headroomX)));
+        const limitY = Math.min(limit, Math.max(0, Math.floor(headroomY)));
         const offsetX = searchOffset(
           (offset) => collidesWithAnyPart(x0 + offset, y0, collisionRadius, boxes),
           dirX,
-          limit,
+          limitX,
         );
         const offsetY = searchOffset(
           (offset) => collidesWithAnyPart(x0, y0 + offset, collisionRadius, boxes),
           dirY,
-          limit,
+          limitY,
         );
         if (offsetX !== null && (offsetY === null || Math.abs(offsetX) <= Math.abs(offsetY))) {
           x = x0 + offsetX;
