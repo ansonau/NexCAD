@@ -136,6 +136,36 @@ describe('nexcadFile', () => {
     expect(node.type === 'enclosure' ? node.params.mountingStyle : 'not-enclosure').toBeUndefined();
   });
 
+  it('舊版 enclosure params 無 screwLidProfile 時仍可正常解析', () => {
+    const doc = emptyDocument('舊檔');
+    const enclosure: EnclosureNode = {
+      type: 'enclosure',
+      id: newId(),
+      name: '外殼底座',
+      role: 'solid',
+      transform: identityTransform(),
+      visible: true,
+      locked: false,
+      part: 'base',
+      params: {
+        wallThickness: 2.5,
+        clearanceMargin: 3,
+        cornerRadius: 3,
+        lidType: 'screw',
+        screwSize: 'M3',
+        standoffWallPadding: 2.5,
+      },
+      sourceParts: [],
+    };
+    doc.nodes = [enclosure];
+    const json = JSON.parse(serializeNexcadFile(doc));
+    delete json.nodes[0].params.screwLidProfile; // 模擬舊檔（本來就沒有此欄位）
+    expect(() => parseNexcadFile(JSON.stringify(json))).not.toThrow();
+    const parsed = parseNexcadFile(JSON.stringify(json));
+    const node = parsed.nodes[0];
+    expect(node.type === 'enclosure' ? node.params.screwLidProfile : 'not-enclosure').toBeUndefined();
+  });
+
   it('拒絕非 JSON', () => {
     expect(() => parseNexcadFile('not json')).toThrow();
   });

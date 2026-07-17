@@ -39,6 +39,7 @@ export interface PartNode extends NodeCommon {
 export type ScrewSizeLiteral = 'M2' | 'M2.5' | 'M3' | 'M4';
 
 export type MountingStyle = 'screw' | 'peg';
+export type ScrewLidProfile = 'flatExposed' | 'flatRecessed';
 
 export interface EnclosureParams {
   wallThickness: number;
@@ -54,6 +55,8 @@ export interface EnclosureParams {
   reserveCornerSpace?: boolean;
   /** 零件安裝柱固定方式：螺絲柱或圓柱定位柱；未設定時視為 'screw' */
   mountingStyle?: MountingStyle;
+  /** 螺絲上蓋剖面：外露平面或內凹平面；未設定時視為 'flatRecessed' */
+  screwLidProfile?: ScrewLidProfile;
 }
 
 export interface EnclosureSourcePart {

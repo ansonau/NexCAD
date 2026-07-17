@@ -32,6 +32,7 @@ export const DEFAULT_ENCLOSURE_PARAMS: EnclosureParams = {
   standoffWallPadding: 3,
   reserveCornerSpace: true,
   mountingStyle: 'screw',
+  screwLidProfile: 'flatRecessed',
 };
 
 /** 零件在世界座標下的包覆範圍（只考慮 Z 軸旋轉） */
