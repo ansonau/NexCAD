@@ -133,6 +133,25 @@ describe('planStandoffs', () => {
     const standoffs = planStandoffs([instance()], 'M3', 9);
     expect(standoffs.every((s) => s.pilotDepth === 9)).toBe(true);
   });
+
+  // Task 2.3: mountingStyle 'peg' 時每個 standoff 帶 mountingStyle: 'peg' 與對應零件安裝孔的真實 holeDiameter
+  it("mountingStyle 為 'peg' 時每個支柱帶 mountingStyle 與對應的 holeDiameter", () => {
+    const standoffs = planStandoffs([instance()], 'M3', 6, 'peg');
+    expect(standoffs).toHaveLength(2);
+    standoffs.forEach((s, i) => {
+      expect(s.mountingStyle).toBe('peg');
+      expect(s.holeDiameter).toBeCloseTo(boardDef.mountingHoles[i].diameter, 6);
+    });
+  });
+
+  // Task 2.3: 'screw' 或未指定時維持現行欄位行為（mountingStyle 預設為 'screw'，holeDiameter 仍帶入）
+  it("mountingStyle 為 'screw' 或省略時維持現行行為，仍帶入 holeDiameter", () => {
+    const withScrew = planStandoffs([instance()], 'M3', 6, 'screw');
+    const omitted = planStandoffs([instance()], 'M3');
+    expect(withScrew.every((s) => s.mountingStyle === 'screw')).toBe(true);
+    expect(omitted.every((s) => s.mountingStyle === 'screw')).toBe(true);
+    withScrew.forEach((s, i) => expect(s.holeDiameter).toBeCloseTo(boardDef.mountingHoles[i].diameter, 6));
+  });
 });
 
 describe('planCornerPosts', () => {

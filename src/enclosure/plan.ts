@@ -3,8 +3,8 @@ import type { ScrewSize } from './screws';
 import type { PartDefinition } from '../parts/schema';
 import type { Transform } from '../types/document';
 
-export type { EnclosureParams } from '../types/document';
-import type { EnclosureParams } from '../types/document';
+export type { EnclosureParams, MountingStyle } from '../types/document';
+import type { EnclosureParams, MountingStyle } from '../types/document';
 
 const DEG = Math.PI / 180;
 
@@ -183,6 +183,10 @@ export interface StandoffPlan {
   pilotDepth: number;
   /** 僅角柱使用：柱心嚴格落入零件 bbox 內部（嚴重重疊）時為 true（見 design.md D2） */
   collided?: boolean;
+  /** 零件安裝柱的固定方式，'peg' 時 buildShellSolid 改長實心定位柱（design.md D2/D3） */
+  mountingStyle?: MountingStyle;
+  /** 零件安裝孔的實際孔徑（來自 PartDefinition.mountingHoles），peg 幾何用它算定位柱直徑 */
+  holeDiameter?: number;
 }
 
 const PILOT_DEPTH = 6;
@@ -192,6 +196,7 @@ export function planStandoffs(
   parts: PartInstance[],
   screwSize: ScrewSize,
   pilotDepth: number = PILOT_DEPTH,
+  mountingStyle: MountingStyle = 'screw',
 ): StandoffPlan[] {
   const out: StandoffPlan[] = [];
   for (const part of parts) {
@@ -206,6 +211,8 @@ export function planStandoffs(
         topZ: pz + (hole.z ?? 0),
         pilotDiameter: pilotDiameter(screwSize, 'selfTap'),
         pilotDepth,
+        mountingStyle,
+        holeDiameter: hole.diameter,
       });
     }
   }
