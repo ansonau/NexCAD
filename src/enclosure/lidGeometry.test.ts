@@ -79,13 +79,14 @@ describe('buildLidSolid', () => {
   describe('flatExposed（薄平面蓋，杯頭外露）', () => {
     const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const, screwLidProfile: 'flatExposed' as const };
 
-    it('蓋頂面平整無凸出（面板頂面上方應為空）', () => {
+    it('蓋頂面平整無凸出（面板頂面上方應為空，探測點偏離孔心避開通孔本身、確認不是舊版凸柱殘留）', () => {
       const plan = planShell(parts, params);
       const lid = buildLidSolid(plan, params, parts, kernel);
       const panelZ = plan.inner.maxZ;
       const panelTop = panelZ + params.wallThickness;
       const p = planCornerPosts(plan, params.screwSize, parts)[0];
-      const aboveTop = probeAt(p.x, p.y, panelTop + 0.3);
+      // 偏離孔心 3.5mm：舊版凸柱（半徑約 3.7mm）在此處會是實心，平面蓋應為空
+      const aboveTop = probeAt(p.x + 3.5, p.y, panelTop + 0.3);
       expect(intersectionVolume(lid, aboveTop)).toBe(0);
     });
 
@@ -111,14 +112,15 @@ describe('buildLidSolid', () => {
   describe('flatRecessed（厚平面蓋，杯頭藏入）— 預設值', () => {
     const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const, screwLidProfile: 'flatRecessed' as const };
 
-    it('蓋頂面平整無凸出（面板頂面上方應為空，與 flatExposed 相同的「無凸柱」不變式）', () => {
+    it('蓋頂面平整無凸出（面板頂面上方應為空，與 flatExposed 相同的「無凸柱」不變式；探測點偏離孔心確認不是舊版凸柱殘留）', () => {
       const plan = planShell(parts, params);
       const lid = buildLidSolid(plan, params, parts, kernel);
       const spec = SCREW_TABLE[params.screwSize];
       const panelH = spec.socketHeadDepth + 0.5 + params.wallThickness; // SINK_MARGIN = 0.5
       const panelTop = plan.inner.maxZ + panelH;
       const p = planCornerPosts(plan, params.screwSize, parts)[0];
-      const aboveTop = probeAt(p.x, p.y, panelTop + 0.3);
+      // 偏離孔心 3.5mm：舊版凸柱（半徑約 3.7mm）在此處會是實心，平面蓋應為空
+      const aboveTop = probeAt(p.x + 3.5, p.y, panelTop + 0.3);
       expect(intersectionVolume(lid, aboveTop)).toBe(0);
     });
 
