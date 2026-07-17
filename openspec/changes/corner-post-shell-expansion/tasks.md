@@ -2,9 +2,9 @@
 
 ## 1. types：EnclosureParams 新欄位與 backward-compat
 
-- [ ] 1.1 `src/types/document.ts`：`EnclosureParams` 加 `reserveCornerSpace?: boolean`，zod schema `.optional()`
-- [ ] 1.2 `src/enclosure/plan.ts`：`DEFAULT_ENCLOSURE_PARAMS` 加 `reserveCornerSpace: true`
-- [ ] 1.3 回歸測試：`src/persistence/nexcadFile.test.ts` 驗證無此欄位的舊 `.nexcad` 內容可正常解析（沿用 Plan 4 `standoffWallPadding` backward-compat 測試模式）
+- [x] 1.1 `src/types/document.ts`：`EnclosureParams` 加 `reserveCornerSpace?: boolean`，zod schema `.optional()`
+- [x] 1.2 `src/enclosure/plan.ts`：`DEFAULT_ENCLOSURE_PARAMS` 加 `reserveCornerSpace: true`
+- [x] 1.3 回歸測試：`src/persistence/nexcadFile.test.ts` 驗證無此欄位的舊 `.nexcad` 內容可正常解析（沿用 Plan 4 `standoffWallPadding` backward-compat 測試模式）
 
 ## 2. plan.ts：擴殼取代位移避讓
 
