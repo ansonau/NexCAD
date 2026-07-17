@@ -98,4 +98,45 @@ describe('buildShellSolid', () => {
     const intersection = kernel.difference(probe, kernel.difference(probe, solid));
     expect(kernel.volume(intersection)).toBe(0);
   });
+
+  it('peg 模式：孔平面柱身無導孔（實心，不像螺絲模式那樣挖空）', () => {
+    const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
+    const pegStandoffs = planStandoffs(parts, DEFAULT_ENCLOSURE_PARAMS.screwSize, undefined, 'peg');
+    const pegSolid = buildShellSolid(plan, DEFAULT_ENCLOSURE_PARAMS.wallThickness, pegStandoffs, kernel);
+    const s = pegStandoffs[0];
+
+    // 探測孔平面 topZ 正上方一小段（螺絲模式導孔會挖空的區間）：peg 模式應為實心，
+    // 探測方塊完全落在殼體內，體積差應接近方塊全部體積。
+    const probe = kernel.transform(kernel.box(0.5, 0.5, 0.5), {
+      position: [s.x, s.y, s.topZ],
+      rotation: [0, 0, 0],
+      scale: [1, 1, 1],
+    });
+    const probeVolume = kernel.volume(probe);
+    const intersection = kernel.difference(probe, kernel.difference(probe, pegSolid));
+    expect(kernel.volume(intersection)).toBeGreaterThan(probeVolume * 0.9);
+
+    // 對照：同一探測位置在螺絲模式下應是導孔挖空（幾乎沒有交集體積），
+    // 證明探測點確實落在螺絲模式會鑽孔的地方，peg 模式的差異不是巧合。
+    const screwStandoffs = planStandoffs(parts, DEFAULT_ENCLOSURE_PARAMS.screwSize, undefined, 'screw');
+    const screwSolid = buildShellSolid(plan, DEFAULT_ENCLOSURE_PARAMS.wallThickness, screwStandoffs, kernel);
+    const screwIntersection = kernel.difference(probe, kernel.difference(probe, screwSolid));
+    expect(kernel.volume(screwIntersection)).toBeLessThan(probeVolume * 0.1);
+  });
+
+  it('peg 模式：孔平面上方存在定位圓柱（探測 topZ 以上的柱體）', () => {
+    const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
+    const pegStandoffs = planStandoffs(parts, DEFAULT_ENCLOSURE_PARAMS.screwSize, undefined, 'peg');
+    const solid = buildShellSolid(plan, DEFAULT_ENCLOSURE_PARAMS.wallThickness, pegStandoffs, kernel);
+    const s = pegStandoffs[0];
+
+    const probe = kernel.transform(kernel.box(0.5, 0.5, 1), {
+      position: [s.x, s.y, s.topZ + 1],
+      rotation: [0, 0, 0],
+      scale: [1, 1, 1],
+    });
+    const probeVolume = kernel.volume(probe);
+    const intersection = kernel.difference(probe, kernel.difference(probe, solid));
+    expect(kernel.volume(intersection)).toBeGreaterThan(probeVolume * 0.9);
+  });
 });
