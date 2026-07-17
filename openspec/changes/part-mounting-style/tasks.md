@@ -15,9 +15,9 @@
 
 ## 3. shellGeometry.ts：peg 幾何分支
 
-- [ ] 3.1 加常數 `PEG_CLEARANCE = 0.2`、`PEG_HEIGHT = 4`（含 `ponytail:` 可調註解）
-- [ ] 3.2 `buildShellSolid` 依 standoff `mountingStyle` 分支：`'peg'` 長實心柱到 `topZ`（不鑽導孔），柱頂向上長定位圓柱（直徑 `max(holeDiameter - PEG_CLEARANCE, 0.5)`、高 `PEG_HEIGHT`）；`'screw'`/未設定維持現行導孔行為
-- [ ] 3.3 測試：`src/enclosure/shellGeometry.test.ts` 驗證 peg 模式柱頂實心（無導孔）且孔平面上方有定位圓柱體積；螺絲模式維持有導孔
+- [x] 3.1 加常數 `PEG_CLEARANCE = 0.2`、`PEG_HEIGHT = 4`（含 `ponytail:` 可調註解）
+- [x] 3.2 `buildShellSolid` 依 standoff `mountingStyle` 分支：`'peg'` 長實心柱到 `topZ`（不鑽導孔），柱頂向上長定位圓柱（直徑 `max(holeDiameter - PEG_CLEARANCE, 0.5)`、高 `PEG_HEIGHT`）；`'screw'`/未設定維持現行導孔行為
+- [x] 3.3 測試：`src/enclosure/shellGeometry.test.ts` 驗證 peg 模式柱頂實心（無導孔）且孔平面上方有定位圓柱體積；螺絲模式維持有導孔
 
 ## 4. generate.ts + UI
 
