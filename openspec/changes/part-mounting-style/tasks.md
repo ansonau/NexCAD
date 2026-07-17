@@ -28,7 +28,7 @@
 
 ## 5. 驗證
 
-- [ ] 5.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
-- [ ] 5.2 瀏覽器驗證：預設（螺絲）產生外殼，安裝柱有導孔（現行不變）
-- [ ] 5.3 瀏覽器驗證：切 `peg` 重新產生，安裝柱頂為實心定位圓柱、無導孔；上蓋角柱仍為螺絲
-- [ ] 5.4 `npm run test:e2e` 通過；Console 全程無錯誤
+- [x] 5.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
+- [x] 5.2 瀏覽器驗證：預設（螺絲）產生外殼，安裝柱有導孔（現行不變）
+- [x] 5.3 瀏覽器驗證：切 `peg` 重新產生，安裝柱頂為實心定位圓柱、無導孔；上蓋角柱仍為螺絲
+- [x] 5.4 `npm run test:e2e` 通過；Console 全程無錯誤
