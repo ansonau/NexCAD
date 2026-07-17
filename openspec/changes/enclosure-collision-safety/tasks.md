@@ -17,9 +17,9 @@
 
 ## 3. PropertyCard：外殼過期提示
 
-- [ ] 3.1 `src/components/PropertyCard.tsx` 選取 enclosure 節點時，比對 `sourceParts` 快照 transform 與 live part transform
-- [ ] 3.2 不一致時在「重新產生」按鈕上方顯示過期提示文字
-- [ ] 3.3 i18n 新增 `enclosure.staleWarning` key（zh/en）
+- [x] 3.1 `src/components/PropertyCard.tsx` 選取 enclosure 節點時，比對 `sourceParts` 快照 transform 與 live part transform
+- [x] 3.2 不一致時在「重新產生」按鈕上方顯示過期提示文字
+- [x] 3.3 i18n 新增 `enclosure.staleWarning` key（zh/en）
 
 ## 4. 驗證
 
