@@ -48,6 +48,8 @@ export interface EnclosureParams {
   standoffWallPadding: number;
   /** 自攻導孔深度；未設定時用查表預設（6mm） */
   pilotDepthOverride?: number;
+  /** 上蓋角柱是否自動保留殼體空間避免與零件碰撞；未設定時視為 true */
+  reserveCornerSpace?: boolean;
 }
 
 export interface EnclosureSourcePart {

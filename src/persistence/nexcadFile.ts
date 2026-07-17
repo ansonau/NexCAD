@@ -51,6 +51,7 @@ const enclosureNodeSchema = z.object({
       screwSize: z.enum(['M2', 'M2.5', 'M3', 'M4']),
       standoffWallPadding: z.number().optional(),
       pilotDepthOverride: z.number().positive().optional(),
+      reserveCornerSpace: z.boolean().optional(),
     })
     .transform((p) => ({ ...p, standoffWallPadding: p.standoffWallPadding ?? p.wallThickness })),
   sourceParts: z.array(
