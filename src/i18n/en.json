@@ -70,6 +70,7 @@
     "regenerate": "Regenerate",
     "noParts": "No parts in the scene to enclose",
     "collisionWarning": "Screw posts conflict with a part, adjust part position or wall thickness",
+    "staleWarning": "Part position has changed; the enclosure may be out of date, regenerate to update",
     "scopeSelected": "Will include {{count}} selected part(s)",
     "scopeAll": "Will include all {{count}} visible part(s)",
     "advanced": "Advanced",

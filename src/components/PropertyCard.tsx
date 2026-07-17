@@ -3,7 +3,13 @@ import { RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { regenerateEnclosure } from '../enclosure/actions';
 import { findNode, useDocumentStore } from '../store/documentStore';
-import type { EnclosureNode, EnclosureParams, PrimitiveNode, SceneNode } from '../types/document';
+import type {
+  EnclosureNode,
+  EnclosureParams,
+  NexcadDocument,
+  PrimitiveNode,
+  SceneNode,
+} from '../types/document';
 
 const PARAM_LABELS: Record<string, string> = {
   width: 'property.width',
@@ -37,6 +43,9 @@ export function PropertyCard() {
       {node.type === 'primitive' && <ParamFields node={node} updateNode={updateNode} />}
       {node.type === 'enclosure' && (
         <>
+          {isEnclosureStale(node, doc) && (
+            <p className="mb-2 text-xs text-amber-700">{t('enclosure.staleWarning')}</p>
+          )}
           <button
             onClick={() => regenerateEnclosure(node.id)}
             className="mb-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-100"
@@ -62,6 +71,18 @@ export function PropertyCard() {
       </div>
     </div>
   );
+}
+
+// 缺少對應 live part 節點的來源零件（已刪除）不計入過期判斷，交由既有重新產生流程處理
+function isEnclosureStale(node: EnclosureNode, doc: NexcadDocument): boolean {
+  return node.sourceParts.some((s) => {
+    const live = findNode(doc.nodes, s.nodeId);
+    if (!live || live.type !== 'part') return false;
+    return (
+      JSON.stringify(live.transform.position) !== JSON.stringify(s.transform.position) ||
+      JSON.stringify(live.transform.rotation) !== JSON.stringify(s.transform.rotation)
+    );
+  });
 }
 
 function RoleToggle({

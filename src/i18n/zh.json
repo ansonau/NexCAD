@@ -70,6 +70,7 @@
     "regenerate": "重新產生",
     "noParts": "場景中沒有零件，無法產生外殼",
     "collisionWarning": "螺絲柱位置與零件衝突，請調整零件位置或壁厚",
+    "staleWarning": "零件位置已變更，外殼可能過期，請重新產生",
     "scopeSelected": "將包含選取的 {{count}} 個零件",
     "scopeAll": "將包含全部 {{count}} 個可見零件",
     "advanced": "進階",
