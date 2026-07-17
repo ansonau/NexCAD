@@ -88,9 +88,15 @@ function SceneMesh({
   onSelect: (shiftKey: boolean) => void;
 }) {
   const geometry = useMemo(() => {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(payload.positions, 3));
-    g.setIndex(new THREE.BufferAttribute(payload.indices, 1));
+    const indexed = new THREE.BufferGeometry();
+    indexed.setAttribute('position', new THREE.BufferAttribute(payload.positions, 3));
+    indexed.setIndex(new THREE.BufferAttribute(payload.indices, 1));
+    // manifold-3d 的 mesh 在稜邊共享頂點；用共享頂點算 vertex normal 會把
+    // 90° 稜邊兩側的法線平均混在一起，平坦面出現漸層斑駁。展開成
+    // non-indexed（每個三角形有自己的頂點）後再算法線，才是正確的 per-face
+    // flat shading。
+    const g = indexed.toNonIndexed();
+    indexed.dispose();
     g.computeVertexNormals();
     return g;
   }, [payload]);
