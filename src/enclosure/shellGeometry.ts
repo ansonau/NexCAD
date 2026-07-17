@@ -49,14 +49,6 @@ export function buildShellSolid(
       ...noRotScale,
     });
     shell = kernel.union(shell, post);
-    // 3D 列印支柱根部為層間剝離高風險點：加 45° 倒角環（圓錐台）分散應力。
-    // 貼在內腔地板（低於地板的部分本來就是實心底板，放 floorZ 只會被吸收）。
-    const chamferBase = Math.max(plan.inner.minZ, plan.floorZ);
-    const chamfer = kernel.transform(
-      kernel.cone(standoffRadius + wallThickness, standoffRadius, wallThickness),
-      { position: [s.x, s.y, chamferBase], ...noRotScale },
-    );
-    shell = kernel.union(shell, chamfer);
     // 導孔下緣夾在 inner.minZ（內腔地板）：避免鑽穿殼體外底面的實心外皮，
     // 保留底板的結構完整性（不論支柱鎖點多接近地板）。
     const pilotBottom = Math.max(s.topZ - s.pilotDepth, plan.inner.minZ);

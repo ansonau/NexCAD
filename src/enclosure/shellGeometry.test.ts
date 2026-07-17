@@ -81,7 +81,7 @@ describe('buildShellSolid', () => {
     expect(kernel.volume(intersection)).toBeGreaterThan(probeVolume * 0.9);
   });
 
-  it('支柱根部有 45° 倒角環（斜面內側實心、上方外側空心）', () => {
+  it('支柱根部無倒角環（柱外緊鄰根部應為空）', () => {
     const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
     const standoffs = planStandoffs(parts, DEFAULT_ENCLOSURE_PARAMS.screwSize);
     const wall = DEFAULT_ENCLOSURE_PARAMS.wallThickness;
@@ -90,21 +90,12 @@ describe('buildShellSolid', () => {
     const postRadius = s.pilotDiameter / 2 + wall;
     const rootZ = Math.max(plan.inner.minZ, plan.floorZ);
 
-    const probeVolumeAt = (x: number, y: number, z: number) => {
-      const probe = kernel.transform(kernel.box(0.5, 0.5, 0.5), {
-        position: [x, y, z],
-        rotation: [0, 0, 0],
-        scale: [1, 1, 1],
-      });
-      const intersection = kernel.difference(probe, kernel.difference(probe, solid));
-      return kernel.volume(intersection);
-    };
-
-    // 倒角環斜面中點：半徑 postRadius + wall*0.25、高 rootZ + wall*0.25 → 應為實心
-    const inside = probeVolumeAt(s.x + postRadius + wall * 0.25, s.y, rootZ + wall * 0.25);
-    expect(inside).toBeGreaterThan(0);
-    // 同半徑、高於倒角環頂（rootZ + wall*1.5）→ 柱外應為空
-    const above = probeVolumeAt(s.x + postRadius + wall * 0.25, s.y, rootZ + wall * 1.5);
-    expect(above).toBe(0);
+    const probe = kernel.transform(kernel.box(0.5, 0.5, 0.5), {
+      position: [s.x + postRadius + wall * 0.25, s.y, rootZ + wall * 0.25],
+      rotation: [0, 0, 0],
+      scale: [1, 1, 1],
+    });
+    const intersection = kernel.difference(probe, kernel.difference(probe, solid));
+    expect(kernel.volume(intersection)).toBe(0);
   });
 });
