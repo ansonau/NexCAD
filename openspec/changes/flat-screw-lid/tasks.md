@@ -17,9 +17,9 @@
 
 ## 3. UI：screwLidProfile 選項
 
-- [ ] 3.1 i18n：`enclosure.screwLidProfile` / `enclosure.lidFlatExposed` / `enclosure.lidFlatRecessed`（zh/en）
-- [ ] 3.2 `src/components/EnclosurePanel.tsx` 進階區塊加 `screwLidProfile` 下拉（僅 `lidType === 'screw'` 顯示）
-- [ ] 3.3 `src/components/PropertyCard.tsx` 外殼參數表加 `screwLidProfile` 下拉（同上），變更觸發既有 `regenerateEnclosure`
+- [x] 3.1 i18n：`enclosure.screwLidProfile` / `enclosure.lidFlatExposed` / `enclosure.lidFlatRecessed`（zh/en）
+- [x] 3.2 `src/components/EnclosurePanel.tsx` 進階區塊加 `screwLidProfile` 下拉（僅 `lidType === 'screw'` 顯示）
+- [x] 3.3 `src/components/PropertyCard.tsx` 外殼參數表加 `screwLidProfile` 下拉（同上），變更觸發既有 `regenerateEnclosure`
 
 ## 4. 驗證
 
