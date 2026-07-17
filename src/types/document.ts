@@ -38,6 +38,8 @@ export interface PartNode extends NodeCommon {
 
 export type ScrewSizeLiteral = 'M2' | 'M2.5' | 'M3' | 'M4';
 
+export type MountingStyle = 'screw' | 'peg';
+
 export interface EnclosureParams {
   wallThickness: number;
   clearanceMargin: number;
@@ -50,6 +52,8 @@ export interface EnclosureParams {
   pilotDepthOverride?: number;
   /** 上蓋角柱是否自動保留殼體空間避免與零件碰撞；未設定時視為 true */
   reserveCornerSpace?: boolean;
+  /** 零件安裝柱固定方式：螺絲柱或圓柱定位柱；未設定時視為 'screw' */
+  mountingStyle?: MountingStyle;
 }
 
 export interface EnclosureSourcePart {
