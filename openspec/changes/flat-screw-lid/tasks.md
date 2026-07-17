@@ -23,8 +23,8 @@
 
 ## 4. 驗證
 
-- [ ] 4.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
-- [ ] 4.2 瀏覽器驗證：預設（flatRecessed）螺絲上蓋產生，蓋面平整無凸柱、四角沉孔埋頭
-- [ ] 4.3 瀏覽器驗證：切 flatExposed 重新產生，蓋面較薄、四角只有通孔、杯頭外露；上蓋與底座仍可對位
-- [ ] 4.4 瀏覽器驗證：slide/open 上蓋不受影響；下拉僅 screw 上蓋顯示
-- [ ] 4.5 `npm run test:e2e` 通過；Console 全程無錯誤
+- [x] 4.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
+- [x] 4.2 瀏覽器驗證：預設（flatRecessed）螺絲上蓋產生，蓋面平整無凸柱、四角沉孔埋頭
+- [x] 4.3 瀏覽器驗證：切 flatExposed 重新產生，蓋面較薄、四角只有通孔、杯頭外露；上蓋與底座仍可對位
+- [x] 4.4 瀏覽器驗證：slide/open 上蓋不受影響；下拉僅 screw 上蓋顯示
+- [x] 4.5 `npm run test:e2e` 通過；Console 全程無錯誤
