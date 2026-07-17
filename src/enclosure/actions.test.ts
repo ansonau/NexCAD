@@ -3,6 +3,20 @@ import { emptyDocument, createPartNode } from '../types/document';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import { DEFAULT_ENCLOSURE_PARAMS } from './plan';
 import { generateEnclosure, regenerateEnclosure } from './actions';
+import { useToastStore } from '../store/toastStore';
+import i18n from '../i18n';
+
+const COLLISION_MSG = i18n.t('enclosure.collisionWarning');
+
+// 角柱一定碰撞、搜尋範圍內找不到解的極端參數：cornerRadius=0（headroom 最小）、
+// wallThickness=1（角柱嵌入零件邊界內），對照 plan.test.ts「零件塞滿整條邊緣」案例的思路
+// （design.md D2：headroom = cornerRadius+3，collisionRadius 恆 > headroom 時無解）。
+const COLLIDING_PARAMS = {
+  ...DEFAULT_ENCLOSURE_PARAMS,
+  wallThickness: 1,
+  clearanceMargin: 0,
+  cornerRadius: 0,
+};
 
 beforeEach(() => {
   useDocumentStore.setState({
@@ -12,6 +26,7 @@ beforeEach(() => {
     future: [],
     dragBase: null,
   });
+  useToastStore.setState({ toasts: [] });
 });
 
 describe('generateEnclosure', () => {
@@ -91,5 +106,38 @@ describe('regenerateEnclosure', () => {
     useDocumentStore.getState().addNode(part);
     regenerateEnclosure(part.id);
     expect(findNode(useDocumentStore.getState().doc.nodes, part.id)).toEqual(part);
+  });
+
+  it('角柱找不到無碰撞位置時，顯示碰撞警告 toast', () => {
+    const part = createPartNode('arduino-nano', 'Nano');
+    useDocumentStore.getState().addNode(part);
+    generateEnclosure(COLLIDING_PARAMS);
+    const baseId = useDocumentStore
+      .getState()
+      .doc.nodes.find((n) => n.type === 'enclosure' && n.part === 'base')!.id;
+
+    useDocumentStore.getState().updateNode(part.id, (n) => {
+      n.transform.position = [50, 0, 0];
+    });
+    regenerateEnclosure(baseId);
+
+    const toasts = useToastStore.getState().toasts;
+    expect(toasts.some((t) => t.message === COLLISION_MSG)).toBe(true);
+  });
+});
+
+describe('角柱碰撞警告（generateEnclosure）', () => {
+  it('角柱找不到無碰撞位置時，顯示碰撞警告 toast', () => {
+    useDocumentStore.getState().addNode(createPartNode('arduino-nano', 'Nano'));
+    generateEnclosure(COLLIDING_PARAMS);
+    const toasts = useToastStore.getState().toasts;
+    expect(toasts.some((t) => t.message === COLLISION_MSG)).toBe(true);
+  });
+
+  it('無碰撞時不顯示碰撞警告 toast', () => {
+    useDocumentStore.getState().addNode(createPartNode('arduino-nano', 'Nano'));
+    generateEnclosure(DEFAULT_ENCLOSURE_PARAMS);
+    const toasts = useToastStore.getState().toasts;
+    expect(toasts.some((t) => t.message === COLLISION_MSG)).toBe(false);
   });
 });

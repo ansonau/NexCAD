@@ -69,6 +69,7 @@
     "generate": "Generate enclosure",
     "regenerate": "Regenerate",
     "noParts": "No parts in the scene to enclose",
+    "collisionWarning": "Screw posts conflict with a part, adjust part position or wall thickness",
     "scopeSelected": "Will include {{count}} selected part(s)",
     "scopeAll": "Will include all {{count}} visible part(s)",
     "advanced": "Advanced",

@@ -1,6 +1,11 @@
 import { findNode, useDocumentStore } from '../store/documentStore';
 import { identityTransform, newId } from '../types/document';
 import type { EnclosureNode, EnclosureParams, EnclosureSourcePart, SceneNode } from '../types/document';
+import { getPartDefinition } from '../parts/library';
+import { planCornerPosts, planShell } from './plan';
+import type { PartInstance } from './plan';
+import { useToastStore } from '../store/toastStore';
+import i18n from '../i18n';
 
 function collectPartSnapshots(nodes: SceneNode[]): EnclosureSourcePart[] {
   const out: EnclosureSourcePart[] = [];
@@ -13,6 +18,28 @@ function collectPartSnapshots(nodes: SceneNode[]): EnclosureSourcePart[] {
   };
   visit(nodes);
   return out;
+}
+
+function toPartInstances(sourceParts: EnclosureSourcePart[]): PartInstance[] {
+  const out: PartInstance[] = [];
+  for (const s of sourceParts) {
+    const def = getPartDefinition(s.partId);
+    if (def) out.push({ def, transform: s.transform });
+  }
+  return out;
+}
+
+/** screw 上蓋類型時，輕量重算一次角柱位置，碰撞時顯示 toast 警告（design.md D4）。
+ * 這是與 generate.ts 的 worker 端幾何建構分開的獨立重算，純數學無 kernel 依賴。 */
+function warnIfCornerPostsCollide(sourceParts: EnclosureSourcePart[], params: EnclosureParams): void {
+  if (params.lidType !== 'screw') return;
+  const parts = toPartInstances(sourceParts);
+  if (parts.length === 0) return;
+  const plan = planShell(parts, params);
+  const posts = planCornerPosts(plan, params.screwSize, parts);
+  if (posts.some((p) => p.collided)) {
+    useToastStore.getState().show(i18n.t('enclosure.collisionWarning'));
+  }
 }
 
 function makeEnclosureNode(
@@ -49,6 +76,7 @@ export function generateEnclosure(params: EnclosureParams): void {
   if (params.lidType !== 'open') {
     store.addNode(makeEnclosureNode('lid', params, sourceParts));
   }
+  warnIfCornerPostsCollide(sourceParts, params);
 }
 
 /** 用目前零件最新位置重新產生指定外殼節點（沿用其既有 params） */
@@ -63,4 +91,5 @@ export function regenerateEnclosure(nodeId: string): void {
   store.updateNode(nodeId, (n) => {
     if (n.type === 'enclosure') n.sourceParts = refreshed;
   });
+  warnIfCornerPostsCollide(refreshed, node.params);
 }
