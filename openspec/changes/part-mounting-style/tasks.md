@@ -21,10 +21,10 @@
 
 ## 4. generate.ts + UI
 
-- [ ] 4.1 `src/enclosure/generate.ts`：`planStandoffs` 呼叫傳入 `node.params.mountingStyle`
-- [ ] 4.2 i18n：`enclosure.mountingStyle` / `enclosure.mountingScrew` / `enclosure.mountingPeg`（zh/en）
-- [ ] 4.3 `src/components/EnclosurePanel.tsx` 進階區塊加 `mountingStyle` 下拉
-- [ ] 4.4 `src/components/PropertyCard.tsx` 外殼參數表加 `mountingStyle` 下拉，變更觸發既有 `regenerateEnclosure`
+- [x] 4.1 `src/enclosure/generate.ts`：`planStandoffs` 呼叫傳入 `node.params.mountingStyle`
+- [x] 4.2 i18n：`enclosure.mountingStyle` / `enclosure.mountingScrew` / `enclosure.mountingPeg`（zh/en）
+- [x] 4.3 `src/components/EnclosurePanel.tsx` 進階區塊加 `mountingStyle` 下拉
+- [x] 4.4 `src/components/PropertyCard.tsx` 外殼參數表加 `mountingStyle` 下拉，變更觸發既有 `regenerateEnclosure`
 
 ## 5. 驗證
 
