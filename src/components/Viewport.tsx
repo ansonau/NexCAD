@@ -118,6 +118,7 @@ function SceneMesh({
         opacity={isHole ? 0.45 : 1}
         roughness={0.6}
         metalness={0.05}
+        side={THREE.DoubleSide}
       />
     </mesh>
   );
