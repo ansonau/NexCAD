@@ -9,11 +9,11 @@
 
 ## 2. lidGeometry.ts：移除凸柱、實作兩種平面蓋
 
-- [ ] 2.1 加常數 `SINK_MARGIN = 0.5`、`HEAD_CLEARANCE = 0.3`、`MIN_SIDE_WALL = 1`（含 `ponytail:` 註解）；刪 `POST_HEIGHT`
-- [ ] 2.2 重寫 `buildLidSolid` 螺絲分支：刪凸柱 union 與柱頂沉孔；依 `params.screwLidProfile ?? 'flatRecessed'` 分兩路（design.md D2/D3）
-- [ ] 2.3 `flatExposed`：`panelH = wallThickness`，四角只挖通孔（D2）
-- [ ] 2.4 `flatRecessed`：`panelH = socketHeadDepth + SINK_MARGIN + wallThickness`，四角挖沉孔（`boreRadius` 依 D3 夾制）+ 通孔
-- [ ] 2.5 更新 `src/enclosure/lidGeometry.test.ts`：既有凸柱/柱頂沉孔斷言改為平面蓋斷言——`flatExposed` 蓋頂通孔存在且無沉孔埋頭、`flatRecessed` 沉孔埋頭且面板加厚、兩者蓋頂面平整無凸出（探測 `panelZ+panelH` 上方應為空）
+- [x] 2.1 加常數 `SINK_MARGIN = 0.5`、`HEAD_CLEARANCE = 0.3`、`MIN_SIDE_WALL = 1`（含 `ponytail:` 註解）；刪 `POST_HEIGHT`
+- [x] 2.2 重寫 `buildLidSolid` 螺絲分支：刪凸柱 union 與柱頂沉孔；依 `params.screwLidProfile ?? 'flatRecessed'` 分兩路（design.md D2/D3）
+- [x] 2.3 `flatExposed`：`panelH = wallThickness`，四角只挖通孔（D2）
+- [x] 2.4 `flatRecessed`：`panelH = socketHeadDepth + SINK_MARGIN + wallThickness`，四角挖沉孔（`boreRadius` 依 D3 夾制）+ 通孔
+- [x] 2.5 更新 `src/enclosure/lidGeometry.test.ts`：既有凸柱/柱頂沉孔斷言改為平面蓋斷言——`flatExposed` 蓋頂通孔存在且無沉孔埋頭、`flatRecessed` 沉孔埋頭且面板加厚、兩者蓋頂面平整無凸出（探測 `panelZ+panelH` 上方應為空）
 
 ## 3. UI：screwLidProfile 選項
 
