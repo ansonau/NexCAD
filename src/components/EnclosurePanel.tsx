@@ -112,6 +112,16 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
               value={params.pilotDepthOverride}
               onChange={(v) => set('pilotDepthOverride', v)}
             />
+            {params.lidType === 'screw' && (
+              <label className="col-span-2 flex items-center gap-2 text-xs text-slate-500">
+                <input
+                  type="checkbox"
+                  checked={params.reserveCornerSpace !== false}
+                  onChange={(e) => set('reserveCornerSpace', e.target.checked)}
+                />
+                {t('enclosure.reserveCornerSpace')}
+              </label>
+            )}
           </div>
         )}
         <p className="mb-3 text-xs text-slate-500">{t(scopeKey, { count: scopeCount })}</p>

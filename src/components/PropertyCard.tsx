@@ -208,6 +208,16 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
           ))}
         </select>
       </label>
+      {p.lidType === 'screw' && (
+        <label className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+          <input
+            type="checkbox"
+            checked={p.reserveCornerSpace !== false}
+            onChange={(e) => setParam('reserveCornerSpace', e.target.checked)}
+          />
+          {t('enclosure.reserveCornerSpace')}
+        </label>
+      )}
     </>
   );
 }
