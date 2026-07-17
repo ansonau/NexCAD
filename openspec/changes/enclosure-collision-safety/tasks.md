@@ -2,12 +2,12 @@
 
 ## 1. plan.ts：角柱碰撞避讓演算法
 
-- [ ] 1.1 `StandoffPlan` 加 `collided?: boolean` 欄位（`src/enclosure/plan.ts`）
-- [ ] 1.2 寫失敗測試：角柱位置與零件 bounding box 重疊時，`planCornerPosts` 回傳位移後的無碰撞座標（`src/enclosure/plan.test.ts`）
-- [ ] 1.3 寫失敗測試：搜尋範圍內找不到解時回傳原位置且 `collided: true`
-- [ ] 1.4 寫失敗測試：無碰撞情況下位置與行為不變（既有測試需保持通過）
-- [ ] 1.5 實作 `planCornerPosts` 新簽名（加 `parts: PartInstance[]` 參數）與 D1/D2 避讓演算法，跑上述測試至綠燈
-- [ ] 1.6 更新所有呼叫端傳入 `parts`：`src/enclosure/generate.ts`、`src/enclosure/shellGeometry.test.ts`、`src/enclosure/lidGeometry.test.ts`（若這些測試檔直接呼叫 `planCornerPosts`）
+- [x] 1.1 `StandoffPlan` 加 `collided?: boolean` 欄位（`src/enclosure/plan.ts`）
+- [x] 1.2 寫失敗測試：角柱位置與零件 bounding box 重疊時，`planCornerPosts` 回傳位移後的無碰撞座標（`src/enclosure/plan.test.ts`）
+- [x] 1.3 寫失敗測試：搜尋範圍內找不到解時回傳原位置且 `collided: true`
+- [x] 1.4 寫失敗測試：無碰撞情況下位置與行為不變（既有測試需保持通過）
+- [x] 1.5 實作 `planCornerPosts` 新簽名（加 `parts: PartInstance[]` 參數）與 D1/D2 避讓演算法，跑上述測試至綠燈
+- [x] 1.6 更新所有呼叫端傳入 `parts`：`src/enclosure/generate.ts`、`src/enclosure/lidGeometry.ts`、`src/enclosure/lidGeometry.test.ts`（`shellGeometry.ts`/`.test.ts` 經確認不直接呼叫 `planCornerPosts`，無需改動）。code review 額外修正：搜尋 offset 需再夾在殼體自身 `outer` 邊界內，避免柱子移出殼體外側（commit 08f22d1）。
 
 ## 2. store 層：碰撞警告
 
