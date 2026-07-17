@@ -112,6 +112,19 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
               value={params.pilotDepthOverride}
               onChange={(v) => set('pilotDepthOverride', v)}
             />
+            <label className="col-span-2 block">
+              <span className="text-xs text-slate-400">{t('enclosure.mountingStyle')}</span>
+              <select
+                className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+                value={params.mountingStyle ?? 'screw'}
+                onChange={(e) =>
+                  set('mountingStyle', e.target.value as EnclosureParams['mountingStyle'])
+                }
+              >
+                <option value="screw">{t('enclosure.mountingScrew')}</option>
+                <option value="peg">{t('enclosure.mountingPeg')}</option>
+              </select>
+            </label>
             {params.lidType === 'screw' && (
               <label className="col-span-2 flex items-center gap-2 text-xs text-slate-500">
                 <input

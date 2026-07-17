@@ -29,7 +29,7 @@ export function buildEnclosureNodeSolid(node: EnclosureNode, kernel: GeometryKer
 
   const pilotDepth = node.params.pilotDepthOverride;
   const standoffs = [
-    ...planStandoffs(parts, node.params.screwSize, pilotDepth),
+    ...planStandoffs(parts, node.params.screwSize, pilotDepth, node.params.mountingStyle),
     ...(node.params.lidType === 'screw'
       ? planCornerPosts(plan, node.params.screwSize, parts, pilotDepth)
       : []),

@@ -77,6 +77,9 @@
     "standoffWallPadding": "Standoff wall padding (mm)",
     "pilotDepthOverride": "Pilot depth (mm, blank = auto)",
     "reserveCornerSpace": "Auto-expand shell to fit screw posts",
+    "mountingStyle": "Part mounting style",
+    "mountingScrew": "Screw standoff",
+    "mountingPeg": "Locating peg",
     "params": "Enclosure parameters"
   },
   "tools": {
