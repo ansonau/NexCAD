@@ -2,10 +2,10 @@
 
 ## 1. types：mountingStyle 欄位與 backward-compat
 
-- [ ] 1.1 `src/types/document.ts`：加 `MountingStyle = 'screw' | 'peg'` 型別並匯出，`EnclosureParams` 加 `mountingStyle?: MountingStyle`
-- [ ] 1.2 `src/enclosure/plan.ts`：`DEFAULT_ENCLOSURE_PARAMS` 加 `mountingStyle: 'screw'`
-- [ ] 1.3 `src/persistence/nexcadFile.ts`：enclosure params zod schema 加 `mountingStyle: z.enum(['screw','peg']).optional()`
-- [ ] 1.4 回歸測試：`src/persistence/nexcadFile.test.ts` 驗證無 `mountingStyle` 的舊 `.nexcad` 內容可正常解析（沿用 `reserveCornerSpace` backward-compat 測試模式）
+- [x] 1.1 `src/types/document.ts`：加 `MountingStyle = 'screw' | 'peg'` 型別並匯出，`EnclosureParams` 加 `mountingStyle?: MountingStyle`
+- [x] 1.2 `src/enclosure/plan.ts`：`DEFAULT_ENCLOSURE_PARAMS` 加 `mountingStyle: 'screw'`
+- [x] 1.3 `src/persistence/nexcadFile.ts`：enclosure params zod schema 加 `mountingStyle: z.enum(['screw','peg']).optional()`
+- [x] 1.4 回歸測試：`src/persistence/nexcadFile.test.ts` 驗證無 `mountingStyle` 的舊 `.nexcad` 內容可正常解析（沿用 `reserveCornerSpace` backward-compat 測試模式）
 
 ## 2. plan.ts：standoff 帶入 mountingStyle 與孔徑
 
