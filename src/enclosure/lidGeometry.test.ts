@@ -43,7 +43,7 @@ function intersectionVolume(solid: Solid, probe: Solid): number {
 describe('buildLidSolid', () => {
   it('screw 上蓋體積大於面板本身（含唇邊與螺絲柱，扣除通孔仍為正）', () => {
     const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
-    const solid = buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, kernel);
+    const solid = buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, parts, kernel);
     const panelOnly =
       (plan.outer.maxX - plan.outer.minX) *
       (plan.outer.maxY - plan.outer.minY) *
@@ -53,16 +53,16 @@ describe('buildLidSolid', () => {
 
   it('slide 上蓋比 screw 上蓋體積小（無螺絲柱）', () => {
     const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
-    const screwLid = kernel.volume(buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, kernel));
+    const screwLid = kernel.volume(buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, parts, kernel));
     const slideLid = kernel.volume(
-      buildLidSolid(plan, { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'slide' }, kernel),
+      buildLidSolid(plan, { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'slide' }, parts, kernel),
     );
     expect(slideLid).toBeLessThan(screwLid);
   });
 
   it('上蓋唇邊（向下伸入內腔的對位特徵）底部不低於殼體開口頂端減唇邊高度', () => {
     const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
-    const mesh = kernel.toMesh(buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, kernel));
+    const mesh = kernel.toMesh(buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, parts, kernel));
     let minZ = Infinity;
     for (let i = 2; i < mesh.positions.length; i += 3) minZ = Math.min(minZ, mesh.positions[i]);
     expect(minZ).toBeCloseTo(plan.inner.maxZ - 3, 0);
@@ -70,31 +70,31 @@ describe('buildLidSolid', () => {
 
   it('screw 上蓋的螺絲柱向上凸出於面板頂面，不侵入殼體內腔（與殼體角柱空間互斥）', () => {
     const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
-    const mesh = kernel.toMesh(buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, kernel));
+    const mesh = kernel.toMesh(buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, parts, kernel));
     let maxZ = -Infinity;
     for (let i = 2; i < mesh.positions.length; i += 3) maxZ = Math.max(maxZ, mesh.positions[i]);
     const panelTop = plan.inner.maxZ + DEFAULT_ENCLOSURE_PARAMS.wallThickness;
     // 柱體向上凸出，故上蓋最高點應高於面板頂面（不像 slide 上蓋那樣面板頂面就是最高點）
     expect(maxZ).toBeGreaterThan(panelTop);
     // 且所有螺絲柱都不應低於面板頂面（即不侵入殼體內腔）
-    const posts = planCornerPosts(plan, DEFAULT_ENCLOSURE_PARAMS.screwSize);
+    const posts = planCornerPosts(plan, DEFAULT_ENCLOSURE_PARAMS.screwSize, parts);
     expect(posts.length).toBeGreaterThan(0);
   });
 
   it('薄壁厚 + 小螺絲規格下，screw 上蓋體積仍大於 slide', () => {
     const params = { ...DEFAULT_ENCLOSURE_PARAMS, wallThickness: 1, screwSize: 'M2' as const };
     const plan = planShell(parts, params);
-    const screwLid = kernel.volume(buildLidSolid(plan, params, kernel));
-    const slideLid = kernel.volume(buildLidSolid(plan, { ...params, lidType: 'slide' }, kernel));
+    const screwLid = kernel.volume(buildLidSolid(plan, params, parts, kernel));
+    const slideLid = kernel.volume(buildLidSolid(plan, { ...params, lidType: 'slide' }, parts, kernel));
     expect(slideLid).toBeLessThan(screwLid);
   });
 
   it('screw 上蓋柱頂有杯頭沉孔（沉孔範圍空心、沉孔壁實心）', () => {
     const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const };
     const plan = planShell(parts, params);
-    const lid = buildLidSolid(plan, params, kernel);
+    const lid = buildLidSolid(plan, params, parts, kernel);
     const spec = SCREW_TABLE[params.screwSize];
-    const p = planCornerPosts(plan, params.screwSize)[0];
+    const p = planCornerPosts(plan, params.screwSize, parts)[0];
     const panelZ = plan.inner.maxZ;
     const postTop = panelZ + params.wallThickness + 4; // POST_HEIGHT = 4
     const boreDepth = Math.min(spec.socketHeadDepth, 4);
@@ -110,9 +110,9 @@ describe('buildLidSolid', () => {
   it('M4 + 薄壁（wallThickness=1）下，沉孔半徑被 clamp，柱體外壁仍保留實心（不會被整個挖空）', () => {
     const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const, screwSize: 'M4' as const, wallThickness: 1 };
     const plan = planShell(parts, params);
-    const lid = buildLidSolid(plan, params, kernel);
+    const lid = buildLidSolid(plan, params, parts, kernel);
     const spec = SCREW_TABLE[params.screwSize];
-    const p = planCornerPosts(plan, params.screwSize)[0];
+    const p = planCornerPosts(plan, params.screwSize, parts)[0];
     const panelZ = plan.inner.maxZ;
     const postTop = panelZ + params.wallThickness + 4; // POST_HEIGHT = 4
     const throughRadius = spec.throughDiameter / 2;

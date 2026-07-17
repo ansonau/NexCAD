@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { identityTransform } from '../types/document';
 import type { PartDefinition } from '../parts/schema';
+import { pilotDiameter } from './screws';
 import {
   combinedBounds,
   planCornerPosts,
@@ -110,18 +111,80 @@ describe('planStandoffs', () => {
 describe('planCornerPosts', () => {
   it('回傳外殼四個角落的支柱，頂部對齊內腔頂', () => {
     const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
-    const posts = planCornerPosts(plan, 'M3');
+    const posts = planCornerPosts(plan, 'M3', []);
     expect(posts).toHaveLength(4);
     for (const p of posts) {
       expect(p.topZ).toBeCloseTo(plan.inner.maxZ, 6);
       expect(p.x).toBeGreaterThan(plan.outer.minX);
       expect(p.x).toBeLessThan(plan.outer.maxX);
+      expect(p.collided).toBeFalsy();
     }
   });
 
   it('可覆寫導孔深度', () => {
     const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
-    const posts = planCornerPosts(plan, 'M3', 9);
+    const posts = planCornerPosts(plan, 'M3', [], 9);
     expect(posts.every((p) => p.pilotDepth === 9)).toBe(true);
+  });
+
+  it('無碰撞的小零件不受角柱避讓影響（既有行為不變）', () => {
+    const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
+    // 零件遠離所有角落（放在殼體中心附近的小零件不會與四角重疊）
+    const smallPart = instance({ position: [1000, 1000, 0] });
+    const posts = planCornerPosts(plan, 'M3', [smallPart]);
+    const naive = planCornerPosts(plan, 'M3', []);
+    for (let i = 0; i < posts.length; i++) {
+      expect(posts[i].x).toBeCloseTo(naive[i].x, 6);
+      expect(posts[i].y).toBeCloseTo(naive[i].y, 6);
+      expect(posts[i].collided).toBeFalsy();
+    }
+  });
+
+  it('零件覆蓋一個角落時，該角柱沿邊搜尋移到無碰撞位置', () => {
+    // DEFAULT_ENCLOSURE_PARAMS: wallThickness=3, clearanceMargin=3, standoffWallPadding=3, screwSize M3
+    // boardDef size [40,20,2] at origin → partWorldBounds: X[-20,20] Y[-10,10] Z[0,10]
+    // planShell: inner X[-23,23] Y[-13,13], outer X[-26,26] Y[-16,16]
+    // cornerRadius = min(3, 26-0.1, 16-0.1) = 3 → inset = 3+3 = 6
+    // 角柱原始位置：(±20, ±10)，其中 (20,10) 落在零件邊界內 (X<=20,Y<=10) → 必碰撞
+    const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
+    const part = instance();
+    const naive = planCornerPosts(plan, 'M3', []);
+    const target = naive.find((p) => p.x > 0 && p.y > 0)!;
+
+    const posts = planCornerPosts(plan, 'M3', [part]);
+    const moved = posts.find((p) => p.x > 0 && p.y > 0)!;
+
+    expect(moved.collided).toBeFalsy();
+    const moved2D = moved.x !== target.x || moved.y !== target.y;
+    expect(moved2D).toBe(true);
+
+    // collisionRadius = pilotDiameter(M3, 'through')/2 + max(wallThickness, standoffWallPadding)
+    const collisionRadius =
+      pilotDiameter('M3', 'through') / 2 + Math.max(DEFAULT_ENCLOSURE_PARAMS.wallThickness, DEFAULT_ENCLOSURE_PARAMS.standoffWallPadding);
+    const b = partWorldBounds(part);
+    const clampedX = Math.max(b.minX, Math.min(moved.x, b.maxX));
+    const clampedY = Math.max(b.minY, Math.min(moved.y, b.maxY));
+    const dist = Math.hypot(moved.x - clampedX, moved.y - clampedY);
+    expect(dist).toBeGreaterThanOrEqual(collisionRadius);
+  });
+
+  it('零件塞滿整條邊緣，搜尋範圍內找不到解時維持原位置並標記 collided', () => {
+    // 用一個涵蓋整個殼體 X 範圍、且 Y 涵蓋角柱所屬水平邊與大半垂直邊的巨大零件，
+    // 讓水平/垂直兩個搜尋方向在 limit 內都無法脫離碰撞範圍。
+    const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
+    const hugePart: PartInstance = {
+      def: {
+        ...boardDef,
+        body: { size: [1000, 1000, 2], blocks: [] },
+      },
+      transform: { ...instance().transform },
+    };
+    const naive = planCornerPosts(plan, 'M3', []);
+    const posts = planCornerPosts(plan, 'M3', [hugePart]);
+    for (let i = 0; i < posts.length; i++) {
+      expect(posts[i].collided).toBe(true);
+      expect(posts[i].x).toBeCloseTo(naive[i].x, 6);
+      expect(posts[i].y).toBeCloseTo(naive[i].y, 6);
+    }
   });
 });

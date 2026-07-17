@@ -1,7 +1,7 @@
 import type { GeometryKernel, Solid } from '../geometry/kernel';
 import { pilotDiameter, SCREW_TABLE } from './screws';
 import { planCornerPosts } from './plan';
-import type { EnclosureParams, ShellPlan } from './plan';
+import type { EnclosureParams, PartInstance, ShellPlan } from './plan';
 
 const noRotScale = { rotation: [0, 0, 0] as [number, number, number], scale: [1, 1, 1] as [number, number, number] };
 const LIP_MARGIN = 0.4;
@@ -26,7 +26,7 @@ function buildLip(plan: ShellPlan, wallThickness: number, height: number, kernel
 }
 
 /** 上蓋（screw：面板+唇邊+四角螺絲柱；slide：面板+唇邊）。呼叫端應在 lidType==='open' 時不呼叫本函數 */
-export function buildLidSolid(plan: ShellPlan, params: EnclosureParams, kernel: GeometryKernel): Solid {
+export function buildLidSolid(plan: ShellPlan, params: EnclosureParams, parts: PartInstance[], kernel: GeometryKernel): Solid {
   const { outer, cornerRadius } = plan;
   const panelH = params.wallThickness;
   const panelZ = plan.inner.maxZ;
@@ -43,7 +43,7 @@ export function buildLidSolid(plan: ShellPlan, params: EnclosureParams, kernel: 
 
   if (params.lidType === 'screw') {
     const throughRadius = pilotDiameter(params.screwSize, 'through') / 2;
-    for (const p of planCornerPosts(plan, params.screwSize)) {
+    for (const p of planCornerPosts(plan, params.screwSize, parts)) {
       // 螺絲柱向上凸出於面板頂面（z >= panelZ），刻意與殼體本身的角柱（z <= inner.maxZ = panelZ）
       // 的空間互斥，兩者在合模面對接而不互相佔用，避免上蓋無法真正貼合殼體開口。
       const postRadius = Math.max(pilotDiameter(params.screwSize, 'selfTap') / 2, throughRadius) + params.wallThickness;

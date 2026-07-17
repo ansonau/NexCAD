@@ -24,14 +24,14 @@ export function buildEnclosureNodeSolid(node: EnclosureNode, kernel: GeometryKer
 
   if (node.part === 'lid') {
     if (node.params.lidType === 'open') return null;
-    return buildLidSolid(plan, node.params, kernel);
+    return buildLidSolid(plan, node.params, parts, kernel);
   }
 
   const pilotDepth = node.params.pilotDepthOverride;
   const standoffs = [
     ...planStandoffs(parts, node.params.screwSize, pilotDepth),
     ...(node.params.lidType === 'screw'
-      ? planCornerPosts(plan, node.params.screwSize, pilotDepth)
+      ? planCornerPosts(plan, node.params.screwSize, parts, pilotDepth)
       : []),
   ];
   let shell = buildShellSolid(

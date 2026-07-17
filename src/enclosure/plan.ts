@@ -72,6 +72,9 @@ export interface ShellPlan {
   cornerRadius: number;
   /** 殼體外底面高度，等同 outer.minZ */
   floorZ: number;
+  /** 壁厚，供 planCornerPosts 計算碰撞緩衝半徑用（見 design.md D1） */
+  wallThickness: number;
+  standoffWallPadding: number;
 }
 
 export function planShell(parts: PartInstance[], params: EnclosureParams): ShellPlan {
@@ -97,7 +100,14 @@ export function planShell(parts: PartInstance[], params: EnclosureParams): Shell
   const width = outer.maxX - outer.minX;
   const depth = outer.maxY - outer.minY;
   const cornerRadius = Math.max(0, Math.min(params.cornerRadius, width / 2 - 0.1, depth / 2 - 0.1));
-  return { inner, outer, cornerRadius, floorZ: outer.minZ };
+  return {
+    inner,
+    outer,
+    cornerRadius,
+    floorZ: outer.minZ,
+    wallThickness: params.wallThickness,
+    standoffWallPadding: params.standoffWallPadding,
+  };
 }
 
 export interface StandoffPlan {
@@ -107,6 +117,8 @@ export interface StandoffPlan {
   topZ: number;
   pilotDiameter: number;
   pilotDepth: number;
+  /** 僅角柱使用：搜尋範圍內找不到無碰撞位置時為 true，維持原位置（見 design.md D2） */
+  collided?: boolean;
 }
 
 const PILOT_DEPTH = 6;
@@ -136,24 +148,88 @@ export function planStandoffs(
   return out;
 }
 
-/** 外殼四個角落的上蓋鎖點支柱，頂部對齊殼體開口（內腔頂） */
+/** 圓心到零件 2D (XY) bounding box 的最短距離是否小於碰撞半徑（circle-vs-AABB） */
+function circleOverlapsBounds(x: number, y: number, radius: number, b: Bounds3): boolean {
+  const clampedX = Math.max(b.minX, Math.min(x, b.maxX));
+  const clampedY = Math.max(b.minY, Math.min(y, b.maxY));
+  const dx = x - clampedX;
+  const dy = y - clampedY;
+  return dx * dx + dy * dy < radius * radius;
+}
+
+function collidesWithAnyPart(x: number, y: number, radius: number, boxes: Bounds3[]): boolean {
+  return boxes.some((b) => circleOverlapsBounds(x, y, radius, b));
+}
+
+/** 沿單一方向以 1mm 步進搜尋無碰撞偏移量；找不到回傳 null（見 design.md D2） */
+function searchOffset(
+  test: (offset: number) => boolean,
+  direction: number,
+  limit: number,
+): number | null {
+  if (direction === 0) return null;
+  for (let step = 1; step <= limit; step++) {
+    const offset = step * direction;
+    if (!test(offset)) return offset;
+  }
+  return null;
+}
+
+/** 外殼四個角落的上蓋鎖點支柱，頂部對齊殼體開口（內腔頂）。
+ * 每個角柱若與零件 bounding box 重疊，沿其所屬的水平/垂直邊向外搜尋鄰近無碰撞位置（design.md D2）。 */
 export function planCornerPosts(
   plan: ShellPlan,
   screwSize: ScrewSize,
+  parts: PartInstance[],
   pilotDepth: number = PILOT_DEPTH,
 ): StandoffPlan[] {
   const inset = plan.cornerRadius + 3;
   const xs = [plan.outer.minX + inset, plan.outer.maxX - inset];
   const ys = [plan.outer.minY + inset, plan.outer.maxY - inset];
+  const centerX = (plan.outer.minX + plan.outer.maxX) / 2;
+  const centerY = (plan.outer.minY + plan.outer.maxY) / 2;
+  const width = plan.outer.maxX - plan.outer.minX;
+  const depth = plan.outer.maxY - plan.outer.minY;
+  const limit = Math.floor(Math.min(width, depth) / 4);
+  // D1：保守碰撞緩衝半徑，恆 ≥ shellGeometry.ts/lidGeometry.ts 實際使用的兩個角柱半徑公式
+  const collisionRadius =
+    pilotDiameter(screwSize, 'through') / 2 + Math.max(plan.wallThickness, plan.standoffWallPadding);
+  const boxes = parts.map((part) => partWorldBounds(part));
+
   const out: StandoffPlan[] = [];
-  for (const x of xs) {
-    for (const y of ys) {
+  for (const x0 of xs) {
+    for (const y0 of ys) {
+      let x = x0;
+      let y = y0;
+      let collided: boolean | undefined;
+      if (collidesWithAnyPart(x0, y0, collisionRadius, boxes)) {
+        const dirX = Math.sign(x0 - centerX);
+        const dirY = Math.sign(y0 - centerY);
+        const offsetX = searchOffset(
+          (offset) => collidesWithAnyPart(x0 + offset, y0, collisionRadius, boxes),
+          dirX,
+          limit,
+        );
+        const offsetY = searchOffset(
+          (offset) => collidesWithAnyPart(x0, y0 + offset, collisionRadius, boxes),
+          dirY,
+          limit,
+        );
+        if (offsetX !== null && (offsetY === null || Math.abs(offsetX) <= Math.abs(offsetY))) {
+          x = x0 + offsetX;
+        } else if (offsetY !== null) {
+          y = y0 + offsetY;
+        } else {
+          collided = true;
+        }
+      }
       out.push({
         x,
         y,
         topZ: plan.inner.maxZ,
         pilotDiameter: pilotDiameter(screwSize, 'selfTap'),
         pilotDepth,
+        collided,
       });
     }
   }
