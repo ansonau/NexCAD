@@ -8,12 +8,12 @@
 
 ## 2. plan.ts：擴殼取代位移避讓
 
-- [ ] 2.1 寫失敗測試：預設參數（Uno 尺寸零件、M3）`planShell` 擴大後，`planCornerPosts` 四柱皆在角落標準位置、與零件 bbox 距離 ≥ collisionRadius、`collided` 皆 falsy（`src/enclosure/plan.test.ts`）
-- [ ] 2.2 寫失敗測試：`reserveCornerSpace: false` 時 outer 尺寸與舊版一致（不擴大）、柱在標準位置、柱心恰在 bbox 角（邊界相切）時 `collided` falsy
-- [ ] 2.3 寫失敗測試：`reserveCornerSpace: false` 且柱心嚴格在零件 bbox 內部時 `collided: true`；擴殼達 12mm 上限仍無解的極端案例同樣 `collided: true`
-- [ ] 2.4 實作 `planShell` 擴殼迭代（design.md D1：0.5mm 步進、上限 12mm、僅 screw + reserveCornerSpace≠false、cornerRadius 以擴大後尺寸重新 clamp）
-- [ ] 2.5 實作 `planCornerPosts` 簡化（design.md D2：刪除 `searchOffset`/方向/headroom 搜尋，固定 inset 位置，`collided` = 柱心嚴格入 bbox）；刪除既有位移避讓相關測試，跑全部測試至綠燈
-- [ ] 2.6 確認 `generate.ts`/`lidGeometry.ts`/`actions.ts` 經 `planShell` 自動取得擴大後 plan，無需改動（D1）；`actions.test.ts` 既有碰撞測試依新語意調整極端參數
+- [x] 2.1 寫失敗測試：預設參數（Uno 尺寸零件、M3）`planShell` 擴大後，`planCornerPosts` 四柱皆在角落標準位置、與零件 bbox 距離 ≥ collisionRadius、`collided` 皆 falsy（`src/enclosure/plan.test.ts`）
+- [x] 2.2 寫失敗測試：`reserveCornerSpace: false` 時 outer 尺寸與舊版一致（不擴大）、柱在標準位置、柱心恰在 bbox 角（邊界相切）時 `collided` falsy
+- [x] 2.3 寫失敗測試：`reserveCornerSpace: false` 且柱心嚴格在零件 bbox 內部時 `collided: true`；擴殼達 12mm 上限仍無解的極端案例同樣 `collided: true`
+- [x] 2.4 實作 `planShell` 擴殼迭代（design.md D1：0.5mm 步進、上限 12mm、僅 screw + reserveCornerSpace≠false、cornerRadius 以擴大後尺寸重新 clamp）
+- [x] 2.5 實作 `planCornerPosts` 簡化（design.md D2：刪除 `searchOffset`/方向/headroom 搜尋，固定 inset 位置，`collided` = 柱心嚴格入 bbox）；刪除既有位移避讓相關測試，跑全部測試至綠燈
+- [x] 2.6 確認 `generate.ts`/`lidGeometry.ts`/`actions.ts` 經 `planShell` 自動取得擴大後 plan，無需改動（D1）；`actions.test.ts` 既有碰撞測試依新語意調整極端參數
 
 ## 3. UI：reserveCornerSpace 選項
 
