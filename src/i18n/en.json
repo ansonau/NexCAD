@@ -76,7 +76,7 @@
     "advanced": "Advanced",
     "standoffWallPadding": "Standoff wall padding (mm)",
     "pilotDepthOverride": "Pilot depth (mm, blank = auto)",
-  "reserveCornerSpace": "Auto-expand shell to fit screw posts",
+    "reserveCornerSpace": "Auto-expand shell to fit screw posts",
     "params": "Enclosure parameters"
   },
   "tools": {

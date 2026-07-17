@@ -180,7 +180,7 @@ export interface StandoffPlan {
   topZ: number;
   pilotDiameter: number;
   pilotDepth: number;
-  /** 僅角柱使用：搜尋範圍內找不到無碰撞位置時為 true，維持原位置（見 design.md D2） */
+  /** 僅角柱使用：柱心嚴格落入零件 bbox 內部（嚴重重疊）時為 true（見 design.md D2） */
   collided?: boolean;
 }
 
