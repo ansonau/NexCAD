@@ -9,9 +9,9 @@
 
 ## 2. plan.ts：standoff 帶入 mountingStyle 與孔徑
 
-- [ ] 2.1 `StandoffPlan` 加 `mountingStyle?: MountingStyle` 與 `holeDiameter?: number`
-- [ ] 2.2 `planStandoffs` 簽名加 `mountingStyle: MountingStyle = 'screw'`，每個 standoff 寫入 `mountingStyle` 與 `hole.diameter`（`planCornerPosts` 不加，角柱恆螺絲）
-- [ ] 2.3 測試：`src/enclosure/plan.test.ts` 驗證 `'peg'` 時 standoff 帶 `mountingStyle: 'peg'` 與正確 `holeDiameter`；`'screw'`/未設定時維持現行欄位
+- [x] 2.1 `StandoffPlan` 加 `mountingStyle?: MountingStyle` 與 `holeDiameter?: number`
+- [x] 2.2 `planStandoffs` 簽名加 `mountingStyle: MountingStyle = 'screw'`，每個 standoff 寫入 `mountingStyle` 與 `hole.diameter`（`planCornerPosts` 不加，角柱恆螺絲）
+- [x] 2.3 測試：`src/enclosure/plan.test.ts` 驗證 `'peg'` 時 standoff 帶 `mountingStyle: 'peg'` 與正確 `holeDiameter`；`'screw'`/未設定時維持現行欄位
 
 ## 3. shellGeometry.ts：peg 幾何分支
 
