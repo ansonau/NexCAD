@@ -2,10 +2,10 @@
 
 ## 1. types：screwLidProfile 欄位與 backward-compat
 
-- [ ] 1.1 `src/types/document.ts`：加 `ScrewLidProfile = 'flatExposed' | 'flatRecessed'` 型別並匯出，`EnclosureParams` 加 `screwLidProfile?: ScrewLidProfile`
-- [ ] 1.2 `src/enclosure/plan.ts`：`DEFAULT_ENCLOSURE_PARAMS` 加 `screwLidProfile: 'flatRecessed'`
-- [ ] 1.3 `src/persistence/nexcadFile.ts`：enclosure params zod schema 加 `screwLidProfile: z.enum(['flatExposed','flatRecessed']).optional()`
-- [ ] 1.4 回歸測試：`src/persistence/nexcadFile.test.ts` 驗證無 `screwLidProfile` 的舊 `.nexcad` 內容可正常解析（沿用 `mountingStyle` backward-compat 測試模式）
+- [x] 1.1 `src/types/document.ts`：加 `ScrewLidProfile = 'flatExposed' | 'flatRecessed'` 型別並匯出，`EnclosureParams` 加 `screwLidProfile?: ScrewLidProfile`
+- [x] 1.2 `src/enclosure/plan.ts`：`DEFAULT_ENCLOSURE_PARAMS` 加 `screwLidProfile: 'flatRecessed'`
+- [x] 1.3 `src/persistence/nexcadFile.ts`：enclosure params zod schema 加 `screwLidProfile: z.enum(['flatExposed','flatRecessed']).optional()`
+- [x] 1.4 回歸測試：`src/persistence/nexcadFile.test.ts` 驗證無 `screwLidProfile` 的舊 `.nexcad` 內容可正常解析（沿用 `mountingStyle` backward-compat 測試模式）
 
 ## 2. lidGeometry.ts：移除凸柱、實作兩種平面蓋
 
