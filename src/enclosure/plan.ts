@@ -78,6 +78,49 @@ export interface ShellPlan {
   standoffWallPadding: number;
 }
 
+const EXPANSION_STEP = 0.5;
+const EXPANSION_CAP = 12;
+
+/** 以 outer 邊界與 cornerRadius 算出四個角柱的標準位置（inset = cornerRadius+3，見 design.md D1/D2） */
+function cornerPostPositions(outer: Bounds3, cornerRadius: number): Array<{ x: number; y: number }> {
+  const inset = cornerRadius + 3;
+  const xs = [outer.minX + inset, outer.maxX - inset];
+  const ys = [outer.minY + inset, outer.maxY - inset];
+  return xs.flatMap((x) => ys.map((y) => ({ x, y })));
+}
+
+/** 給定擴量 e，算出擴大後的 outer 與重新 clamp 的 cornerRadius */
+function expandedOuter(outer: Bounds3, params: EnclosureParams, e: number): { outer: Bounds3; cornerRadius: number } {
+  const expanded: Bounds3 = {
+    minX: outer.minX - e,
+    maxX: outer.maxX + e,
+    minY: outer.minY - e,
+    maxY: outer.maxY + e,
+    minZ: outer.minZ,
+    maxZ: outer.maxZ,
+  };
+  const width = expanded.maxX - expanded.minX;
+  const depth = expanded.maxY - expanded.minY;
+  const cornerRadius = Math.max(0, Math.min(params.cornerRadius, width / 2 - 0.1, depth / 2 - 0.1));
+  return { outer: expanded, cornerRadius };
+}
+
+/** design.md D1：找最小擴量 e（0.5mm 步進，上限 12mm），使四個角柱標準位置皆與所有零件 bbox 保持
+ * ≥ collisionRadius 的距離；找不到則回傳上限值（安全網交給 planCornerPosts 的 collided 標記）。 */
+function findExpansion(outer: Bounds3, params: EnclosureParams, boxes: Bounds3[]): number {
+  if (boxes.length === 0) return 0;
+  const collisionRadius =
+    pilotDiameter(params.screwSize, 'through') / 2 +
+    Math.max(params.wallThickness, params.standoffWallPadding);
+  for (let e = 0; e <= EXPANSION_CAP; e += EXPANSION_STEP) {
+    const { outer: candidateOuter, cornerRadius } = expandedOuter(outer, params, e);
+    const posts = cornerPostPositions(candidateOuter, cornerRadius);
+    const safe = posts.every((post) => !boxes.some((b) => circleOverlapsBounds(post.x, post.y, collisionRadius, b)));
+    if (safe) return e;
+  }
+  return EXPANSION_CAP;
+}
+
 export function planShell(parts: PartInstance[], params: EnclosureParams): ShellPlan {
   const p = combinedBounds(parts);
   const m = params.clearanceMargin;
@@ -90,7 +133,7 @@ export function planShell(parts: PartInstance[], params: EnclosureParams): Shell
     maxZ: p.maxZ + m,
   };
   const t = params.wallThickness;
-  const outer: Bounds3 = {
+  let outer: Bounds3 = {
     minX: inner.minX - t,
     maxX: inner.maxX + t,
     minY: inner.minY - t,
@@ -98,6 +141,25 @@ export function planShell(parts: PartInstance[], params: EnclosureParams): Shell
     minZ: inner.minZ - t,
     maxZ: inner.maxZ,
   };
+
+  if (params.lidType === 'screw' && params.reserveCornerSpace !== false) {
+    const boxes = parts.map((part) => partWorldBounds(part));
+    const e = findExpansion(outer, params, boxes);
+    if (e > 0) {
+      outer = {
+        ...outer,
+        minX: outer.minX - e,
+        maxX: outer.maxX + e,
+        minY: outer.minY - e,
+        maxY: outer.maxY + e,
+      };
+      inner.minX -= e;
+      inner.maxX += e;
+      inner.minY -= e;
+      inner.maxY += e;
+    }
+  }
+
   const width = outer.maxX - outer.minX;
   const depth = outer.maxY - outer.minY;
   const cornerRadius = Math.max(0, Math.min(params.cornerRadius, width / 2 - 0.1, depth / 2 - 0.1));
@@ -158,26 +220,14 @@ function circleOverlapsBounds(x: number, y: number, radius: number, b: Bounds3):
   return dx * dx + dy * dy < radius * radius;
 }
 
-function collidesWithAnyPart(x: number, y: number, radius: number, boxes: Bounds3[]): boolean {
-  return boxes.some((b) => circleOverlapsBounds(x, y, radius, b));
+/** 柱心（點）是否嚴格落入零件 XY bbox 內部（邊界相切不算，見 design.md D2） */
+function pointStrictlyInsideBounds(x: number, y: number, b: Bounds3): boolean {
+  return x > b.minX && x < b.maxX && y > b.minY && y < b.maxY;
 }
 
-/** 沿單一方向以 1mm 步進搜尋無碰撞偏移量；找不到回傳 null（見 design.md D2） */
-function searchOffset(
-  test: (offset: number) => boolean,
-  direction: number,
-  limit: number,
-): number | null {
-  if (direction === 0) return null;
-  for (let step = 1; step <= limit; step++) {
-    const offset = step * direction;
-    if (!test(offset)) return offset;
-  }
-  return null;
-}
-
-/** 外殼四個角落的上蓋鎖點支柱，頂部對齊殼體開口（內腔頂）。
- * 每個角柱若與零件 bounding box 重疊，沿其所屬的水平/垂直邊向外搜尋鄰近無碰撞位置（design.md D2）。 */
+/** 外殼四個角落的上蓋鎖點支柱，固定在標準角落位置（inset = cornerRadius+3），頂部對齊殼體開口（內腔頂）。
+ * 空間保留（reserveCornerSpace）由 planShell 的擴殼負責；此處不再位移，
+ * collided 僅在柱心嚴重重疊（嚴格落入零件 bbox 內部）時標記，作為安全網（design.md D2）。 */
 export function planCornerPosts(
   plan: ShellPlan,
   screwSize: ScrewSize,
@@ -187,48 +237,12 @@ export function planCornerPosts(
   const inset = plan.cornerRadius + 3;
   const xs = [plan.outer.minX + inset, plan.outer.maxX - inset];
   const ys = [plan.outer.minY + inset, plan.outer.maxY - inset];
-  const centerX = (plan.outer.minX + plan.outer.maxX) / 2;
-  const centerY = (plan.outer.minY + plan.outer.maxY) / 2;
-  const width = plan.outer.maxX - plan.outer.minX;
-  const depth = plan.outer.maxY - plan.outer.minY;
-  const limit = Math.floor(Math.min(width, depth) / 4);
-  // D1：保守碰撞緩衝半徑，恆 ≥ shellGeometry.ts/lidGeometry.ts 實際使用的兩個角柱半徑公式
-  const collisionRadius =
-    pilotDiameter(screwSize, 'through') / 2 + Math.max(plan.wallThickness, plan.standoffWallPadding);
   const boxes = parts.map((part) => partWorldBounds(part));
 
   const out: StandoffPlan[] = [];
-  for (const x0 of xs) {
-    for (const y0 of ys) {
-      let x = x0;
-      let y = y0;
-      let collided: boolean | undefined;
-      if (collidesWithAnyPart(x0, y0, collisionRadius, boxes)) {
-        const dirX = Math.sign(x0 - centerX);
-        const dirY = Math.sign(y0 - centerY);
-        // 搜尋上限不可讓支柱中心超出殼體自身的 outer 邊界（見 code review 發現）
-        const headroomX = dirX > 0 ? plan.outer.maxX - x0 : dirX < 0 ? x0 - plan.outer.minX : 0;
-        const headroomY = dirY > 0 ? plan.outer.maxY - y0 : dirY < 0 ? y0 - plan.outer.minY : 0;
-        const limitX = Math.min(limit, Math.max(0, Math.floor(headroomX)));
-        const limitY = Math.min(limit, Math.max(0, Math.floor(headroomY)));
-        const offsetX = searchOffset(
-          (offset) => collidesWithAnyPart(x0 + offset, y0, collisionRadius, boxes),
-          dirX,
-          limitX,
-        );
-        const offsetY = searchOffset(
-          (offset) => collidesWithAnyPart(x0, y0 + offset, collisionRadius, boxes),
-          dirY,
-          limitY,
-        );
-        if (offsetX !== null && (offsetY === null || Math.abs(offsetX) <= Math.abs(offsetY))) {
-          x = x0 + offsetX;
-        } else if (offsetY !== null) {
-          y = y0 + offsetY;
-        } else {
-          collided = true;
-        }
-      }
+  for (const x of xs) {
+    for (const y of ys) {
+      const collided = boxes.some((b) => pointStrictlyInsideBounds(x, y, b)) || undefined;
       out.push({
         x,
         y,

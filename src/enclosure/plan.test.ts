@@ -68,10 +68,13 @@ describe('combinedBounds', () => {
 });
 
 describe('planShell', () => {
+  // reserveCornerSpace: false 隔離基本 margin/wall 幾何計算，不受 D1 擴殼影響（擴殼另有專屬測試）。
+  const NO_EXPANSION_PARAMS = { ...DEFAULT_ENCLOSURE_PARAMS, reserveCornerSpace: false };
+
   it('內腔比零件範圍多出 clearanceMargin，外殼比內腔多出 wallThickness', () => {
-    const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
-    const margin = DEFAULT_ENCLOSURE_PARAMS.clearanceMargin;
-    const wall = DEFAULT_ENCLOSURE_PARAMS.wallThickness;
+    const plan = planShell([instance()], NO_EXPANSION_PARAMS);
+    const margin = NO_EXPANSION_PARAMS.clearanceMargin;
+    const wall = NO_EXPANSION_PARAMS.wallThickness;
     expect(plan.inner.minX).toBeCloseTo(-20 - margin, 6);
     expect(plan.inner.maxX).toBeCloseTo(20 + margin, 6);
     expect(plan.outer.minX).toBeCloseTo(-20 - margin - wall, 6);
@@ -79,18 +82,42 @@ describe('planShell', () => {
   });
 
   it('外殼底部比零件底部低一個壁厚，頂部開放（等於內腔頂）', () => {
-    const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
-    expect(plan.outer.minZ).toBeCloseTo(-DEFAULT_ENCLOSURE_PARAMS.wallThickness, 6);
+    const plan = planShell([instance()], NO_EXPANSION_PARAMS);
+    expect(plan.outer.minZ).toBeCloseTo(-NO_EXPANSION_PARAMS.wallThickness, 6);
     expect(plan.outer.maxZ).toBeCloseTo(plan.inner.maxZ, 6);
     expect(plan.floorZ).toBeCloseTo(plan.outer.minZ, 6);
   });
 
   it('cornerRadius 被限制在不超過外形寬/深的一半', () => {
-    const tiny = planShell([instance()], { ...DEFAULT_ENCLOSURE_PARAMS, cornerRadius: 1000 });
+    const tiny = planShell([instance()], { ...NO_EXPANSION_PARAMS, cornerRadius: 1000 });
     const width = tiny.outer.maxX - tiny.outer.minX;
     const depth = tiny.outer.maxY - tiny.outer.minY;
     expect(tiny.cornerRadius).toBeLessThan(width / 2);
     expect(tiny.cornerRadius).toBeLessThan(depth / 2);
+  });
+
+  // Task 2.1/2.4: D1 擴殼——預設參數下（reserveCornerSpace 開啟），outer 應比未擴殼時大，
+  // 且擴量至少讓角柱與零件保持安全距離（見 design.md 預設案例：e ≈ 3.5mm）。
+  it('reserveCornerSpace 開啟時（預設）outer 比未擴殼時大，擴量約為 design.md 推導的 3.5mm', () => {
+    const expanded = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
+    const unexpanded = planShell([instance()], NO_EXPANSION_PARAMS);
+    const widthDelta = (expanded.outer.maxX - expanded.outer.minX) - (unexpanded.outer.maxX - unexpanded.outer.minX);
+    expect(widthDelta).toBeCloseTo(7, 6); // e=3.5 兩側各 +3.5 → 寬度 +7
+  });
+
+  it('reserveCornerSpace: false 時擴殼邏輯完全不生效，即使零件覆蓋角柱位置', () => {
+    const expanded = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
+    const unexpanded = planShell([instance()], NO_EXPANSION_PARAMS);
+    expect(unexpanded.outer).not.toEqual(expanded.outer);
+    expect(unexpanded.outer.minX).toBeCloseTo(-26, 6);
+    expect(unexpanded.outer.maxX).toBeCloseTo(26, 6);
+  });
+
+  it('lidType 非 screw 時擴殼邏輯不生效', () => {
+    const openLid = planShell([instance()], { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'open' });
+    const unexpanded = planShell([instance()], NO_EXPANSION_PARAMS);
+    expect(openLid.outer.minX).toBeCloseTo(unexpanded.outer.minX, 6);
+    expect(openLid.outer.maxX).toBeCloseTo(unexpanded.outer.maxX, 6);
   });
 });
 
@@ -127,9 +154,8 @@ describe('planCornerPosts', () => {
     expect(posts.every((p) => p.pilotDepth === 9)).toBe(true);
   });
 
-  it('無碰撞的小零件不受角柱避讓影響（既有行為不變）', () => {
+  it('柱位固定在角落標準位置（inset = cornerRadius+3），不受零件位置影響', () => {
     const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
-    // 零件遠離所有角落（放在殼體中心附近的小零件不會與四角重疊）
     const smallPart = instance({ position: [1000, 1000, 0] });
     const posts = planCornerPosts(plan, 'M3', [smallPart]);
     const naive = planCornerPosts(plan, 'M3', []);
@@ -140,77 +166,91 @@ describe('planCornerPosts', () => {
     }
   });
 
-  it('零件覆蓋一個角落時，該角柱沿邊搜尋移到無碰撞位置', () => {
-    // DEFAULT_ENCLOSURE_PARAMS: wallThickness=3, clearanceMargin=3, standoffWallPadding=3, screwSize M3
-    // boardDef size [40,20,2] at origin → partWorldBounds: X[-20,20] Y[-10,10] Z[0,10]
-    // planShell: inner X[-23,23] Y[-13,13], outer X[-26,26] Y[-16,16]
-    // cornerRadius = min(3, 26-0.1, 16-0.1) = 3 → inset = 3+3 = 6
-    // 角柱原始位置：(±20, ±10)，其中 (20,10) 落在零件邊界內 (X<=20,Y<=10) → 必碰撞
-    const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
-    const part = instance();
-    const naive = planCornerPosts(plan, 'M3', []);
-    const target = naive.find((p) => p.x > 0 && p.y > 0)!;
+  // Task 2.1: 預設參數（reserveCornerSpace 開啟）下，planShell 擴殼後
+  // 四支角柱皆在標準角落位置、與零件 bbox 距離 ≥ collisionRadius、collided 皆 falsy。
+  it('預設參數：planShell 擴殼後四柱在標準位置且與零件保持安全距離，collided 皆為 falsy', () => {
+    const params = DEFAULT_ENCLOSURE_PARAMS; // reserveCornerSpace: true, lidType: 'screw'
+    const plan = planShell([instance()], params);
+    const posts = planCornerPosts(plan, params.screwSize, [instance()]);
+    expect(posts).toHaveLength(4);
 
-    const posts = planCornerPosts(plan, 'M3', [part]);
-    const moved = posts.find((p) => p.x > 0 && p.y > 0)!;
+    const inset = plan.cornerRadius + 3;
+    const expectedXs = [plan.outer.minX + inset, plan.outer.maxX - inset];
+    const expectedYs = [plan.outer.minY + inset, plan.outer.maxY - inset];
 
-    expect(moved.collided).toBeFalsy();
-    const moved2D = moved.x !== target.x || moved.y !== target.y;
-    expect(moved2D).toBe(true);
-
-    // collisionRadius = pilotDiameter(M3, 'through')/2 + max(wallThickness, standoffWallPadding)
     const collisionRadius =
-      pilotDiameter('M3', 'through') / 2 + Math.max(DEFAULT_ENCLOSURE_PARAMS.wallThickness, DEFAULT_ENCLOSURE_PARAMS.standoffWallPadding);
-    const b = partWorldBounds(part);
-    const clampedX = Math.max(b.minX, Math.min(moved.x, b.maxX));
-    const clampedY = Math.max(b.minY, Math.min(moved.y, b.maxY));
-    const dist = Math.hypot(moved.x - clampedX, moved.y - clampedY);
-    expect(dist).toBeGreaterThanOrEqual(collisionRadius);
-  });
-
-  it('零件塞滿整條邊緣，搜尋範圍內找不到解時維持原位置並標記 collided', () => {
-    // 用一個涵蓋整個殼體 X 範圍、且 Y 涵蓋角柱所屬水平邊與大半垂直邊的巨大零件，
-    // 讓水平/垂直兩個搜尋方向在 limit 內都無法脫離碰撞範圍。
-    const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
-    const hugePart: PartInstance = {
-      def: {
-        ...boardDef,
-        body: { size: [1000, 1000, 2], blocks: [] },
-      },
-      transform: { ...instance().transform },
-    };
-    const naive = planCornerPosts(plan, 'M3', []);
-    const posts = planCornerPosts(plan, 'M3', [hugePart]);
-    for (let i = 0; i < posts.length; i++) {
-      expect(posts[i].collided).toBe(true);
-      expect(posts[i].x).toBeCloseTo(naive[i].x, 6);
-      expect(posts[i].y).toBeCloseTo(naive[i].y, 6);
-    }
-  });
-
-  it('搜尋上限不可讓角柱中心超出殼體 outer 邊界（code review 發現的迴歸測試）', () => {
-    // DEFAULT_ENCLOSURE_PARAMS 下 outer X=[-26,26] Y=[-16,16]，角柱 (20,10)。
-    // inset = cornerRadius(3)+3 = 6 → 該角柱到 outer.maxX/maxY 的實際餘裕僅 6，
-    // 但舊版 limit = floor(min(width,depth)/4) = 8，與餘裕完全脫鉤。
-    // 建構一個零件，使其 bounding box 恰好需要 offset=7 才能脫離碰撞（見審查發現的反例）：
-    // X=[-100,22] Y=[5,15] → 角柱在 x 方向的舊版搜尋會停在 offsetX=7（post.x=27），超出 outer.maxX=26。
-    const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
-    const collidingPart: PartInstance = {
-      def: { ...boardDef, body: { size: [122, 10, 2], blocks: [] } },
-      transform: { ...identityTransform(), position: [-39, 10, 0] },
-    };
-    const posts = planCornerPosts(plan, 'M3', [collidingPart]);
+      pilotDiameter(params.screwSize, 'through') / 2 +
+      Math.max(params.wallThickness, params.standoffWallPadding);
+    const b = partWorldBounds(instance());
 
     for (const p of posts) {
-      expect(p.x).toBeGreaterThanOrEqual(plan.outer.minX);
-      expect(p.x).toBeLessThanOrEqual(plan.outer.maxX);
-      expect(p.y).toBeGreaterThanOrEqual(plan.outer.minY);
-      expect(p.y).toBeLessThanOrEqual(plan.outer.maxY);
+      expect(expectedXs.some((x) => Math.abs(x - p.x) < 1e-6)).toBe(true);
+      expect(expectedYs.some((y) => Math.abs(y - p.y) < 1e-6)).toBe(true);
+      const clampedX = Math.max(b.minX, Math.min(p.x, b.maxX));
+      const clampedY = Math.max(b.minY, Math.min(p.y, b.maxY));
+      const dist = Math.hypot(p.x - clampedX, p.y - clampedY);
+      expect(dist).toBeGreaterThanOrEqual(collisionRadius - 1e-9);
+      expect(p.collided).toBeFalsy();
     }
+  });
 
-    // 該角落（20,10）在修正後的搜尋範圍內無解（水平/垂直方向皆被 outer 邊界限制在 6mm 內，
-    // 不足以脫離此零件），必須誠實回報 collided，而非把支柱悄悄推到殼體外。
-    const targetCorner = posts.find((p) => p.x > 0 && p.y > 0)!;
-    expect(targetCorner.collided).toBe(true);
+  // Task 2.2: reserveCornerSpace: false → outer 尺寸與「無擴殼邏輯」時一致（舊版行為），
+  // 柱在標準位置；柱心恰在 bbox 角上（邊界相切）不算碰撞。
+  it('reserveCornerSpace: false 時 outer 不擴大，柱心恰在零件 bbox 角上（邊界相切）時 collided 為 falsy', () => {
+    const params = { ...DEFAULT_ENCLOSURE_PARAMS, reserveCornerSpace: false };
+    const plan = planShell([instance()], params);
+    const margin = params.clearanceMargin;
+    const wall = params.wallThickness;
+    // 未擴殼：與 clearanceMargin/wallThickness 直接推算的舊版尺寸一致
+    expect(plan.outer.minX).toBeCloseTo(-20 - margin - wall, 6);
+    expect(plan.outer.maxX).toBeCloseTo(20 + margin + wall, 6);
+    expect(plan.outer.minY).toBeCloseTo(-10 - margin - wall, 6);
+    expect(plan.outer.maxY).toBeCloseTo(10 + margin + wall, 6);
+
+    // 預設案例下，角柱 (20,10) 恰好落在零件 bbox 的角上（見既有註解推導）
+    const part = instance();
+    const posts = planCornerPosts(plan, params.screwSize, [part]);
+    const inset = plan.cornerRadius + 3;
+    expect(inset).toBeCloseTo(6, 6);
+    const target = posts.find((p) => p.x > 0 && p.y > 0)!;
+    expect(target.x).toBeCloseTo(20, 6);
+    expect(target.y).toBeCloseTo(10, 6);
+    expect(target.collided).toBeFalsy();
+  });
+
+  // Task 2.3a: reserveCornerSpace: false，零件涵蓋角柱位置 → 柱心嚴格落入 bbox 內部 → collided true。
+  it('reserveCornerSpace: false 且柱心嚴格落入零件 bbox 內部時，collided 為 true', () => {
+    const params = { ...DEFAULT_ENCLOSURE_PARAMS, reserveCornerSpace: false };
+    const plan = planShell([instance()], params);
+    // 巨大零件涵蓋整個殼體範圍，四個角柱中心都嚴格落在零件 bbox 內部
+    const hugePart: PartInstance = {
+      def: { ...boardDef, body: { size: [1000, 1000, 2], blocks: [] } },
+      transform: { ...instance().transform },
+    };
+    const posts = planCornerPosts(plan, params.screwSize, [hugePart]);
+    for (const p of posts) {
+      expect(p.collided).toBe(true);
+    }
+  });
+
+  // Task 2.3b: reserveCornerSpace: true，但擴殼迭代達 12mm 上限仍無法讓角柱脫離零件 → collided 仍為 true（安全網）。
+  // 用大 cornerRadius 撐大 inset（inset=cornerRadius+3），讓角柱標準位置本就深陷零件 bbox 內部
+  // （margin+wall-inset = 3+3-23 = -17，超出 12mm 擴殼上限也無法脫離），零件夠大以免 cornerRadius 被 clamp。
+  it('reserveCornerSpace: true 但角柱標準位置深陷零件內部，擴殼達 12mm 上限仍無解時 collided 為 true', () => {
+    const params = { ...DEFAULT_ENCLOSURE_PARAMS, cornerRadius: 20 };
+    const hugePart: PartInstance = {
+      def: { ...boardDef, body: { size: [1000, 1000, 2], blocks: [] } },
+      transform: { ...instance().transform },
+    };
+    const plan = planShell([hugePart], params);
+    // 擴殼確實跑到上限，但仍不足以讓角柱脫離零件 bbox
+    const unexpanded = planShell([hugePart], { ...params, reserveCornerSpace: false });
+    const widthDelta = (plan.outer.maxX - plan.outer.minX) - (unexpanded.outer.maxX - unexpanded.outer.minX);
+    expect(widthDelta).toBeCloseTo(24, 6); // e 撐到上限 12mm，兩側各 +12
+
+    const posts = planCornerPosts(plan, params.screwSize, [hugePart]);
+    for (const p of posts) {
+      expect(p.collided).toBe(true);
+    }
   });
 });

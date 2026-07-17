@@ -8,14 +8,17 @@ import i18n from '../i18n';
 
 const COLLISION_MSG = i18n.t('enclosure.collisionWarning');
 
-// 角柱一定碰撞、搜尋範圍內找不到解的極端參數：cornerRadius=0（headroom 最小）、
-// wallThickness=1（角柱嵌入零件邊界內），對照 plan.test.ts「零件塞滿整條邊緣」案例的思路
-// （design.md D2：headroom = cornerRadius+3，collisionRadius 恆 > headroom 時無解）。
+// 角柱一定碰撞的極端參數（design.md D2 新語意：collided = 柱心嚴格落入零件 bbox 內部）。
+// reserveCornerSpace 明確關閉（新語意下預設會自動擴殼避開碰撞，見 plan.test.ts），並用大 cornerRadius
+// 撐大 inset（inset = cornerRadius+3）使角柱標準位置直接落在零件（Arduino Nano，43.2×18mm）bbox 內部：
+// wallThickness=1、clearanceMargin=0 時 outer 為零件 bbox 外擴 1mm，cornerRadius=9（clamp 上限
+// depth/2-0.1≈9.9 內）令 inset=12 > 零件半寬/半深，四個角柱皆嚴格落入 bbox 內部。
 const COLLIDING_PARAMS = {
   ...DEFAULT_ENCLOSURE_PARAMS,
+  reserveCornerSpace: false,
   wallThickness: 1,
   clearanceMargin: 0,
-  cornerRadius: 0,
+  cornerRadius: 9,
 };
 
 beforeEach(() => {
