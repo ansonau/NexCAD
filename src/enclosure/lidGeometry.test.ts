@@ -41,7 +41,7 @@ function intersectionVolume(solid: Solid, probe: Solid): number {
 }
 
 describe('buildLidSolid', () => {
-  it('screw 上蓋體積大於面板本身（含唇邊與螺絲柱，扣除通孔仍為正）', () => {
+  it('screw 上蓋（flatRecessed）體積大於面板本身（含唇邊，扣除通孔／沉孔仍為正）', () => {
     const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
     const solid = buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, parts, kernel);
     const panelOnly =
@@ -51,7 +51,7 @@ describe('buildLidSolid', () => {
     expect(kernel.volume(solid)).toBeGreaterThan(panelOnly * 0.8);
   });
 
-  it('slide 上蓋比 screw 上蓋體積小（無螺絲柱）', () => {
+  it('slide 上蓋比 screw 上蓋（flatRecessed，較厚面板）體積小', () => {
     const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
     const screwLid = kernel.volume(buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, parts, kernel));
     const slideLid = kernel.volume(
@@ -68,19 +68,6 @@ describe('buildLidSolid', () => {
     expect(minZ).toBeCloseTo(plan.inner.maxZ - 3, 0);
   });
 
-  it('screw 上蓋的螺絲柱向上凸出於面板頂面，不侵入殼體內腔（與殼體角柱空間互斥）', () => {
-    const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
-    const mesh = kernel.toMesh(buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, parts, kernel));
-    let maxZ = -Infinity;
-    for (let i = 2; i < mesh.positions.length; i += 3) maxZ = Math.max(maxZ, mesh.positions[i]);
-    const panelTop = plan.inner.maxZ + DEFAULT_ENCLOSURE_PARAMS.wallThickness;
-    // 柱體向上凸出，故上蓋最高點應高於面板頂面（不像 slide 上蓋那樣面板頂面就是最高點）
-    expect(maxZ).toBeGreaterThan(panelTop);
-    // 且所有螺絲柱都不應低於面板頂面（即不侵入殼體內腔）
-    const posts = planCornerPosts(plan, DEFAULT_ENCLOSURE_PARAMS.screwSize, parts);
-    expect(posts.length).toBeGreaterThan(0);
-  });
-
   it('薄壁厚 + 小螺絲規格下，screw 上蓋體積仍大於 slide', () => {
     const params = { ...DEFAULT_ENCLOSURE_PARAMS, wallThickness: 1, screwSize: 'M2' as const };
     const plan = planShell(parts, params);
@@ -89,39 +76,99 @@ describe('buildLidSolid', () => {
     expect(slideLid).toBeLessThan(screwLid);
   });
 
-  it('screw 上蓋柱頂有杯頭沉孔（沉孔範圍空心、沉孔壁實心）', () => {
-    const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const };
-    const plan = planShell(parts, params);
-    const lid = buildLidSolid(plan, params, parts, kernel);
-    const spec = SCREW_TABLE[params.screwSize];
-    const p = planCornerPosts(plan, params.screwSize, parts)[0];
-    const panelZ = plan.inner.maxZ;
-    const postTop = panelZ + params.wallThickness + 4; // POST_HEIGHT = 4
-    const boreDepth = Math.min(spec.socketHeadDepth, 4);
-    // 沉孔內、通孔外（半徑介於 throughRadius 與 socketHeadRadius 之間）→ 應為空
-    const rMid = (spec.throughDiameter / 2 + spec.socketHeadDiameter / 2) / 2;
-    const inBore = probeAt(p.x + rMid, p.y, postTop - boreDepth / 2);
-    expect(intersectionVolume(lid, inBore)).toBe(0);
-    // 同半徑、沉孔底以下（柱體實心區）→ 應為實心
-    const belowBore = probeAt(p.x + rMid, p.y, postTop - boreDepth - 0.6);
-    expect(intersectionVolume(lid, belowBore)).toBeGreaterThan(0);
+  describe('flatExposed（薄平面蓋，杯頭外露）', () => {
+    const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const, screwLidProfile: 'flatExposed' as const };
+
+    it('蓋頂面平整無凸出（面板頂面上方應為空）', () => {
+      const plan = planShell(parts, params);
+      const lid = buildLidSolid(plan, params, parts, kernel);
+      const panelZ = plan.inner.maxZ;
+      const panelTop = panelZ + params.wallThickness;
+      const p = planCornerPosts(plan, params.screwSize, parts)[0];
+      const aboveTop = probeAt(p.x, p.y, panelTop + 0.3);
+      expect(intersectionVolume(lid, aboveTop)).toBe(0);
+    });
+
+    it('四角只挖通孔，孔位貫穿面板', () => {
+      const plan = planShell(parts, params);
+      const lid = buildLidSolid(plan, params, parts, kernel);
+      const panelZ = plan.inner.maxZ;
+      const panelTop = panelZ + params.wallThickness;
+      const p = planCornerPosts(plan, params.screwSize, parts)[0];
+      const inHole = probeAt(p.x, p.y, panelTop - params.wallThickness / 2);
+      expect(intersectionVolume(lid, inHole)).toBe(0);
+    });
+
+    it('面板厚度等於 wallThickness（比 flatRecessed 薄）', () => {
+      const plan = planShell(parts, params);
+      const mesh = kernel.toMesh(buildLidSolid(plan, params, parts, kernel));
+      let maxZ = -Infinity;
+      for (let i = 2; i < mesh.positions.length; i += 3) maxZ = Math.max(maxZ, mesh.positions[i]);
+      expect(maxZ).toBeCloseTo(plan.inner.maxZ + params.wallThickness, 1);
+    });
   });
 
-  it('M4 + 薄壁（wallThickness=1）下，沉孔半徑被 clamp，柱體外壁仍保留實心（不會被整個挖空）', () => {
-    const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const, screwSize: 'M4' as const, wallThickness: 1 };
-    const plan = planShell(parts, params);
-    const lid = buildLidSolid(plan, params, parts, kernel);
-    const spec = SCREW_TABLE[params.screwSize];
-    const p = planCornerPosts(plan, params.screwSize, parts)[0];
-    const panelZ = plan.inner.maxZ;
-    const postTop = panelZ + params.wallThickness + 4; // POST_HEIGHT = 4
-    const throughRadius = spec.throughDiameter / 2;
-    const postRadius = Math.max(spec.selfTapDiameter / 2, throughRadius) + params.wallThickness;
-    // 未 clamp 時 socketHeadDiameter/2 (3.7) > postRadius (3.25)，柱體會被整個挖空；
-    // clamp 後應在 postRadius 內側保留至少 0.3mm 殘壁。探測點取在殘壁中點，
-    // 且沉孔深度會 clamp 到滿柱高（4mm），故整個柱高範圍都要驗證。
-    const probeRadius = postRadius - 0.15;
-    const nearWall = probeAt(p.x + probeRadius, p.y, postTop - 2);
-    expect(intersectionVolume(lid, nearWall)).toBeGreaterThan(0);
+  describe('flatRecessed（厚平面蓋，杯頭藏入）— 預設值', () => {
+    const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const, screwLidProfile: 'flatRecessed' as const };
+
+    it('蓋頂面平整無凸出（面板頂面上方應為空，與 flatExposed 相同的「無凸柱」不變式）', () => {
+      const plan = planShell(parts, params);
+      const lid = buildLidSolid(plan, params, parts, kernel);
+      const spec = SCREW_TABLE[params.screwSize];
+      const panelH = spec.socketHeadDepth + 0.5 + params.wallThickness; // SINK_MARGIN = 0.5
+      const panelTop = plan.inner.maxZ + panelH;
+      const p = planCornerPosts(plan, params.screwSize, parts)[0];
+      const aboveTop = probeAt(p.x, p.y, panelTop + 0.3);
+      expect(intersectionVolume(lid, aboveTop)).toBe(0);
+    });
+
+    it('沉孔埋頭：蓋頂面正下方（杯頭容納區）為空，沉孔壁外圍（面板本體）實心', () => {
+      const plan = planShell(parts, params);
+      const lid = buildLidSolid(plan, params, parts, kernel);
+      const spec = SCREW_TABLE[params.screwSize];
+      const panelH = spec.socketHeadDepth + 0.5 + params.wallThickness;
+      const panelZ = plan.inner.maxZ;
+      const p = planCornerPosts(plan, params.screwSize, parts)[0];
+      // 沉孔內、通孔外的中間半徑，蓋頂面下方一點 → 應為空（沉孔容納杯頭）
+      const rMid = (spec.throughDiameter / 2 + spec.socketHeadDiameter / 2) / 2;
+      const inBore = probeAt(p.x + rMid, p.y, panelZ + panelH - 0.5);
+      expect(intersectionVolume(lid, inBore)).toBe(0);
+      // 面板側邊（遠離孔位，仍在面板範圍內）→ 應為實心，確認面板本體未被整個掏空
+      const solidSide = probeAt(p.x + 3.5, p.y, panelZ + panelH - 1);
+      expect(intersectionVolume(lid, solidSide)).toBeGreaterThan(0);
+    });
+
+    it('通孔貫穿到底（面板底部附近孔位為空）', () => {
+      const plan = planShell(parts, params);
+      const lid = buildLidSolid(plan, params, parts, kernel);
+      const panelZ = plan.inner.maxZ;
+      const p = planCornerPosts(plan, params.screwSize, parts)[0];
+      const nearBottom = probeAt(p.x, p.y, panelZ + 0.5);
+      expect(intersectionVolume(lid, nearBottom)).toBe(0);
+    });
+
+    it('面板厚度 = socketHeadDepth + SINK_MARGIN + wallThickness，比 flatExposed 厚', () => {
+      const exposedParams = { ...params, screwLidProfile: 'flatExposed' as const };
+      const plan = planShell(parts, params);
+      const recessedVol = kernel.volume(buildLidSolid(plan, params, parts, kernel));
+      const exposedVol = kernel.volume(buildLidSolid(plan, exposedParams, parts, kernel));
+      expect(recessedVol).toBeGreaterThan(exposedVol);
+
+      const mesh = kernel.toMesh(buildLidSolid(plan, params, parts, kernel));
+      let maxZ = -Infinity;
+      for (let i = 2; i < mesh.positions.length; i += 3) maxZ = Math.max(maxZ, mesh.positions[i]);
+      const spec = SCREW_TABLE[params.screwSize];
+      const expectedPanelH = spec.socketHeadDepth + 0.5 + params.wallThickness;
+      expect(maxZ).toBeCloseTo(plan.inner.maxZ + expectedPanelH, 1);
+    });
+  });
+
+  it('未設定 screwLidProfile 時行為等同 flatRecessed（backward-compat）', () => {
+    const withUndefined = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const, screwLidProfile: undefined };
+    const withExplicit = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const, screwLidProfile: 'flatRecessed' as const };
+    const plan = planShell(parts, withExplicit);
+    const volA = kernel.volume(buildLidSolid(plan, withUndefined, parts, kernel));
+    const volB = kernel.volume(buildLidSolid(plan, withExplicit, parts, kernel));
+    expect(volA).toBeCloseTo(volB, 3);
   });
 });
