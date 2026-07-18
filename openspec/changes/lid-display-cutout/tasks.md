@@ -14,8 +14,8 @@
 
 ## 3. lidGeometry.ts：上蓋挖窗
 
-- [ ] 3.1 `buildLidSolid` 末端依 `params.lidDisplayCutout !== false` 對每個 `planTopWindowCutouts(parts)` 矩形挖貫穿孔（design.md D3：Z 從 `panelZ - LIP_HEIGHT - 1` 高 `panelH + LIP_HEIGHT + 2`）
-- [ ] 3.2 測試：`src/enclosure/lidGeometry.test.ts`——含 OLED top port 的零件開啟時窗位為空（探測窗中心）、關閉時同位置實心、slide 上蓋同樣開窗、screw 四角螺絲孔不受影響
+- [x] 3.1 `buildLidSolid` 末端依 `params.lidDisplayCutout !== false` 對每個 `planTopWindowCutouts(parts)` 矩形挖貫穿孔（design.md D3：Z 從 `panelZ - LIP_HEIGHT - 1` 高 `panelH + LIP_HEIGHT + 2`）
+- [x] 3.2 測試：`src/enclosure/lidGeometry.test.ts`——含 OLED top port 的零件開啟時窗位為空（探測窗中心）、關閉時同位置實心、slide 上蓋同樣開窗、screw 四角螺絲孔不受影響
 
 ## 4. UI：lidDisplayCutout 選項
 
