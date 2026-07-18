@@ -2,10 +2,10 @@
 
 ## 1. 型別 + shellGeometry 分支
 
-- [ ] 1.1 `src/types/document.ts`：`MountingStyle` 加 `'hole'`
-- [ ] 1.2 `src/persistence/nexcadFile.ts`：`mountingStyle` zod enum 同步加 `'hole'`（`z.enum(['screw','peg','hole'])`）
-- [ ] 1.3 `src/enclosure/shellGeometry.ts`：`buildShellSolid` 非角柱迴圈新增 `mountingStyle === 'hole'` 分支（design.md D2：不長柱，貫穿地板挖 `pilotDiameter(screwSize,'through')` 直徑的孔，Z 範圍 `plan.floorZ-1` 起、高 `wallThickness+2`）
-- [ ] 1.4 測試：`src/enclosure/shellGeometry.test.ts`——`hole` 模式體積增量僅為挖孔（無支柱體積增加，可與無 standoffs 基準比較體積不增反減或持平）、貫穿孔確實打穿地板（探測外底面與內腔地板間任一點皆為空）、孔徑等於 `pilotDiameter(screwSize,'through')`；`nexcadFile.test.ts` 驗證 `mountingStyle: 'hole'` 可正常序列化/解析（zod enum 擴充後的回歸）
+- [x] 1.1 `src/types/document.ts`：`MountingStyle` 加 `'hole'`
+- [x] 1.2 `src/persistence/nexcadFile.ts`：`mountingStyle` zod enum 同步加 `'hole'`（`z.enum(['screw','peg','hole'])`）
+- [x] 1.3 `src/enclosure/shellGeometry.ts`：`buildShellSolid` 非角柱迴圈新增 `mountingStyle === 'hole'` 分支（design.md D2：不長柱，貫穿地板挖 `pilotDiameter(screwSize,'through')` 直徑的孔，Z 範圍 `plan.floorZ-1` 起、高 `wallThickness+2`）
+- [x] 1.4 測試：`src/enclosure/shellGeometry.test.ts`——`hole` 模式體積增量僅為挖孔（無支柱體積增加，可與無 standoffs 基準比較體積不增反減或持平）、貫穿孔確實打穿地板（探測外底面與內腔地板間任一點皆為空）、孔徑等於 `pilotDiameter(screwSize,'through')`；`nexcadFile.test.ts` 驗證 `mountingStyle: 'hole'` 可正常序列化/解析（zod enum 擴充後的回歸）
 
 ## 2. UI
 
