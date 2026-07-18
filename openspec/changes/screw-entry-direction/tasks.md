@@ -24,9 +24,9 @@
 
 ## 4. UI：screwEntry 選項
 
-- [ ] 4.1 i18n：`enclosure.screwEntry` / `enclosure.screwEntryFromLid` / `enclosure.screwEntryFromBase`（zh/en）
-- [ ] 4.2 `src/components/EnclosurePanel.tsx` 進階區塊加 `screwEntry` 下拉（僅 `lidType === 'screw'` 顯示，同 `screwLidProfile` 顯示條件）
-- [ ] 4.3 `src/components/PropertyCard.tsx` 外殼參數表加 `screwEntry` 下拉（同上），變更觸發既有 `regenerateEnclosure`
+- [x] 4.1 i18n：`enclosure.screwEntry` / `enclosure.screwEntryFromLid` / `enclosure.screwEntryFromBase`（zh/en）
+- [x] 4.2 `src/components/EnclosurePanel.tsx` 進階區塊加 `screwEntry` 下拉（僅 `lidType === 'screw'` 顯示，同 `screwLidProfile` 顯示條件）
+- [x] 4.3 `src/components/PropertyCard.tsx` 外殼參數表加 `screwEntry` 下拉（同上），變更觸發既有 `regenerateEnclosure`
 
 ## 5. 驗證
 
