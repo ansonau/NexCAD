@@ -14,10 +14,10 @@
 
 ## 3. Viewport 渲染：ViewCube + X-ray + Edges
 
-- [ ] 3.1 `Viewport.tsx` 加 drei `GizmoHelper`+`GizmoViewcube`（bottom-right，design.md D3）
-- [ ] 3.2 `SceneMesh` 加 `xray` prop（enclosure 節點 + `shellXray` 開啟時 `transparent opacity 0.35 depthWrite false`，hole 既有分支優先，design.md D4）
-- [ ] 3.3 `SceneMesh` 加 wireframe 分支（drei `<Edges threshold={30}>`，design.md D5）
-- [ ] 3.4 瀏覽器驗證：ViewCube 點面切換視角；X-ray 開關外殼透明/恢復、零件不受影響；Wireframe 開關稜線出現/消失、平面內部無雜線
+- [x] 3.1 `Viewport.tsx` 加 drei `GizmoHelper`+`GizmoViewcube`（bottom-right，design.md D3）
+- [x] 3.2 `SceneMesh` 加 `xray` prop（enclosure 節點 + `shellXray` 開啟時 `transparent opacity 0.35 depthWrite false`，hole 既有分支優先，design.md D4）
+- [x] 3.3 `SceneMesh` 加 wireframe 分支（drei `<Edges threshold={30}>`，design.md D5）
+- [x] 3.4 瀏覽器驗證：ViewCube 點面切換視角；X-ray 開關外殼透明/恢復、零件不受影響；Wireframe 開關稜線出現/消失、平面內部無雜線
 
 ## 4. 驗證
 
