@@ -2,10 +2,10 @@
 
 ## 1. types：lidDisplayCutout 欄位與 backward-compat
 
-- [ ] 1.1 `src/types/document.ts`：`EnclosureParams` 加 `lidDisplayCutout?: boolean`
-- [ ] 1.2 `src/enclosure/plan.ts`：`DEFAULT_ENCLOSURE_PARAMS` 加 `lidDisplayCutout: true`
-- [ ] 1.3 `src/persistence/nexcadFile.ts`：enclosure params zod schema 加 `lidDisplayCutout: z.boolean().optional()`
-- [ ] 1.4 回歸測試：`src/persistence/nexcadFile.test.ts` 驗證無 `lidDisplayCutout` 的舊 `.nexcad` 內容可正常解析（沿用 `screwLidProfile` backward-compat 測試模式）
+- [x] 1.1 `src/types/document.ts`：`EnclosureParams` 加 `lidDisplayCutout?: boolean`
+- [x] 1.2 `src/enclosure/plan.ts`：`DEFAULT_ENCLOSURE_PARAMS` 加 `lidDisplayCutout: true`
+- [x] 1.3 `src/persistence/nexcadFile.ts`：enclosure params zod schema 加 `lidDisplayCutout: z.boolean().optional()`
+- [x] 1.4 回歸測試：`src/persistence/nexcadFile.test.ts` 驗證無 `lidDisplayCutout` 的舊 `.nexcad` 內容可正常解析（沿用 `screwLidProfile` backward-compat 測試模式）
 
 ## 2. portProjection.ts：planTopWindowCutouts
 
