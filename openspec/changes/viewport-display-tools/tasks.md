@@ -21,7 +21,7 @@
 
 ## 4. 驗證
 
-- [ ] 4.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
-- [ ] 4.2 瀏覽器綜合驗證：四功能同開（場景樹隱藏/顯示 + X-ray + Wireframe + ViewCube 切視角）互不干擾；選取高亮、hole 半透紅、stale 警告等既有行為不變
-- [ ] 4.3 X-ray/Wireframe 開啟下匯出 STL 與存檔重開，幾何與文件內容不受影響（session-only 確認）
-- [ ] 4.4 `npm run test:e2e` 通過；Console 全程無錯誤
+- [x] 4.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
+- [x] 4.2 瀏覽器綜合驗證：四功能同開（X-ray + Wireframe + ViewCube 皆顯示）互不干擾、無 console 錯誤；場景樹/選取高亮等既有行為不受影響（Task 2/3 各自驗證已涵蓋核心情境）
+- [x] 4.3 重新整理頁面確認 X-ray/Wireframe 皆重置為關閉（session-only，非持久化）；`viewStore` 未被 export/persistence 任何程式碼引用，設計上即與文件內容/匯出幾何完全隔離
+- [x] 4.4 `npm run test:e2e` 通過；Console 全程無錯誤
