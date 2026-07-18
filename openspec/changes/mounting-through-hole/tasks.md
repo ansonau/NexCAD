@@ -9,9 +9,9 @@
 
 ## 2. UI
 
-- [ ] 2.1 i18n：`enclosure.mountingHole`（zh/en）
-- [ ] 2.2 `src/components/EnclosurePanel.tsx` 的 `mountingStyle` 下拉加第三個 `<option value="hole">`
-- [ ] 2.3 `src/components/PropertyCard.tsx` 的 `mountingStyle` 下拉加第三個 `<option value="hole">`，變更觸發既有 `regenerateEnclosure`
+- [x] 2.1 i18n：`enclosure.mountingHole`（zh/en）
+- [x] 2.2 `src/components/EnclosurePanel.tsx` 的 `mountingStyle` 下拉加第三個 `<option value="hole">`
+- [x] 2.3 `src/components/PropertyCard.tsx` 的 `mountingStyle` 下拉加第三個 `<option value="hole">`，變更觸發既有 `regenerateEnclosure`
 
 ## 3. 驗證
 
