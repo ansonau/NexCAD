@@ -3,7 +3,10 @@ import { identityTransform } from '../types/document';
 import type { PartDefinition } from '../parts/schema';
 import { ManifoldKernel } from '../geometry/manifoldKernel';
 import type { PartInstance } from './plan';
-import { cutPorts, planPortCutouts } from './portProjection';
+import { cutPorts, planPortCutouts, planTopWindowCutouts } from './portProjection';
+import { getPartDefinition } from '../parts/library';
+
+const TOLERANCE_MM = 0.4;
 
 const kernel = new ManifoldKernel();
 
@@ -97,5 +100,102 @@ describe('cutPorts', () => {
     );
     expect(after).toBeLessThan(before);
     expect(before - after).toBeGreaterThan(10 * 5 * 2 * 0.5); // 至少挖穿部分壁厚
+  });
+});
+
+describe('planTopWindowCutouts', () => {
+  const topPortDef: PartDefinition = {
+    id: 'test-top-part',
+    name: 'Test',
+    nameZh: '測試',
+    category: 'sensor',
+    body: { size: [20, 10, 2], blocks: [] },
+    mountingHoles: [],
+    ports: [{ face: 'top', shape: 'rect', x: 5, z: -3, w: 8, h: 4 }],
+    clearanceHeight: 5,
+  };
+
+  it('0° 旋轉：世界中心 = 零件位置 + port 偏移，尺寸 = port 尺寸 + 公差', () => {
+    const part: PartInstance = {
+      def: topPortDef,
+      transform: { position: [10, 20, 0], rotation: [0, 0, 0], scale: [1, 1, 1] },
+    };
+    const [cut] = planTopWindowCutouts([part]);
+    expect(cut.x).toBeCloseTo(15); // 10 + 5
+    expect(cut.y).toBeCloseTo(17); // 20 + (-3)
+    expect(cut.w).toBeCloseTo(8 + TOLERANCE_MM * 2);
+    expect(cut.h).toBeCloseTo(4 + TOLERANCE_MM * 2);
+  });
+
+  it('90° 旋轉：偏移隨零件位置旋轉，寬高對調', () => {
+    const part: PartInstance = {
+      def: topPortDef,
+      transform: { position: [10, 20, 0], rotation: [0, 0, 90], scale: [1, 1, 1] },
+    };
+    const [cut] = planTopWindowCutouts([part]);
+    // cos=0, sin=1: worldX = px - port.z = 10 - (-3) = 13; worldY = py + port.x = 20 + 5 = 25
+    expect(cut.x).toBeCloseTo(13);
+    expect(cut.y).toBeCloseTo(25);
+    expect(cut.w).toBeCloseTo(4 + TOLERANCE_MM * 2); // 對調自 h
+    expect(cut.h).toBeCloseTo(8 + TOLERANCE_MM * 2); // 對調自 w
+  });
+
+  it('非 90 倍數旋轉時該零件的視窗被整個跳過', () => {
+    const part: PartInstance = {
+      def: topPortDef,
+      transform: { ...identityTransform(), rotation: [0, 0, 45] },
+    };
+    expect(planTopWindowCutouts([part])).toEqual([]);
+  });
+
+  it('無 top face 接口的零件回傳空陣列', () => {
+    const noTop: PartDefinition = {
+      ...topPortDef,
+      ports: [],
+    };
+    const part: PartInstance = { def: noTop, transform: identityTransform() };
+    expect(planTopWindowCutouts([part])).toEqual([]);
+  });
+
+  it('僅側面接口的零件不產生任何視窗（不與 planPortCutouts 的職責重疊）', () => {
+    const sideOnly: PartDefinition = {
+      ...topPortDef,
+      ports: [
+        { face: 'north', shape: 'rect', x: 0, z: 0, w: 9, h: 4 },
+        { face: 'west', shape: 'rect', x: 0, z: 0, w: 9, h: 4 },
+      ],
+    };
+    const part: PartInstance = { def: sideOnly, transform: identityTransform() };
+    expect(planTopWindowCutouts([part])).toEqual([]);
+  });
+
+  it('實際 oled-096 零件：產生一個對應其螢幕視窗的開孔', () => {
+    const def = getPartDefinition('oled-096');
+    expect(def).toBeDefined();
+    const part: PartInstance = {
+      def: def!,
+      transform: { position: [50, 60, 0], rotation: [0, 0, 0], scale: [1, 1, 1] },
+    };
+    const cuts = planTopWindowCutouts([part]);
+    expect(cuts).toHaveLength(1);
+    const port = def!.ports.find((p) => p.face === 'top')!;
+    expect(cuts[0].x).toBeCloseTo(50 + port.x);
+    expect(cuts[0].y).toBeCloseTo(60 + port.z);
+    expect(cuts[0].w).toBeCloseTo(port.w + TOLERANCE_MM * 2);
+    expect(cuts[0].h).toBeCloseTo(port.h + TOLERANCE_MM * 2);
+  });
+
+  it('實際 lcd1602 零件旋轉 90°：寬高對調', () => {
+    const def = getPartDefinition('lcd1602');
+    expect(def).toBeDefined();
+    const part: PartInstance = {
+      def: def!,
+      transform: { position: [0, 0, 0], rotation: [0, 0, 90], scale: [1, 1, 1] },
+    };
+    const cuts = planTopWindowCutouts([part]);
+    expect(cuts).toHaveLength(1);
+    const port = def!.ports.find((p) => p.face === 'top')!;
+    expect(cuts[0].w).toBeCloseTo(port.h + TOLERANCE_MM * 2);
+    expect(cuts[0].h).toBeCloseTo(port.w + TOLERANCE_MM * 2);
   });
 });

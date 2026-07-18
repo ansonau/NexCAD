@@ -85,6 +85,45 @@ export function planPortCutouts(parts: PartInstance[]): PortCutoutPlan[] {
   return out;
 }
 
+export interface TopWindowCutout {
+  /** 世界座標窗中心 X */
+  x: number;
+  /** 世界座標窗中心 Y */
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * 把零件 top face 接口（螢幕視窗）投影為上蓋開窗計畫。只支援 Z 軸 90° 倍數旋轉，
+ * 其餘角度的零件其視窗會被略過（見計畫全域限制，同 planPortCutouts）。
+ */
+export function planTopWindowCutouts(parts: PartInstance[]): TopWindowCutout[] {
+  const out: TopWindowCutout[] = [];
+  for (const part of parts) {
+    const angle = normalizeAngle(part.transform.rotation[2]);
+    if (angle % 90 !== 0) continue;
+    const [px, py] = part.transform.position;
+    const rad = angle * DEG;
+    const cos = Math.round(Math.cos(rad));
+    const sin = Math.round(Math.sin(rad));
+    for (const port of part.def.ports) {
+      if (port.face !== 'top') continue;
+      const worldX = px + port.x * cos - port.z * sin;
+      const worldY = py + port.x * sin + port.z * cos;
+      const worldW = Math.abs(port.w * cos) + Math.abs(port.h * sin);
+      const worldH = Math.abs(port.w * sin) + Math.abs(port.h * cos);
+      out.push({
+        x: worldX,
+        y: worldY,
+        w: worldW + TOLERANCE_MM * 2,
+        h: worldH + TOLERANCE_MM * 2,
+      });
+    }
+  }
+  return out;
+}
+
 /** 在殼體對應牆面挖出矩形開孔（見全域限制：一律以外接矩形挖孔） */
 export function cutPorts(
   shell: Solid,
