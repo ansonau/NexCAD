@@ -2,11 +2,11 @@
 
 ## 1. types：screwEntry 欄位、backward-compat、共用沉孔函式
 
-- [ ] 1.1 `src/types/document.ts`：加 `ScrewEntry = 'fromLid' | 'fromBase'` 型別並匯出，`EnclosureParams` 加 `screwEntry?: ScrewEntry`；`screwLidProfile` 註解更新為「螺絲進入面（依 screwEntry 決定）的杯頭樣式」
-- [ ] 1.2 `src/enclosure/plan.ts`：`DEFAULT_ENCLOSURE_PARAMS` 加 `screwEntry: 'fromLid'`；`StandoffPlan` 加 `isCornerPost?: boolean`；`planCornerPosts` 設定每個回傳項目 `isCornerPost: true`（`planStandoffs` 不變、不設定此欄位）
-- [ ] 1.3 `src/persistence/nexcadFile.ts`：enclosure params zod schema 加 `screwEntry: z.enum(['fromLid','fromBase']).optional()`
-- [ ] 1.4 回歸測試：`src/persistence/nexcadFile.test.ts` 驗證無 `screwEntry` 的舊 `.nexcad` 內容可正常解析（沿用既有 backward-compat 測試模式）；`src/enclosure/plan.test.ts` 驗證 `planCornerPosts` 回傳項目 `isCornerPost: true`、`planStandoffs` 回傳項目無此欄位（或為 falsy）
-- [ ] 1.5 新增 `src/enclosure/counterbore.ts`：抽出 `SINK_MARGIN`/`HEAD_CLEARANCE`/`MIN_SIDE_WALL` 常數與 `counterboreRadius(screwSize, cornerRadius, throughRadius)`/`counterboreDepth(screwSize)` 函式（design.md D3，公式與 `lidGeometry.ts` 現有內聯計算逐位元組一致）
+- [x] 1.1 `src/types/document.ts`：加 `ScrewEntry = 'fromLid' | 'fromBase'` 型別並匯出，`EnclosureParams` 加 `screwEntry?: ScrewEntry`；`screwLidProfile` 註解更新為「螺絲進入面（依 screwEntry 決定）的杯頭樣式」
+- [x] 1.2 `src/enclosure/plan.ts`：`DEFAULT_ENCLOSURE_PARAMS` 加 `screwEntry: 'fromLid'`；`StandoffPlan` 加 `isCornerPost?: boolean`；`planCornerPosts` 設定每個回傳項目 `isCornerPost: true`（`planStandoffs` 不變、不設定此欄位）
+- [x] 1.3 `src/persistence/nexcadFile.ts`：enclosure params zod schema 加 `screwEntry: z.enum(['fromLid','fromBase']).optional()`
+- [x] 1.4 回歸測試：`src/persistence/nexcadFile.test.ts` 驗證無 `screwEntry` 的舊 `.nexcad` 內容可正常解析（沿用既有 backward-compat 測試模式）；`src/enclosure/plan.test.ts` 驗證 `planCornerPosts` 回傳項目 `isCornerPost: true`、`planStandoffs` 回傳項目無此欄位（或為 falsy）
+- [x] 1.5 新增 `src/enclosure/counterbore.ts`：抽出 `SINK_MARGIN`/`HEAD_CLEARANCE`/`MIN_SIDE_WALL` 常數與 `counterboreRadius(screwSize, cornerRadius, throughRadius)`/`counterboreDepth(screwSize)` 函式（design.md D3，公式與 `lidGeometry.ts` 現有內聯計算逐位元組一致）
 
 ## 2. lidGeometry.ts：改用共用函式 + fromBase 分支
 
