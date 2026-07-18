@@ -123,10 +123,13 @@ export function buildShellSolid(
         ...noRotScale,
       });
       shell = kernel.union(shell, post);
-      // 導孔下緣夾在 inner.minZ（內腔地板）：避免鑽穿殼體外底面的實心外皮，
-      // 保留底板的結構完整性（不論支柱鎖點多接近地板）。
-      const pilotBottom = Math.max(s.topZ - s.pilotDepth, plan.inner.minZ);
-      const pilot = kernel.transform(kernel.cylinder(s.pilotDiameter / 2, s.topZ - pilotBottom + 1), {
+      // 導孔必須以支柱「實際頂面」（floorZ+standoffHeight）為基準往下鑽，而非 s.topZ：
+      // 當零件貼齊內腔底（topZ 等於 inner.minZ）觸發上面的 pilotDepth 高度下限時，支柱實際
+      // 頂面會高於 topZ；若仍以 topZ 為鑽孔基準，導孔會幾乎鑽不到深度（柱頂留下實心無孔的
+      // 錯誤外觀）。下緣依然夾在 inner.minZ，避免鑽穿殼體外底面的實心外皮。
+      const standoffTop = plan.floorZ + standoffHeight;
+      const pilotBottom = Math.max(standoffTop - s.pilotDepth, plan.inner.minZ);
+      const pilot = kernel.transform(kernel.cylinder(s.pilotDiameter / 2, standoffTop - pilotBottom + 1), {
         position: [s.x, s.y, pilotBottom],
         ...noRotScale,
       });
