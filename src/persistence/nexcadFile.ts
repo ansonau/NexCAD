@@ -54,6 +54,7 @@ const enclosureNodeSchema = z.object({
       reserveCornerSpace: z.boolean().optional(),
       mountingStyle: z.enum(['screw', 'peg']).optional(),
       screwLidProfile: z.enum(['flatExposed', 'flatRecessed']).optional(),
+      lidDisplayCutout: z.boolean().optional(),
     })
     .transform((p) => ({ ...p, standoffWallPadding: p.standoffWallPadding ?? p.wallThickness })),
   sourceParts: z.array(

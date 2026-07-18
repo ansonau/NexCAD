@@ -33,6 +33,7 @@ export const DEFAULT_ENCLOSURE_PARAMS: EnclosureParams = {
   reserveCornerSpace: true,
   mountingStyle: 'screw',
   screwLidProfile: 'flatRecessed',
+  lidDisplayCutout: true,
 };
 
 /** 零件在世界座標下的包覆範圍（只考慮 Z 軸旋轉） */

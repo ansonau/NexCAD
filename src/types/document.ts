@@ -57,6 +57,8 @@ export interface EnclosureParams {
   mountingStyle?: MountingStyle;
   /** 螺絲上蓋剖面：外露平面或內凹平面；未設定時視為 'flatRecessed' */
   screwLidProfile?: ScrewLidProfile;
+  /** 上蓋是否依零件螢幕視窗自動開孔；未設定時視為 true */
+  lidDisplayCutout?: boolean;
 }
 
 export interface EnclosureSourcePart {
