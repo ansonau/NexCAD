@@ -219,6 +219,7 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
         >
           <option value="screw">{t('enclosure.mountingScrew')}</option>
           <option value="peg">{t('enclosure.mountingPeg')}</option>
+          <option value="hole">{t('enclosure.mountingHole')}</option>
         </select>
       </label>
       {p.lidType === 'screw' && (

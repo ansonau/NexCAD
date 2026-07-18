@@ -123,6 +123,7 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
               >
                 <option value="screw">{t('enclosure.mountingScrew')}</option>
                 <option value="peg">{t('enclosure.mountingPeg')}</option>
+                <option value="hole">{t('enclosure.mountingHole')}</option>
               </select>
             </label>
             {params.lidType === 'screw' && (

@@ -81,6 +81,7 @@
     "mountingStyle": "零件固定方式",
     "mountingScrew": "螺絲柱",
     "mountingPeg": "圓柱定位柱",
+    "mountingHole": "螺絲孔",
     "screwLidProfile": "螺絲上蓋樣式",
     "lidFlatExposed": "平面蓋・杯頭外露",
     "lidFlatRecessed": "平面蓋・杯頭藏入",
