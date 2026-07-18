@@ -180,6 +180,38 @@ describe('buildShellSolid', () => {
     expect(kernel.volume(intersection)).toBeGreaterThan(probeVolume * 0.9);
   });
 
+  describe('hole 模式（design.md D2：不長柱，只在地板挖通孔）', () => {
+    it('體積不大於無 standoffs 基準（只挖孔，不加材料）', () => {
+      const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
+      const baseline = kernel.volume(buildShellSolid(plan, DEFAULT_ENCLOSURE_PARAMS.wallThickness, [], kernel));
+      const holeStandoffs = planStandoffs(parts, DEFAULT_ENCLOSURE_PARAMS.screwSize, undefined, 'hole');
+      const holeSolid = buildShellSolid(plan, DEFAULT_ENCLOSURE_PARAMS.wallThickness, holeStandoffs, kernel);
+      expect(kernel.volume(holeSolid)).toBeLessThanOrEqual(baseline);
+    });
+
+    it('通孔貫穿地板：外底面與內腔地板之間的中點應為空', () => {
+      const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
+      const holeStandoffs = planStandoffs(parts, DEFAULT_ENCLOSURE_PARAMS.screwSize, undefined, 'hole');
+      const solid = buildShellSolid(plan, DEFAULT_ENCLOSURE_PARAMS.wallThickness, holeStandoffs, kernel);
+      const s = holeStandoffs[0];
+      const midZ = (plan.floorZ + plan.inner.minZ) / 2;
+      expect(probeSolidRatio(solid, s.x, s.y, midZ)).toBeLessThan(0.1);
+    });
+
+    it('孔徑等於 pilotDiameter(screwSize, "through")：半徑內為空、半徑外為實心', () => {
+      const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
+      const holeStandoffs = planStandoffs(parts, DEFAULT_ENCLOSURE_PARAMS.screwSize, undefined, 'hole');
+      const solid = buildShellSolid(plan, DEFAULT_ENCLOSURE_PARAMS.wallThickness, holeStandoffs, kernel);
+      const s = holeStandoffs[0];
+      const holeRadius = pilotDiameter(DEFAULT_ENCLOSURE_PARAMS.screwSize, 'through') / 2;
+      const midZ = (plan.floorZ + plan.inner.minZ) / 2;
+      // 半徑內：空
+      expect(probeSolidRatio(solid, s.x + holeRadius * 0.5, s.y, midZ)).toBeLessThan(0.1);
+      // 半徑外一點（radius + 0.3）：實心，證明孔沒有比預期寬
+      expect(probeSolidRatio(solid, s.x + holeRadius + 0.3, s.y, midZ)).toBeGreaterThan(0.9);
+    });
+  });
+
   describe('screwEntry: fromBase（角柱通孔/沉孔對調到底座，design.md D5）', () => {
     it('flatRecessed：底板加厚量等於 counterboreDepth+wallThickness，角柱沉孔存在但柱身上段仍實心', () => {
       const params = { ...DEFAULT_ENCLOSURE_PARAMS, screwEntry: 'fromBase' as const, screwLidProfile: 'flatRecessed' as const };

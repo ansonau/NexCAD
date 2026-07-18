@@ -226,6 +226,33 @@ describe('nexcadFile', () => {
     expect(node.type === 'enclosure' ? node.params.lidDisplayCutout : 'not-enclosure').toBeUndefined();
   });
 
+  it('mountingStyle: "hole" 可正常序列化/解析（zod enum 擴充後的回歸）', () => {
+    const doc = emptyDocument('測試外殼');
+    const enclosure: EnclosureNode = {
+      type: 'enclosure',
+      id: newId(),
+      name: '外殼底座',
+      role: 'solid',
+      transform: identityTransform(),
+      visible: true,
+      locked: false,
+      part: 'base',
+      params: {
+        wallThickness: 2,
+        clearanceMargin: 3,
+        cornerRadius: 3,
+        lidType: 'screw',
+        screwSize: 'M3',
+        standoffWallPadding: 2,
+        mountingStyle: 'hole',
+      },
+      sourceParts: [],
+    };
+    doc.nodes = [enclosure];
+    const parsed = parseNexcadFile(serializeNexcadFile(doc));
+    expect(parsed).toEqual(doc);
+  });
+
   it('拒絕非 JSON', () => {
     expect(() => parseNexcadFile('not json')).toThrow();
   });

@@ -94,7 +94,16 @@ export function buildShellSolid(
       }
       continue;
     }
-    if (s.mountingStyle === 'peg') {
+    if (s.mountingStyle === 'hole') {
+      // hole 模式：不長柱，只在零件安裝孔位置貫穿殼體地板挖一個螺絲淨空孔。
+      // 螺絲全程不與殼體咬合（不自攻），直徑用通孔徑，同角柱通孔公式。
+      const holeRadius = pilotDiameter(screwSize, 'through') / 2;
+      const hole = kernel.transform(kernel.cylinder(holeRadius, wallThickness + 2), {
+        position: [s.x, s.y, plan.floorZ - 1],
+        ...noRotScale,
+      });
+      shell = kernel.difference(shell, hole);
+    } else if (s.mountingStyle === 'peg') {
       // peg 模式：實心柱長到孔平面 topZ，不鑽導孔（沒有螺絲要攻牙，柱身不需要深度餘量）。
       const standoffHeight = s.topZ - plan.floorZ;
       if (standoffHeight <= 0) continue;

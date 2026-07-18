@@ -38,7 +38,7 @@ export interface PartNode extends NodeCommon {
 
 export type ScrewSizeLiteral = 'M2' | 'M2.5' | 'M3' | 'M4';
 
-export type MountingStyle = 'screw' | 'peg';
+export type MountingStyle = 'screw' | 'peg' | 'hole';
 export type ScrewLidProfile = 'flatExposed' | 'flatRecessed';
 export type ScrewEntry = 'fromLid' | 'fromBase';
 

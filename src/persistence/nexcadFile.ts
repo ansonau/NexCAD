@@ -52,7 +52,7 @@ const enclosureNodeSchema = z.object({
       standoffWallPadding: z.number().optional(),
       pilotDepthOverride: z.number().positive().optional(),
       reserveCornerSpace: z.boolean().optional(),
-      mountingStyle: z.enum(['screw', 'peg']).optional(),
+      mountingStyle: z.enum(['screw', 'peg', 'hole']).optional(),
       screwLidProfile: z.enum(['flatExposed', 'flatRecessed']).optional(),
       screwEntry: z.enum(['fromLid', 'fromBase']).optional(),
       lidDisplayCutout: z.boolean().optional(),
