@@ -2,6 +2,7 @@ import type { GeometryKernel, Solid } from '../geometry/kernel';
 import { pilotDiameter, SCREW_TABLE } from './screws';
 import { planCornerPosts } from './plan';
 import type { EnclosureParams, PartInstance, ShellPlan } from './plan';
+import { planTopWindowCutouts } from './portProjection';
 
 const noRotScale = { rotation: [0, 0, 0] as [number, number, number], scale: [1, 1, 1] as [number, number, number] };
 const LIP_MARGIN = 0.4;
@@ -80,6 +81,17 @@ export function buildLidSolid(plan: ShellPlan, params: EnclosureParams, parts: P
         });
         lid = kernel.difference(lid, bore);
       }
+    }
+  }
+
+  if (params.lidDisplayCutout !== false) {
+    for (const w of planTopWindowCutouts(parts)) {
+      const cutH = panelH + LIP_HEIGHT + 2;
+      const cut = kernel.transform(kernel.box(w.w, w.h, cutH), {
+        position: [w.x, w.y, panelZ - LIP_HEIGHT - 1],
+        ...noRotScale,
+      });
+      lid = kernel.difference(lid, cut);
     }
   }
 

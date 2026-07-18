@@ -7,6 +7,7 @@ import { DEFAULT_ENCLOSURE_PARAMS, planCornerPosts, planShell } from './plan';
 import type { PartInstance } from './plan';
 import { buildLidSolid } from './lidGeometry';
 import { SCREW_TABLE } from './screws';
+import { getPartDefinition } from '../parts/library';
 
 const kernel = new ManifoldKernel();
 
@@ -172,5 +173,41 @@ describe('buildLidSolid', () => {
     const volA = kernel.volume(buildLidSolid(plan, withUndefined, parts, kernel));
     const volB = kernel.volume(buildLidSolid(plan, withExplicit, parts, kernel));
     expect(volA).toBeCloseTo(volB, 3);
+  });
+
+  describe('lidDisplayCutout（螢幕視窗開孔）', () => {
+    const oledDef = getPartDefinition('oled-096');
+    if (!oledDef) throw new Error('oled-096 part definition missing from library');
+    const oledParts: PartInstance[] = [{ def: oledDef, transform: identityTransform() }];
+    // 螢幕視窗世界中心 = port.x/port.z（part 在原點、無旋轉）：(0, -1.5)
+    const windowX = 0;
+    const windowY = -1.5;
+
+    it('開啟時（預設）螢幕視窗位置貫穿為空', () => {
+      const plan = planShell(oledParts, DEFAULT_ENCLOSURE_PARAMS);
+      const lid = buildLidSolid(plan, DEFAULT_ENCLOSURE_PARAMS, oledParts, kernel);
+      const panelZ = plan.inner.maxZ;
+      // 探測點涵蓋唇邊底部到面板頂之間，只要窗貫穿即應全程為空
+      const probe = probeAt(windowX, windowY, panelZ);
+      expect(intersectionVolume(lid, probe)).toBe(0);
+    });
+
+    it('關閉時同一位置維持實心（證明是 flag 生效而非窗本來就存在）', () => {
+      const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidDisplayCutout: false };
+      const plan = planShell(oledParts, params);
+      const lid = buildLidSolid(plan, params, oledParts, kernel);
+      const panelZ = plan.inner.maxZ;
+      const probe = probeAt(windowX, windowY, panelZ);
+      expect(intersectionVolume(lid, probe)).toBeGreaterThan(0);
+    });
+
+    it('slide 上蓋同樣依螢幕視窗開孔', () => {
+      const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'slide' as const, lidDisplayCutout: true };
+      const plan = planShell(oledParts, params);
+      const lid = buildLidSolid(plan, params, oledParts, kernel);
+      const panelZ = plan.inner.maxZ;
+      const probe = probeAt(windowX, windowY, panelZ);
+      expect(intersectionVolume(lid, probe)).toBe(0);
+    });
   });
 });
