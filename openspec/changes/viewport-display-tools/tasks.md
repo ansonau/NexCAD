@@ -2,9 +2,9 @@
 
 ## 1. viewStore + 顯示切換按鈕
 
-- [ ] 1.1 新增 `src/store/viewStore.ts`（design.md D1：`shellXray`/`wireframe` + toggle，沿用 toastStore 極簡模式）與 `src/store/viewStore.test.ts`（toggle 行為單元測試）
-- [ ] 1.2 i18n：`view.xray` / `view.wireframe` / `view.sceneTree`（zh/en）
-- [ ] 1.3 Viewport 右上角浮動 toggle 按鈕組（X-ray、Wireframe，active 反白；DOM overlay 不進 Canvas，掛在 `App.tsx` 層，design.md D6）
+- [x] 1.1 新增 `src/store/viewStore.ts`（design.md D1：`shellXray`/`wireframe` + toggle，沿用 toastStore 極簡模式）與 `src/store/viewStore.test.ts`（toggle 行為單元測試）
+- [x] 1.2 i18n：`view.xray` / `view.wireframe` / `view.sceneTree`（zh/en）
+- [x] 1.3 Viewport 右上角浮動 toggle 按鈕組（X-ray、Wireframe，active 反白；DOM overlay 不進 Canvas，掛在 `App.tsx` 層，design.md D6）
 
 ## 2. 場景樹面板
 
