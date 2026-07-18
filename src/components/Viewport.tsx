@@ -1,18 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Grid, OrbitControls } from '@react-three/drei';
+import { Edges, Grid, GizmoHelper, GizmoViewcube, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { getGeometryClient } from '../geometry/client';
 import type { NodeMeshPayload } from '../geometry/protocol';
 import i18n from '../i18n';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import { useToastStore } from '../store/toastStore';
+import { useViewStore } from '../store/viewStore';
 import { SelectionGizmo } from './SelectionGizmo';
 
 export function Viewport() {
   const doc = useDocumentStore((s) => s.doc);
   const selection = useDocumentStore((s) => s.selection);
   const setSelection = useDocumentStore((s) => s.setSelection);
+  const shellXray = useViewStore((s) => s.shellXray);
+  const wireframe = useViewStore((s) => s.wireframe);
   const [meshes, setMeshes] = useState<NodeMeshPayload[]>([]);
 
   useEffect(() => {
@@ -52,6 +55,8 @@ export function Viewport() {
             payload={m}
             selected={selection.includes(m.nodeId)}
             isPart={findNode(doc.nodes, m.nodeId)?.type === 'part'}
+            xray={findNode(doc.nodes, m.nodeId)?.type === 'enclosure' && shellXray}
+            wireframe={wireframe}
             onSelect={(shiftKey) => {
               if (shiftKey) {
                 const current = useDocumentStore.getState().selection;
@@ -72,6 +77,9 @@ export function Viewport() {
         makeDefault
         touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
       />
+      <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
+        <GizmoViewcube />
+      </GizmoHelper>
     </Canvas>
   );
 }
@@ -80,11 +88,15 @@ function SceneMesh({
   payload,
   selected,
   isPart,
+  xray,
+  wireframe,
   onSelect,
 }: {
   payload: NodeMeshPayload;
   selected: boolean;
   isPart: boolean;
+  xray: boolean;
+  wireframe: boolean;
   onSelect: (shiftKey: boolean) => void;
 }) {
   const geometry = useMemo(() => {
@@ -114,12 +126,14 @@ function SceneMesh({
     >
       <meshStandardMaterial
         color={isHole ? '#ef4444' : selected ? '#3b82f6' : isPart ? '#2e7d5b' : '#9db4d0'}
-        transparent={isHole}
-        opacity={isHole ? 0.45 : 1}
+        transparent={isHole || xray}
+        opacity={isHole ? 0.45 : xray ? 0.35 : 1}
+        depthWrite={isHole ? true : !xray}
         roughness={0.6}
         metalness={0.05}
         side={THREE.DoubleSide}
       />
+      {wireframe && <Edges threshold={30} color="#334155" />}
     </mesh>
   );
 }
