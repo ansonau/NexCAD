@@ -2,33 +2,38 @@
 
 ## Purpose
 
-定義螺絲上蓋（screw lid）的平面蓋外觀選擇：杯頭外露的薄蓋，或杯頭埋入的厚蓋。只影響螺絲上蓋，不影響滑蓋、開放式上蓋或殼體底座的螺絲接收柱。另定義上蓋依零件螢幕視窗（`top` face 接口）開孔的能力，適用於螺絲蓋與滑蓋等各類上蓋生成。
+定義螺絲上蓋（screw lid）的平面蓋外觀選擇：杯頭外露的薄蓋，或杯頭埋入的厚蓋；並可選擇螺絲鎖固方向（從上蓋鎖入或從底座鎖入）。只影響螺絲上蓋的四角鎖點角柱，不影響滑蓋、開放式上蓋或殼體其餘幾何。另定義上蓋依零件螢幕視窗（`top` face 接口）開孔的能力，適用於螺絲蓋與滑蓋等各類上蓋生成。
 
 ## Requirements
 
 ### Requirement: 螺絲上蓋為平面蓋，杯頭可選外露或藏入
 
-螺絲上蓋（`lidType === 'screw'`）SHALL 產生平整蓋面（不含凸起圓柱），並提供 `screwLidProfile` 選項選擇杯頭處理：`'flatExposed'`（薄平面蓋，螺絲杯頭外露於蓋面）或 `'flatRecessed'`（厚平面蓋，杯頭完全埋入面板內）。未設定時 SHALL 視為 `'flatRecessed'`。此選項 SHALL 只影響螺絲上蓋，不影響滑蓋、開放式上蓋或殼體底座的螺絲接收柱。
+螺絲上蓋（`lidType === 'screw'`）SHALL 產生平整蓋面（不含凸起圓柱）。系統 SHALL 提供 `screwEntry` 選項決定螺絲鎖固方向：`'fromLid'`（螺絲從上蓋鎖入，預設）或 `'fromBase'`（螺絲從底座鎖入）。杯頭沉孔的外露/藏入樣式（`screwLidProfile`：`'flatExposed'` 或 `'flatRecessed'`，未設定時視為 `'flatRecessed'`）SHALL 套用在螺絲實際進入的那一面（`fromLid` 時為上蓋、`fromBase` 時為底座）；未進入螺絲的那一面 SHALL 只有自攻導孔盲孔（供螺牙咬合），不加厚、不開沉孔。此組選項 SHALL 只影響螺絲上蓋的四角鎖點角柱，不影響滑蓋、開放式上蓋、零件安裝柱或殼體其餘幾何。
 
-#### Scenario: 外露樣式產生薄平面蓋只挖通孔
+#### Scenario: 從上蓋鎖入（預設）時外露樣式產生薄平面蓋只挖通孔
 
-- **WHEN** `screwLidProfile` 為 `'flatExposed'`
-- **THEN** 上蓋為厚度等於壁厚的平整面板，四角只挖螺絲通孔，蓋頂面無沉孔、無凸起圓柱，杯頭外露坐於蓋面
+- **WHEN** `screwEntry` 為 `'fromLid'`（或未設定）且 `screwLidProfile` 為 `'flatExposed'`
+- **THEN** 上蓋為厚度等於壁厚的平整面板，四角只挖螺絲通孔；底座角柱為自攻導孔盲孔
 
-#### Scenario: 藏入樣式產生厚平面蓋埋入杯頭
+#### Scenario: 從上蓋鎖入時藏入樣式產生厚平面蓋埋入杯頭
 
-- **WHEN** `screwLidProfile` 為 `'flatRecessed'` 或未設定
-- **THEN** 上蓋為加厚平整面板（足以容納杯頭沉孔與底floor），四角從蓋頂挖沉孔使杯頭完全埋入面板內、通孔貫穿到底，蓋頂面平整無凸起圓柱
+- **WHEN** `screwEntry` 為 `'fromLid'`（或未設定）且 `screwLidProfile` 為 `'flatRecessed'`（或未設定）
+- **THEN** 上蓋為加厚平整面板，四角挖沉孔使杯頭完全埋入面板內、通孔貫穿到底；底座角柱為自攻導孔盲孔
+
+#### Scenario: 從底座鎖入時角柱通孔/沉孔與自攻盲孔互換
+
+- **WHEN** `screwEntry` 為 `'fromBase'`
+- **THEN** 底座四角角柱依 `screwLidProfile` 挖通孔（`flatExposed`）或通孔+沉孔（`flatRecessed`，底板整體加厚以容納），上蓋角柱改為自攻導孔盲孔，上蓋面板厚度維持壁厚不加厚
 
 #### Scenario: 樣式不影響滑蓋與開放式上蓋
 
 - **WHEN** `lidType` 為 `'slide'` 或 `'open'`
-- **THEN** 上蓋幾何不受 `screwLidProfile` 影響
+- **THEN** 上蓋幾何不受 `screwEntry`/`screwLidProfile` 影響
 
-#### Scenario: 舊專案無欄位時視為藏入
+#### Scenario: 舊專案無 screwEntry 欄位時視為從上蓋鎖入
 
-- **WHEN** 載入的 `.nexcad` 檔或 IndexedDB 專案的 `EnclosureParams` 無 `screwLidProfile` 欄位
-- **THEN** 行為等同 `screwLidProfile: 'flatRecessed'`
+- **WHEN** 載入的 `.nexcad` 檔或 IndexedDB 專案的 `EnclosureParams` 無 `screwEntry` 欄位
+- **THEN** 行為等同 `screwEntry: 'fromLid'`（現行行為）
 
 ### Requirement: 上蓋依螢幕視窗開孔
 
