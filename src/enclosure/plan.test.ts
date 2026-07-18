@@ -152,6 +152,12 @@ describe('planStandoffs', () => {
     expect(omitted.every((s) => s.mountingStyle === 'screw')).toBe(true);
     withScrew.forEach((s, i) => expect(s.holeDiameter).toBeCloseTo(boardDef.mountingHoles[i].diameter, 6));
   });
+
+  // Task 1.4/D2: planStandoffs 產生的是零件安裝柱，不應帶 isCornerPost 標記
+  it('回傳的支柱不帶 isCornerPost（或為 falsy）', () => {
+    const standoffs = planStandoffs([instance()], 'M3');
+    expect(standoffs.every((s) => !s.isCornerPost)).toBe(true);
+  });
 });
 
 describe('planCornerPosts', () => {
@@ -171,6 +177,13 @@ describe('planCornerPosts', () => {
     const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
     const posts = planCornerPosts(plan, 'M3', [], 9);
     expect(posts.every((p) => p.pilotDepth === 9)).toBe(true);
+  });
+
+  // Task 1.4/D2: planCornerPosts 產生的每個項目都應明確標記 isCornerPost: true
+  it('回傳的每個支柱都帶 isCornerPost: true', () => {
+    const plan = planShell([instance()], DEFAULT_ENCLOSURE_PARAMS);
+    const posts = planCornerPosts(plan, 'M3', []);
+    expect(posts.every((p) => p.isCornerPost === true)).toBe(true);
   });
 
   it('柱位固定在角落標準位置（inset = cornerRadius+3），不受零件位置影響', () => {

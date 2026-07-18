@@ -33,6 +33,7 @@ export const DEFAULT_ENCLOSURE_PARAMS: EnclosureParams = {
   reserveCornerSpace: true,
   mountingStyle: 'screw',
   screwLidProfile: 'flatRecessed',
+  screwEntry: 'fromLid',
   lidDisplayCutout: true,
 };
 
@@ -189,6 +190,8 @@ export interface StandoffPlan {
   mountingStyle?: MountingStyle;
   /** 零件安裝孔的實際孔徑（來自 PartDefinition.mountingHoles），peg 幾何用它算定位柱直徑 */
   holeDiameter?: number;
+  /** 是否為上蓋鎖點角柱（true）或零件安裝柱（undefined）；取代原先以 mountingStyle 是否為 undefined 的間接判斷（design.md D2） */
+  isCornerPost?: boolean;
 }
 
 const PILOT_DEPTH = 6;
@@ -260,6 +263,7 @@ export function planCornerPosts(
         pilotDiameter: pilotDiameter(screwSize, 'selfTap'),
         pilotDepth,
         collided,
+        isCornerPost: true,
       });
     }
   }

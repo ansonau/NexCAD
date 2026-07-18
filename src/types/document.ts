@@ -40,6 +40,7 @@ export type ScrewSizeLiteral = 'M2' | 'M2.5' | 'M3' | 'M4';
 
 export type MountingStyle = 'screw' | 'peg';
 export type ScrewLidProfile = 'flatExposed' | 'flatRecessed';
+export type ScrewEntry = 'fromLid' | 'fromBase';
 
 export interface EnclosureParams {
   wallThickness: number;
@@ -55,8 +56,10 @@ export interface EnclosureParams {
   reserveCornerSpace?: boolean;
   /** 零件安裝柱固定方式：螺絲柱或圓柱定位柱；未設定時視為 'screw' */
   mountingStyle?: MountingStyle;
-  /** 螺絲上蓋剖面：外露平面或內凹平面；未設定時視為 'flatRecessed' */
+  /** 螺絲進入面（依 screwEntry 決定為上蓋或底座）的杯頭剖面：外露平面或內凹平面；未設定時視為 'flatRecessed' */
   screwLidProfile?: ScrewLidProfile;
+  /** 螺絲鎖固方向：從上蓋鎖入或從底座鎖入；未設定時視為 'fromLid' */
+  screwEntry?: ScrewEntry;
   /** 上蓋是否依零件螢幕視窗自動開孔；未設定時視為 true */
   lidDisplayCutout?: boolean;
 }
