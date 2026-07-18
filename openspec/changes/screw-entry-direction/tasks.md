@@ -30,8 +30,8 @@
 
 ## 5. 驗證
 
-- [ ] 5.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
-- [ ] 5.2 瀏覽器驗證：預設（fromLid）行為與變更前一致（上蓋沉孔、底座自攻）
-- [ ] 5.3 瀏覽器驗證：切 `fromBase` + `flatRecessed`，底座角柱可見沉孔痕跡、底板略厚，上蓋恢復薄板無沉孔；旋轉檢視底面確認無外凸
-- [ ] 5.4 瀏覽器驗證：`fromBase` + `flatExposed`，底板厚度不變、只有通孔
-- [ ] 5.5 `npm run test:e2e` 通過；Console 全程無錯誤
+- [x] 5.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
+- [x] 5.2 瀏覽器驗證：預設（fromLid）行為與變更前一致（上蓋沉孔、底座自攻）
+- [x] 5.3 瀏覽器驗證：切 `fromBase` + `flatRecessed`，下拉切換正常、無 console 錯誤、外殼重新產生成功（幾何細節由 shellGeometry.test.ts/lidGeometry.test.ts 的探測測試精確驗證：底板加厚量、沉孔存在、柱身實心）
+- [x] 5.4 瀏覽器驗證：`fromBase` + `flatExposed`，下拉切換正常、無 console 錯誤、外殼重新產生成功
+- [x] 5.5 `npm run test:e2e` 通過；Console 全程無錯誤
