@@ -19,9 +19,9 @@
 
 ## 4. UI：lidDisplayCutout 選項
 
-- [ ] 4.1 i18n：`enclosure.lidDisplayCutout`（zh/en）
-- [ ] 4.2 `src/components/EnclosurePanel.tsx` 進階區塊加 checkbox（`lidType !== 'open'` 顯示）
-- [ ] 4.3 `src/components/PropertyCard.tsx` 外殼參數表加 checkbox（同上），變更觸發既有 `regenerateEnclosure`
+- [x] 4.1 i18n：`enclosure.lidDisplayCutout`（zh/en）
+- [x] 4.2 `src/components/EnclosurePanel.tsx` 進階區塊加 checkbox（`lidType !== 'open'` 顯示）
+- [x] 4.3 `src/components/PropertyCard.tsx` 外殼參數表加 checkbox（同上），變更觸發既有 `regenerateEnclosure`
 
 ## 5. 驗證
 
