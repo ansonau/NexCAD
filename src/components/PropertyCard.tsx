@@ -246,6 +246,16 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
           {t('enclosure.reserveCornerSpace')}
         </label>
       )}
+      {p.lidType !== 'open' && (
+        <label className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+          <input
+            type="checkbox"
+            checked={p.lidDisplayCutout !== false}
+            onChange={(e) => setParam('lidDisplayCutout', e.target.checked)}
+          />
+          {t('enclosure.lidDisplayCutout')}
+        </label>
+      )}
     </>
   );
 }

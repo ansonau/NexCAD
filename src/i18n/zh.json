@@ -77,6 +77,7 @@
     "standoffWallPadding": "支柱壁厚 (mm)",
     "pilotDepthOverride": "導孔深度 (mm，空=自動)",
     "reserveCornerSpace": "自動加大外殼容納螺絲柱",
+    "lidDisplayCutout": "上蓋依螢幕視窗開孔",
     "mountingStyle": "零件固定方式",
     "mountingScrew": "螺絲柱",
     "mountingPeg": "圓柱定位柱",

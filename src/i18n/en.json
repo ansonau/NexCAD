@@ -77,6 +77,7 @@
     "standoffWallPadding": "Standoff wall padding (mm)",
     "pilotDepthOverride": "Pilot depth (mm, blank = auto)",
     "reserveCornerSpace": "Auto-expand shell to fit screw posts",
+    "lidDisplayCutout": "Cut display windows in lid",
     "mountingStyle": "Part mounting style",
     "mountingScrew": "Screw standoff",
     "mountingPeg": "Locating peg",

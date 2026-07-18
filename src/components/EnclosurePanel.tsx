@@ -150,6 +150,16 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
                 {t('enclosure.reserveCornerSpace')}
               </label>
             )}
+            {params.lidType !== 'open' && (
+              <label className="col-span-2 flex items-center gap-2 text-xs text-slate-500">
+                <input
+                  type="checkbox"
+                  checked={params.lidDisplayCutout !== false}
+                  onChange={(e) => set('lidDisplayCutout', e.target.checked)}
+                />
+                {t('enclosure.lidDisplayCutout')}
+              </label>
+            )}
           </div>
         )}
         <p className="mb-3 text-xs text-slate-500">{t(scopeKey, { count: scopeCount })}</p>
