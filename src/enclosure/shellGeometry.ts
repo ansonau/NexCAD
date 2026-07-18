@@ -1,5 +1,9 @@
 import type { GeometryKernel, Solid } from '../geometry/kernel';
 import type { ShellPlan, StandoffPlan } from './plan';
+import type { ScrewEntry, ScrewLidProfile } from '../types/document';
+import type { ScrewSize } from './screws';
+import { pilotDiameter } from './screws';
+import { counterboreDepth, counterboreRadius } from './counterbore';
 
 const noRotScale = { rotation: [0, 0, 0] as [number, number, number], scale: [1, 1, 1] as [number, number, number] };
 
@@ -11,6 +15,9 @@ const PEG_HEIGHT = 4;
 /**
  * 殼體本體：外形（圓角）挖去內腔，再加上每個支柱（含螺絲導孔）。
  * 世界絕對座標，呼叫端不需再套用額外 transform。
+ *
+ * `screwEntry`/`screwSize`/`screwLidProfile` 只影響 `isCornerPost` 支柱（上蓋鎖點角柱）；
+ * 零件安裝柱維持現行 `mountingStyle` 分支不變（design.md D5）。
  */
 export function buildShellSolid(
   plan: ShellPlan,
@@ -18,13 +25,22 @@ export function buildShellSolid(
   standoffs: StandoffPlan[],
   kernel: GeometryKernel,
   standoffWallPadding: number = wallThickness,
+  screwEntry: ScrewEntry = 'fromLid',
+  screwSize: ScrewSize = 'M3',
+  screwLidProfile: ScrewLidProfile = 'flatRecessed',
 ): Solid {
   const { outer, inner, cornerRadius } = plan;
 
+  // fromBase + flatRecessed：底板整體加厚以容納杯頭沉孔（design.md D5）。
+  // cavitySolid／inner 完全不動，只把外底面往下延伸；非 fromBase 或 flatExposed 時 floorExtra=0，行為不變。
+  const isFlatRecessed = (screwLidProfile ?? 'flatRecessed') === 'flatRecessed';
+  const floorExtra = screwEntry === 'fromBase' && isFlatRecessed ? counterboreDepth(screwSize) : 0;
+  const adjustedFloorZ = plan.floorZ - floorExtra;
+
   const outerSolid = kernel.transform(
-    kernel.roundedBox(outer.maxX - outer.minX, outer.maxY - outer.minY, outer.maxZ - outer.minZ, cornerRadius),
+    kernel.roundedBox(outer.maxX - outer.minX, outer.maxY - outer.minY, outer.maxZ - adjustedFloorZ, cornerRadius),
     {
-      position: [(outer.minX + outer.maxX) / 2, (outer.minY + outer.maxY) / 2, outer.minZ],
+      position: [(outer.minX + outer.maxX) / 2, (outer.minY + outer.maxY) / 2, adjustedFloorZ],
       ...noRotScale,
     },
   );
@@ -43,6 +59,41 @@ export function buildShellSolid(
   let shell = kernel.difference(outerSolid, cavitySolid);
 
   for (const s of standoffs) {
+    if (s.isCornerPost && screwEntry === 'fromBase') {
+      // fromBase：螺絲頭在底座，角柱改提供通孔淨空（柱體半徑=通孔半徑，非自攻半徑），
+      // 從新的外底面（adjustedFloorZ）長到合模面（topZ）（design.md D5）。
+      const throughRadius = pilotDiameter(screwSize, 'through') / 2;
+      const postRadius = throughRadius + standoffWallPadding;
+      const postHeight = s.topZ - adjustedFloorZ;
+      if (postHeight > 0) {
+        const post = kernel.transform(kernel.cylinder(postRadius, postHeight), {
+          position: [s.x, s.y, adjustedFloorZ],
+          ...noRotScale,
+        });
+        shell = kernel.union(shell, post);
+      }
+
+      // 通孔：從外底面下方 1mm 貫穿到合模面上方 1mm，確保乾淨貫穿。
+      const throughBottom = adjustedFloorZ - 1;
+      const throughTop = s.topZ + 1;
+      const through = kernel.transform(kernel.cylinder(throughRadius, throughTop - throughBottom), {
+        position: [s.x, s.y, throughBottom],
+        ...noRotScale,
+      });
+      shell = kernel.difference(shell, through);
+
+      if (isFlatRecessed) {
+        // 杯頭沉孔：從新的外底面向上挖，讓杯頭完全埋入加厚的底板內，外底面維持平整。
+        const boreDepth = counterboreDepth(screwSize);
+        const boreRadius = counterboreRadius(screwSize, plan.cornerRadius, throughRadius);
+        const bore = kernel.transform(kernel.cylinder(boreRadius, boreDepth + 1), {
+          position: [s.x, s.y, adjustedFloorZ - 1],
+          ...noRotScale,
+        });
+        shell = kernel.difference(shell, bore);
+      }
+      continue;
+    }
     if (s.mountingStyle === 'peg') {
       // peg 模式：實心柱長到孔平面 topZ，不鑽導孔（沒有螺絲要攻牙，柱身不需要深度餘量）。
       const standoffHeight = s.topZ - plan.floorZ;

@@ -40,6 +40,9 @@ export function buildEnclosureNodeSolid(node: EnclosureNode, kernel: GeometryKer
     standoffs,
     kernel,
     node.params.standoffWallPadding,
+    node.params.screwEntry,
+    node.params.screwSize,
+    node.params.screwLidProfile,
   );
   shell = cutPorts(shell, plan.outer, planPortCutouts(parts), kernel);
   return shell;
