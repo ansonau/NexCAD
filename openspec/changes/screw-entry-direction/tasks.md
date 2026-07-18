@@ -10,10 +10,10 @@
 
 ## 2. lidGeometry.ts：改用共用函式 + fromBase 分支
 
-- [ ] 2.1 `lidGeometry.ts` 改呼叫 `counterbore.ts` 的函式取代原本內聯的沉孔半徑/深度計算（純重構，`lidGeometry.test.ts` 既有案例須全數維持通過，作為重構安全網）
-- [ ] 2.2 `isFlatRecessed` 判斷加 `&& params.screwEntry !== 'fromBase'`（fromBase 模式上蓋永不加厚）
-- [ ] 2.3 角柱迴圈依 `params.screwEntry` 分支：`fromLid`（現行，通孔+視情況沉孔，改呼叫共用函式）；`fromBase`（新，自攻盲孔：從 `panelZ - LIP_HEIGHT` 向上鑽 `pilotDiameter(screwSize,'selfTap')` 直徑、`p.pilotDepth` 深，深度 clamp 在面板+唇邊實際厚度內，design.md D4）
-- [ ] 2.4 測試：`src/enclosure/lidGeometry.test.ts`——`fromBase` 模式上蓋角柱為自攻盲孔（探測孔內為空、孔外實心）非通孔（探測面板頂面上方無穿透）、面板厚度維持 `wallThickness` 不因 `screwLidProfile` 加厚
+- [x] 2.1 `lidGeometry.ts` 改呼叫 `counterbore.ts` 的函式取代原本內聯的沉孔半徑/深度計算（純重構，`lidGeometry.test.ts` 既有案例須全數維持通過，作為重構安全網）
+- [x] 2.2 `isFlatRecessed` 判斷加 `&& params.screwEntry !== 'fromBase'`（fromBase 模式上蓋永不加厚）
+- [x] 2.3 角柱迴圈依 `params.screwEntry` 分支：`fromLid`（現行，通孔+視情況沉孔，改呼叫共用函式）；`fromBase`（新，自攻盲孔：從 `panelZ - LIP_HEIGHT` 向上鑽 `pilotDiameter(screwSize,'selfTap')` 直徑、`p.pilotDepth` 深，深度 clamp 在面板+唇邊實際厚度內，design.md D4）
+- [x] 2.4 測試：`src/enclosure/lidGeometry.test.ts`——`fromBase` 模式上蓋角柱為自攻盲孔（探測孔內為空、孔外實心）非通孔（探測面板頂面上方無穿透）、面板厚度維持 `wallThickness` 不因 `screwLidProfile` 加厚
 
 ## 3. shellGeometry.ts：fromBase 分支 + 底板加厚
 
