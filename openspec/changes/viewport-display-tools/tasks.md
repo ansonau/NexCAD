@@ -8,9 +8,9 @@
 
 ## 2. 場景樹面板
 
-- [ ] 2.1 新增 `src/components/SceneTreePanel.tsx`（design.md D2）：列出 `doc.nodes`（group 巢狀縮排）、每列類型標記+名稱+眼睛按鈕、點列選取（shift 多選同 viewport 邏輯）、選中列高亮、隱藏節點半透明、可收合
-- [ ] 2.2 眼睛按鈕接 `updateNode` toggle `visible`（`stopPropagation` 不觸發選取）；`App.tsx` 掛入面板（左側浮動）
-- [ ] 2.3 瀏覽器驗證場景樹核心情境：點列選取與 viewport 同步；隱藏外殼後被包住的零件可直接點擊；恢復顯示正常
+- [x] 2.1 新增 `src/components/SceneTreePanel.tsx`（design.md D2）：列出 `doc.nodes`（group 巢狀縮排）、每列類型標記+名稱+眼睛按鈕、點列選取（shift 多選同 viewport 邏輯）、選中列高亮、隱藏節點半透明、可收合
+- [x] 2.2 眼睛按鈕接 `updateNode` toggle `visible`（`stopPropagation` 不觸發選取）；`App.tsx` 掛入面板（左側浮動）
+- [x] 2.3 瀏覽器驗證場景樹核心情境：點列選取與 viewport 同步；隱藏外殼後被包住的零件可直接點擊；恢復顯示正常
 
 ## 3. Viewport 渲染：ViewCube + X-ray + Edges
 
