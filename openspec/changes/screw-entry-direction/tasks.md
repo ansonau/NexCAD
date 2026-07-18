@@ -17,10 +17,10 @@
 
 ## 3. shellGeometry.ts：fromBase 分支 + 底板加厚
 
-- [ ] 3.1 `buildShellSolid` 依 `params.screwEntry === 'fromBase'` 且 `s.isCornerPost === true` 分支處理角柱（design.md D5）；非角柱（`isCornerPost` 非 true）維持現行 `mountingStyle` 邏輯完全不變
-- [ ] 3.2 `fromBase` 模式：依 `screwLidProfile ?? 'flatRecessed'` 算 `floorExtra`（`flatRecessed` 用 `counterboreDepth(screwSize)`、`flatExposed` 為 0），把 `outerSolid` 的 Z 下緣往下延伸 `floorExtra`（`inner`/`cavitySolid` 不動）
-- [ ] 3.3 `fromBase` 模式角柱：柱體從新底面延伸到 `topZ`（通孔半徑非自攻半徑）、通孔貫穿新底面到 `topZ` 之外、`flatRecessed` 時另從新底面向上挖沉孔（呼叫 `counterbore.ts` 共用函式）
-- [ ] 3.4 測試：`src/enclosure/shellGeometry.test.ts`——`fromBase`+`flatRecessed` 時底板實測厚度等於 `counterboreDepth+wallThickness`、角柱沉孔埋頭、通孔貫穿；`fromBase`+`flatExposed` 時底板厚度不變、只有通孔無沉孔；零件安裝柱（非角柱）在 `fromBase` 模式下幾何不受影響（沿用既有測試案例，確認仍通過）
+- [x] 3.1 `buildShellSolid` 依 `params.screwEntry === 'fromBase'` 且 `s.isCornerPost === true` 分支處理角柱（design.md D5）；非角柱（`isCornerPost` 非 true）維持現行 `mountingStyle` 邏輯完全不變
+- [x] 3.2 `fromBase` 模式：依 `screwLidProfile ?? 'flatRecessed'` 算 `floorExtra`（`flatRecessed` 用 `counterboreDepth(screwSize)`、`flatExposed` 為 0），把 `outerSolid` 的 Z 下緣往下延伸 `floorExtra`（`inner`/`cavitySolid` 不動）
+- [x] 3.3 `fromBase` 模式角柱：柱體從新底面延伸到 `topZ`（通孔半徑非自攻半徑）、通孔貫穿新底面到 `topZ` 之外、`flatRecessed` 時另從新底面向上挖沉孔（呼叫 `counterbore.ts` 共用函式）
+- [x] 3.4 測試：`src/enclosure/shellGeometry.test.ts`——`fromBase`+`flatRecessed` 時底板實測厚度等於 `counterboreDepth+wallThickness`、角柱沉孔埋頭、通孔貫穿；`fromBase`+`flatExposed` 時底板厚度不變、只有通孔無沉孔；零件安裝柱（非角柱）在 `fromBase` 模式下幾何不受影響（沿用既有測試案例，確認仍通過）
 
 ## 4. UI：screwEntry 選項
 
