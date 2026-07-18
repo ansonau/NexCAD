@@ -84,6 +84,9 @@
     "screwLidProfile": "Screw lid profile",
     "lidFlatExposed": "Flat, head exposed",
     "lidFlatRecessed": "Flat, head recessed",
+    "screwEntry": "Screw entry direction",
+    "screwEntryFromLid": "From lid",
+    "screwEntryFromBase": "From base",
     "params": "Enclosure parameters"
   },
   "tools": {

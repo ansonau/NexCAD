@@ -141,6 +141,21 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
               </label>
             )}
             {params.lidType === 'screw' && (
+              <label className="col-span-2 block">
+                <span className="text-xs text-slate-400">{t('enclosure.screwEntry')}</span>
+                <select
+                  className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+                  value={params.screwEntry ?? 'fromLid'}
+                  onChange={(e) =>
+                    set('screwEntry', e.target.value as EnclosureParams['screwEntry'])
+                  }
+                >
+                  <option value="fromLid">{t('enclosure.screwEntryFromLid')}</option>
+                  <option value="fromBase">{t('enclosure.screwEntryFromBase')}</option>
+                </select>
+              </label>
+            )}
+            {params.lidType === 'screw' && (
               <label className="col-span-2 flex items-center gap-2 text-xs text-slate-500">
                 <input
                   type="checkbox"

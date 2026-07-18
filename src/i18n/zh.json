@@ -84,6 +84,9 @@
     "screwLidProfile": "螺絲上蓋樣式",
     "lidFlatExposed": "平面蓋・杯頭外露",
     "lidFlatRecessed": "平面蓋・杯頭藏入",
+    "screwEntry": "螺絲鎖固方向",
+    "screwEntryFromLid": "從上蓋鎖入",
+    "screwEntryFromBase": "從底座鎖入",
     "params": "外殼參數"
   },
   "tools": {
