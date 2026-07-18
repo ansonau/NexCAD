@@ -9,8 +9,8 @@
 
 ## 2. portProjection.ts：planTopWindowCutouts
 
-- [ ] 2.1 新增 `TopWindowCutout` 型別與 `planTopWindowCutouts(parts)`（design.md D2：只收 top face、`angle % 90 !== 0` 跳過、旋轉後中心 = 零件位置 + 旋轉 `(port.x, port.z)`、`worldW/worldH` 依 cos/sin 對調、各加 `TOLERANCE_MM × 2`）
-- [ ] 2.2 測試：`src/enclosure/portProjection.test.ts`（若無此檔則建立；`holeProjection.test.ts` 為孔位投影非此檔）——0° 位置/尺寸正確、90° 旋轉 w/h 對調且中心跟著轉、非 90° 倍數跳過、無 top port 零件回傳空陣列、側面 port 不被收入
+- [x] 2.1 新增 `TopWindowCutout` 型別與 `planTopWindowCutouts(parts)`（design.md D2：只收 top face、`angle % 90 !== 0` 跳過、旋轉後中心 = 零件位置 + 旋轉 `(port.x, port.z)`、`worldW/worldH` 依 cos/sin 對調、各加 `TOLERANCE_MM × 2`）
+- [x] 2.2 測試：`src/enclosure/portProjection.test.ts`（若無此檔則建立；`holeProjection.test.ts` 為孔位投影非此檔）——0° 位置/尺寸正確、90° 旋轉 w/h 對調且中心跟著轉、非 90° 倍數跳過、無 top port 零件回傳空陣列、側面 port 不被收入
 
 ## 3. lidGeometry.ts：上蓋挖窗
 
