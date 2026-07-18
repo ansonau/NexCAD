@@ -175,6 +175,37 @@ describe('buildLidSolid', () => {
     expect(volA).toBeCloseTo(volB, 3);
   });
 
+  describe('screwEntry: fromBase（螺絲從底座鎖入，上蓋角柱改自攻盲孔）', () => {
+    const params = { ...DEFAULT_ENCLOSURE_PARAMS, lidType: 'screw' as const, screwEntry: 'fromBase' as const, screwLidProfile: 'flatRecessed' as const };
+
+    it('面板厚度維持 wallThickness，即使 screwLidProfile 為 flatRecessed 也不加厚', () => {
+      const plan = planShell(parts, params);
+      const mesh = kernel.toMesh(buildLidSolid(plan, params, parts, kernel));
+      let maxZ = -Infinity;
+      for (let i = 2; i < mesh.positions.length; i += 3) maxZ = Math.max(maxZ, mesh.positions[i]);
+      expect(maxZ).toBeCloseTo(plan.inner.maxZ + params.wallThickness, 1);
+    });
+
+    it('面板頂面附近孔位為實心（非通孔，證明只是盲孔沒有鑽穿頂皮）', () => {
+      const plan = planShell(parts, params);
+      const lid = buildLidSolid(plan, params, parts, kernel);
+      const panelZ = plan.inner.maxZ;
+      const panelTop = panelZ + params.wallThickness;
+      const p = planCornerPosts(plan, params.screwSize, parts)[0];
+      const nearTop = probeAt(p.x, p.y, panelTop - 0.3);
+      expect(intersectionVolume(lid, nearTop)).toBeGreaterThan(0);
+    });
+
+    it('唇邊底面（合模面）附近孔位為空（自攻盲孔從此處向上鑽入）', () => {
+      const plan = planShell(parts, params);
+      const lid = buildLidSolid(plan, params, parts, kernel);
+      const panelZ = plan.inner.maxZ;
+      const p = planCornerPosts(plan, params.screwSize, parts)[0];
+      const nearLipBottom = probeAt(p.x, p.y, panelZ - 3 + 0.3); // LIP_HEIGHT = 3
+      expect(intersectionVolume(lid, nearLipBottom)).toBe(0);
+    });
+  });
+
   describe('lidDisplayCutout（螢幕視窗開孔）', () => {
     const oledDef = getPartDefinition('oled-096');
     if (!oledDef) throw new Error('oled-096 part definition missing from library');
