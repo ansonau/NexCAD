@@ -15,7 +15,7 @@
 
 ## 3. 驗證
 
-- [ ] 3.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
-- [ ] 3.2 瀏覽器驗證：切 `mountingStyle: 'hole'` 產生外殼，零件安裝孔位置無支柱、殼體地板可見貫穿孔；角柱與螺絲上蓋不受影響
-- [ ] 3.3 瀏覽器驗證：`screw`/`peg` 兩個既有選項行為不變（回歸確認）
-- [ ] 3.4 `npm run test:e2e` 通過；Console 全程無錯誤
+- [x] 3.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
+- [x] 3.2 瀏覽器驗證：切 `mountingStyle: 'hole'` 產生外殼，零件安裝孔位置無支柱、殼體地板可見貫穿孔；角柱與螺絲上蓋不受影響
+- [x] 3.3 瀏覽器驗證：`screw`/`peg` 兩個既有選項行為不變（回歸確認）
+- [x] 3.4 `npm run test:e2e` 通過；Console 全程無錯誤
