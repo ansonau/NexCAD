@@ -107,5 +107,10 @@
     "geometry": "Geometry operation failed; the last valid state was kept",
     "exportEmpty": "Nothing to export",
     "exportFailed": "Export failed"
+  },
+  "view": {
+    "xray": "Shell X-ray",
+    "wireframe": "Wireframe",
+    "sceneTree": "Scene objects"
   }
 }

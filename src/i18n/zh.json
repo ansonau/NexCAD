@@ -107,5 +107,10 @@
     "geometry": "幾何運算失敗，已保留上一個有效狀態",
     "exportEmpty": "沒有可匯出的實體",
     "exportFailed": "匯出失敗"
+  },
+  "view": {
+    "xray": "外殼透視",
+    "wireframe": "稜線顯示",
+    "sceneTree": "場景物件"
   }
 }
