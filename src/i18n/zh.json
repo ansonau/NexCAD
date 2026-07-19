@@ -7,7 +7,8 @@
     "undo": "復原",
     "redo": "重做",
     "delete": "刪除",
-    "export": "匯出 STL"
+    "export": "匯出 STL",
+    "smartCar": "智能小車"
   },
   "property": {
     "name": "名稱",
@@ -113,5 +114,8 @@
     "xray": "外殼透視",
     "wireframe": "稜線顯示",
     "sceneTree": "場景物件"
+  },
+  "common": {
+    "close": "關閉"
   }
 }

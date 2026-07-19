@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   Box,
+  Car,
   Circle,
   Cone,
   Cylinder,
@@ -16,7 +17,9 @@ import { useTranslation } from 'react-i18next';
 import { EnclosurePanel } from './EnclosurePanel';
 import { ExportDialog } from './ExportDialog';
 import { ScrewToolsMenu } from './ScrewToolsMenu';
+import { IconButton, panelClass } from './ui';
 import { useDocumentStore } from '../store/documentStore';
+import { buildSmartCarNodes } from '../parts/presets';
 import { createPrimitive } from '../types/document';
 import type { PrimitiveKind } from '../types/document';
 
@@ -28,8 +31,9 @@ const PRIMITIVES: { kind: PrimitiveKind; label: string; icon: LucideIcon }[] = [
 ];
 
 export function Toolbar() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const addNode = useDocumentStore((s) => s.addNode);
+  const addNodes = useDocumentStore((s) => s.addNodes);
   const undo = useDocumentStore((s) => s.undo);
   const redo = useDocumentStore((s) => s.redo);
   const removeSelected = useDocumentStore((s) => s.removeSelected);
@@ -42,33 +46,42 @@ export function Toolbar() {
 
   return (
     <>
-      <div className="absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-slate-200 bg-white/90 p-1.5 shadow-lg backdrop-blur">
+      <div
+        className={`absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-0.5 p-1 ${panelClass}`}
+      >
         {PRIMITIVES.map((p) => (
-          <ToolButton key={p.kind} title={t(p.label)} onClick={() => addNode(createPrimitive(p.kind))}>
-            <p.icon size={20} />
-          </ToolButton>
+          <IconButton key={p.kind} title={t(p.label)} onClick={() => addNode(createPrimitive(p.kind))}>
+            <p.icon size={18} strokeWidth={1.8} />
+          </IconButton>
         ))}
         <Divider />
-        <ToolButton title={t('toolbar.undo')} onClick={undo} disabled={!canUndo}>
-          <Undo2 size={20} />
-        </ToolButton>
-        <ToolButton title={t('toolbar.redo')} onClick={redo} disabled={!canRedo}>
-          <Redo2 size={20} />
-        </ToolButton>
-        <ToolButton title={t('toolbar.delete')} onClick={removeSelected} disabled={selection.length === 0}>
-          <Trash2 size={20} />
-        </ToolButton>
+        <IconButton title={t('toolbar.undo')} onClick={undo} disabled={!canUndo}>
+          <Undo2 size={18} strokeWidth={1.8} />
+        </IconButton>
+        <IconButton title={t('toolbar.redo')} onClick={redo} disabled={!canRedo}>
+          <Redo2 size={18} strokeWidth={1.8} />
+        </IconButton>
+        <IconButton
+          title={t('toolbar.delete')}
+          onClick={removeSelected}
+          disabled={selection.length === 0}
+        >
+          <Trash2 size={18} strokeWidth={1.8} />
+        </IconButton>
         <Divider />
-        <ToolButton title={t('enclosure.title')} onClick={() => setShowEnclosure(true)}>
-          <PackageOpen size={20} />
-        </ToolButton>
-        <ToolButton title={t('tools.title')} onClick={() => setShowTools(true)}>
-          <Wrench size={20} />
-        </ToolButton>
+        <IconButton title={t('enclosure.title')} onClick={() => setShowEnclosure(true)}>
+          <PackageOpen size={18} strokeWidth={1.8} />
+        </IconButton>
+        <IconButton title={t('toolbar.smartCar')} onClick={() => addNodes(buildSmartCarNodes(i18n.language))}>
+          <Car size={18} strokeWidth={1.8} />
+        </IconButton>
+        <IconButton title={t('tools.title')} onClick={() => setShowTools(true)}>
+          <Wrench size={18} strokeWidth={1.8} />
+        </IconButton>
         <Divider />
-        <ToolButton title={t('toolbar.export')} onClick={() => setShowExport(true)}>
-          <Download size={20} />
-        </ToolButton>
+        <IconButton title={t('toolbar.export')} onClick={() => setShowExport(true)}>
+          <Download size={18} strokeWidth={1.8} />
+        </IconButton>
       </div>
       {showExport && <ExportDialog onClose={() => setShowExport(false)} />}
       {showEnclosure && <EnclosurePanel onClose={() => setShowEnclosure(false)} />}
@@ -78,29 +91,5 @@ export function Toolbar() {
 }
 
 function Divider() {
-  return <div className="mx-1 h-6 w-px bg-slate-200" />;
-}
-
-function ToolButton({
-  title,
-  onClick,
-  disabled,
-  children,
-}: {
-  title: string;
-  onClick: () => void;
-  disabled?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      title={title}
-      aria-label={title}
-      onClick={onClick}
-      disabled={disabled}
-      className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100 active:scale-95 disabled:opacity-40 disabled:hover:bg-transparent"
-    >
-      {children}
-    </button>
-  );
+  return <div className="mx-1 h-5 w-px bg-line" />;
 }

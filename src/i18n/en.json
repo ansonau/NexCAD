@@ -7,7 +7,8 @@
     "undo": "Undo",
     "redo": "Redo",
     "delete": "Delete",
-    "export": "Export STL"
+    "export": "Export STL",
+    "smartCar": "Smart Car"
   },
   "property": {
     "name": "Name",
@@ -113,5 +114,8 @@
     "xray": "Shell X-ray",
     "wireframe": "Wireframe",
     "sceneTree": "Scene objects"
+  },
+  "common": {
+    "close": "Close"
   }
 }
