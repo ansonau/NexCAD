@@ -19,13 +19,13 @@
 
 ## 4. 底盤與車輪（第二輪，使用者追加需求）
 
-- [ ] 4.1 `src/parts/schema.ts`：`partBlockSchema` 新增選填 `rotation: vec3Schema.optional()`（design.md D5）
-- [ ] 4.2 `src/parts/partGeometry.ts`：`buildPartSolid` 的 block 迴圈改用 `block.rotation ?? [0, 0, 0]`（取代固定 `noTransform.rotation`），既有零件行為不變
-- [ ] 4.3 `src/parts/library.ts`：新增 `car-wheel` 零件（design.md D6：body 極薄轂座 + 一個 `rotation: [90,0,0]` 的 cylinder block 當輪胎，`size: [65, 65, 27]`）——**block.position 的精確平移量需實作者用 `buildPartSolid` 實測調整**，直到 4.4 的 probe 測試通過（觸地、半徑、寬度），非憑空硬編公式
-- [ ] 4.4 `src/parts/library.test.ts` 或新檔：`car-wheel` 幾何 probe 測試——(a) 最低點 z≈0（容許 0.5mm）、(b) XZ 剖面半徑≈32.5mm、(c) Y 方向寬度≈27mm（沿用 `shellGeometry.test.ts` 的 probe-box 手法）
-- [ ] 4.5 `src/parts/presets.ts`：新增 `buildChassisAndWheels()`（design.md D7，底盤 `createPrimitive('box', ...)` + 2 顆 `car-wheel` PartNode，位置見 D7）
-- [ ] 4.6 `src/parts/presets.test.ts`：`buildChassisAndWheels` 回傳 3 個節點（1 primitive + 2 part），位置/尺寸與 D7 一致
-- [ ] 4.7 `src/components/Toolbar.tsx`：onClick 改為 `addNodes([...carParts, ...extras])` 後 `setSelection(carParts.map(n => n.id))`（design.md D8，只選電子零件）
+- [x] 4.1 `src/parts/schema.ts`：`partBlockSchema` 新增選填 `rotation: vec3Schema.optional()`（design.md D5）
+- [x] 4.2 `src/parts/partGeometry.ts`：`buildPartSolid` 的 block 迴圈改用 `block.rotation ?? [0, 0, 0]`（取代固定 `noTransform.rotation`），既有零件行為不變
+- [x] 4.3 `src/parts/library.ts`：新增 `car-wheel` 零件（design.md D6：body 極薄轂座 + 一個 `rotation: [90,0,0]` 的 cylinder block 當輪胎，`size: [65, 65, 27]`）——**block.position 的精確平移量需實作者用 `buildPartSolid` 實測調整**，直到 4.4 的 probe 測試通過（觸地、半徑、寬度），非憑空硬編公式
+- [x] 4.4 `src/parts/library.test.ts` 或新檔：`car-wheel` 幾何 probe 測試——(a) 最低點 z≈0（容許 0.5mm）、(b) XZ 剖面半徑≈32.5mm、(c) Y 方向寬度≈27mm（沿用 `shellGeometry.test.ts` 的 probe-box 手法）
+- [x] 4.5 `src/parts/presets.ts`：新增 `buildChassisAndWheels()`（design.md D7，底盤 `createPrimitive('box', ...)` + 2 顆 `car-wheel` PartNode，位置見 D7）
+- [x] 4.6 `src/parts/presets.test.ts`：`buildChassisAndWheels` 回傳 3 個節點（1 primitive + 2 part），位置/尺寸與 D7 一致
+- [x] 4.7 `src/components/Toolbar.tsx`：onClick 改為 `addNodes([...carParts, ...extras])` 後 `setSelection(carParts.map(n => n.id))`（design.md D8，只選電子零件）
 
 ## 5. 最終驗證
 
