@@ -7,8 +7,8 @@
 
 ## 2. UI
 
-- [ ] 2.1 i18n：`toolbar.smartCar`（zh「智能小車」/ en「Smart Car」）
-- [ ] 2.2 `src/components/Toolbar.tsx`：新增 lucide `Car` IconButton（「產生外殼」旁），onClick `addNodes(buildSmartCarNodes(i18n.language))`
+- [x] 2.1 i18n：`toolbar.smartCar`（zh「智能小車」/ en「Smart Car」）
+- [x] 2.2 `src/components/Toolbar.tsx`：新增 lucide `Car` IconButton（「產生外殼」旁），onClick `addNodes(buildSmartCarNodes(i18n.language))`
 
 ## 3. 驗證
 
