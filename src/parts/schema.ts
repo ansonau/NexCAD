@@ -11,6 +11,8 @@ export const partBlockSchema = z.object({
   position: vec3Schema,
   /** box: [寬x, 深y, 高z]；cylinder: [直徑, 直徑, 高] */
   size: vec3Schema,
+  /** 選填，度；預設 [0,0,0]（現行行為不變）。目前只有輪子用得到（水平軸圓柱）。 */
+  rotation: vec3Schema.optional(),
   label: z.string().optional(),
 });
 export type PartBlock = z.infer<typeof partBlockSchema>;

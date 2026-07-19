@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PART_LIBRARY, getPartDefinition } from './library';
-import { SMART_CAR_PRESET, buildSmartCarNodes } from './presets';
+import { SMART_CAR_PRESET, buildChassisAndWheels, buildSmartCarNodes } from './presets';
 
 describe('SMART_CAR_PRESET', () => {
   it('每個 partId 都存在於 PART_LIBRARY', () => {
@@ -66,5 +66,37 @@ describe('buildSmartCarNodes', () => {
     } finally {
       entry.partId = original;
     }
+  });
+});
+
+describe('buildChassisAndWheels', () => {
+  it('回傳 3 個節點：1 底盤 box + 2 car-wheel part', () => {
+    const nodes = buildChassisAndWheels('zh');
+    expect(nodes).toHaveLength(3);
+
+    const [chassis, leftWheel, rightWheel] = nodes;
+    expect(chassis.type).toBe('primitive');
+    if (chassis.type === 'primitive') {
+      expect(chassis.kind).toBe('box');
+      expect(chassis.params).toEqual({ width: 270, depth: 185, height: 3 });
+      expect(chassis.transform.position).toEqual([-3, 0, -3]);
+    }
+
+    expect(leftWheel.type).toBe('part');
+    expect(rightWheel.type).toBe('part');
+    if (leftWheel.type === 'part' && rightWheel.type === 'part') {
+      expect(leftWheel.partId).toBe('car-wheel');
+      expect(rightWheel.partId).toBe('car-wheel');
+      expect(leftWheel.transform.position).toEqual([-15, 102.5, 0]);
+      expect(rightWheel.transform.position).toEqual([-15, -102.5, 0]);
+    }
+  });
+
+  it('lang 決定輪子名稱', () => {
+    const zh = buildChassisAndWheels('zh');
+    const en = buildChassisAndWheels('en');
+    const wheelDef = getPartDefinition('car-wheel')!;
+    expect(zh[1].name).toBe(wheelDef.nameZh);
+    expect(en[1].name).toBe(wheelDef.name);
   });
 });

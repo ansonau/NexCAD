@@ -18,7 +18,11 @@ export function buildPartSolid(def: PartDefinition, kernel: GeometryKernel): Sol
     // blocks 的 z 從主體頂面起算
     solid = kernel.union(
       solid,
-      kernel.transform(base, { position: [x, y, bodyT + z], ...noTransform }),
+      kernel.transform(base, {
+        position: [x, y, bodyT + z],
+        rotation: block.rotation ?? noTransform.rotation,
+        scale: noTransform.scale,
+      }),
     );
   }
 

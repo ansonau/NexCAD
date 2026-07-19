@@ -1,6 +1,6 @@
-import { createPartNode } from '../types/document';
+import { createPartNode, createPrimitive } from '../types/document';
 import { getPartDefinition } from './library';
-import type { PartNode } from '../types/document';
+import type { PartNode, SceneNode } from '../types/document';
 
 /** 智能小車 preset：經典 Arduino 2WD 佈局（車頭朝 +X，全部貼地 z=0） */
 export const SMART_CAR_PRESET: { partId: string; x: number; y: number; rotZ: number }[] = [
@@ -21,4 +21,26 @@ export function buildSmartCarNodes(lang: string): PartNode[] {
       transform: { position: [x, y, 0], rotation: [0, 0, rotZ], scale: [1, 1, 1] },
     });
   });
+}
+
+/** 底盤板 + 左右車輪（design.md D7）：加入場景但不進預設 selection */
+export function buildChassisAndWheels(lang: string): SceneNode[] {
+  const chassis = createPrimitive('box', {
+    name: '車體底盤',
+    params: { width: 270, depth: 185, height: 3 },
+    transform: { position: [-3, 0, -3], rotation: [0, 0, 0], scale: [1, 1, 1] },
+  });
+
+  const wheelDef = getPartDefinition('car-wheel');
+  if (!wheelDef) throw new Error('smart-car-preset: unknown part id "car-wheel"');
+  const wheelName = lang === 'zh' ? wheelDef.nameZh : wheelDef.name;
+
+  const leftWheel = createPartNode('car-wheel', wheelName, {
+    transform: { position: [-15, 102.5, 0], rotation: [0, 0, 0], scale: [1, 1, 1] },
+  });
+  const rightWheel = createPartNode('car-wheel', wheelName, {
+    transform: { position: [-15, -102.5, 0], rotation: [0, 0, 0], scale: [1, 1, 1] },
+  });
+
+  return [chassis, leftWheel, rightWheel];
 }

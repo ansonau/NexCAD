@@ -407,6 +407,22 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     body: { size: [165, 54.5, 8.5] },
     clearanceHeight: 8.5,
   },
+  {
+    id: 'car-wheel',
+    name: 'Wheel 65mm',
+    nameZh: '65mm 車輪',
+    category: 'component',
+    body: {
+      size: [10, 27, 1],
+      // 輪胎用水平軸圓柱表達（rotation 繞 X 轉 90°）；position 為實測值，見 partGeometry probe 測試
+      blocks: [
+        { shape: 'cylinder', position: [0, 13.5, 31.5], size: [65, 65, 27], rotation: [90, 0, 0], label: '輪胎' },
+      ],
+    },
+    mountingHoles: [],
+    ports: [],
+    clearanceHeight: 65,
+  },
 ];
 
 export const PART_LIBRARY: PartDefinition[] = RAW_LIBRARY.map((p) =>

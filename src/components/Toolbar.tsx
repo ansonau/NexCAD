@@ -19,7 +19,7 @@ import { ExportDialog } from './ExportDialog';
 import { ScrewToolsMenu } from './ScrewToolsMenu';
 import { IconButton, panelClass } from './ui';
 import { useDocumentStore } from '../store/documentStore';
-import { buildSmartCarNodes } from '../parts/presets';
+import { buildChassisAndWheels, buildSmartCarNodes } from '../parts/presets';
 import { createPrimitive } from '../types/document';
 import type { PrimitiveKind } from '../types/document';
 
@@ -34,6 +34,7 @@ export function Toolbar() {
   const { t, i18n } = useTranslation();
   const addNode = useDocumentStore((s) => s.addNode);
   const addNodes = useDocumentStore((s) => s.addNodes);
+  const setSelection = useDocumentStore((s) => s.setSelection);
   const undo = useDocumentStore((s) => s.undo);
   const redo = useDocumentStore((s) => s.redo);
   const removeSelected = useDocumentStore((s) => s.removeSelected);
@@ -72,7 +73,15 @@ export function Toolbar() {
         <IconButton title={t('enclosure.title')} onClick={() => setShowEnclosure(true)}>
           <PackageOpen size={18} strokeWidth={1.8} />
         </IconButton>
-        <IconButton title={t('toolbar.smartCar')} onClick={() => addNodes(buildSmartCarNodes(i18n.language))}>
+        <IconButton
+          title={t('toolbar.smartCar')}
+          onClick={() => {
+            const carParts = buildSmartCarNodes(i18n.language);
+            const extras = buildChassisAndWheels(i18n.language);
+            addNodes([...carParts, ...extras]);
+            setSelection(carParts.map((n) => n.id));
+          }}
+        >
           <Car size={18} strokeWidth={1.8} />
         </IconButton>
         <IconButton title={t('tools.title')} onClick={() => setShowTools(true)}>
