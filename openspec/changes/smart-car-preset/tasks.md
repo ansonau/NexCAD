@@ -2,8 +2,8 @@
 
 ## 1. Preset 資料 + 組裝函式
 
-- [ ] 1.1 新檔 `src/parts/presets.ts`：`SMART_CAR_PRESET` 資料表（design.md D1 的 6 筆座標）+ `buildSmartCarNodes(lang)` 組裝函式（查 `getPartDefinition`、`createPartNode` 帶 transform，查無 id 時 throw）
-- [ ] 1.2 新檔 `src/parts/presets.test.ts`：(a) 每個 partId 存在於 `PART_LIBRARY`；(b) `buildSmartCarNodes` 回傳 6 個 part 節點且位置/旋轉正確；(c) 兩兩俯視 AABB（90° 旋轉交換寬深）不相交
+- [x] 1.1 新檔 `src/parts/presets.ts`：`SMART_CAR_PRESET` 資料表（design.md D1 的 6 筆座標）+ `buildSmartCarNodes(lang)` 組裝函式（查 `getPartDefinition`、`createPartNode` 帶 transform，查無 id 時 throw）
+- [x] 1.2 新檔 `src/parts/presets.test.ts`：(a) 每個 partId 存在於 `PART_LIBRARY`；(b) `buildSmartCarNodes` 回傳 6 個 part 節點且位置/旋轉正確；(c) 兩兩俯視 AABB（90° 旋轉交換寬深）不相交
 
 ## 2. UI
 
