@@ -12,7 +12,7 @@
 
 ## 3. 驗證
 
-- [ ] 3.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
-- [ ] 3.2 瀏覽器驗證：點按鈕生成 6 零件、佈局正確無重疊、全選狀態；接著按「產生外殼」能以此組零件生成外殼
-- [ ] 3.3 瀏覽器驗證：單次 undo 整組移除；zh/en 切換後生成名稱正確
-- [ ] 3.4 `npm run test:e2e` 通過；Console 全程無錯誤
+- [x] 3.1 `npx vitest run && npx tsc --noEmit && npm run build` 全綠
+- [x] 3.2 瀏覽器驗證：點按鈕生成 6 零件、佈局正確無重疊、全選狀態；接著按「產生外殼」能以此組零件生成外殼
+- [x] 3.3 瀏覽器驗證：單次 undo 整組移除；zh/en 切換後生成名稱正確
+- [x] 3.4 `npm run test:e2e` 通過；Console 全程無錯誤
