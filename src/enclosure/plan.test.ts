@@ -286,3 +286,24 @@ describe('planCornerPosts', () => {
     }
   });
 });
+
+describe('planStandoffs：standoff 旗標', () => {
+  it('standoff:false 的孔不產生支柱', () => {
+    const def: PartDefinition = {
+      id: 'standoff-test',
+      name: 'T',
+      nameZh: 'T',
+      category: 'board',
+      body: { size: [20, 20, 2], blocks: [] },
+      mountingHoles: [
+        { x: 5, y: 0, diameter: 3 },
+        { x: -5, y: 0, diameter: 3, standoff: false },
+      ],
+      ports: [],
+      clearanceHeight: 5,
+    };
+    const plans = planStandoffs([{ def, transform: identityTransform() }], 'M3');
+    expect(plans).toHaveLength(1);
+    expect(plans[0].x).toBeCloseTo(5, 6);
+  });
+});

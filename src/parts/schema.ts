@@ -11,8 +11,13 @@ export const partBlockSchema = z.object({
   position: vec3Schema,
   /** box: [寬x, 深y, 高z]；cylinder: [直徑, 直徑, 高] */
   size: vec3Schema,
-  /** 選填，度；預設 [0,0,0]（現行行為不變）。目前只有輪子用得到（水平軸圓柱）。 */
+  /** 選填，度；預設 [0,0,0]（現行行為不變）。水平軸圓柱用（輪胎/輪轂/馬達罐/軸）。 */
   rotation: vec3Schema.optional(),
+  /** 選填 #RRGGBB；設定後此 block 獨立成色段渲染（不併入主體 union） */
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
   label: z.string().optional(),
 });
 export type PartBlock = z.infer<typeof partBlockSchema>;
@@ -23,6 +28,8 @@ export const mountingHoleSchema = z.object({
   diameter: z.number().positive(),
   /** 孔平面絕對高度；預設 0 = 主體底面 */
   z: z.number().optional(),
+  /** 預設 true；false＝孔照鑽穿零件幾何，但 planStandoffs 不為它長支柱（底盤電子件鎖附孔用） */
+  standoff: z.boolean().optional(),
 });
 export type MountingHole = z.infer<typeof mountingHoleSchema>;
 
@@ -47,6 +54,8 @@ export const partDefinitionSchema = z.object({
   body: z.object({
     /** 主體尺寸 [長x, 寬y, 厚z]，原點在底面中心 */
     size: vec3Schema,
+    /** 垂直邊圓角半徑；缺省/0＝直角長方體（kernel.roundedBox，<=0 時等同 box） */
+    cornerRadius: z.number().nonnegative().optional(),
     blocks: z.array(partBlockSchema).default([]),
   }),
   mountingHoles: z.array(mountingHoleSchema).default([]),

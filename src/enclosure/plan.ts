@@ -210,6 +210,7 @@ export function planStandoffs(
     const sin = Math.sin(angle);
     const [px, py, pz] = part.transform.position;
     for (const hole of part.def.mountingHoles) {
+      if (hole.standoff === false) continue;
       out.push({
         x: px + hole.x * cos - hole.y * sin,
         y: py + hole.x * sin + hole.y * cos,

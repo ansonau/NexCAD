@@ -49,4 +49,39 @@ describe('partDefinitionSchema', () => {
     expect(parsed.mountingHoles).toHaveLength(2);
     expect(parsed.ports[0].face).toBe('west');
   });
+
+  it('block color：接受 #RRGGBB、拒絕非法格式', () => {
+    const withColor = (color: string) => ({
+      ...validPart,
+      body: {
+        size: [20, 10, 1.6],
+        blocks: [{ shape: 'box', position: [0, 0, 0], size: [1, 1, 1], color }],
+      },
+    });
+    expect(partDefinitionSchema.safeParse(withColor('#2b2d30')).success).toBe(true);
+    for (const bad of ['red', '#fff', '#12345g', '2b2d30']) {
+      expect(partDefinitionSchema.safeParse(withColor(bad)).success, `應拒絕 ${bad}`).toBe(false);
+    }
+  });
+
+  it('mountingHole standoff：缺省 undefined、接受 false', () => {
+    const parsed = partDefinitionSchema.parse({
+      ...validPart,
+      mountingHoles: [{ x: 0, y: 0, diameter: 3 }, { x: 1, y: 0, diameter: 3, standoff: false }],
+    });
+    expect(parsed.mountingHoles[0].standoff).toBeUndefined();
+    expect(parsed.mountingHoles[1].standoff).toBe(false);
+  });
+
+  it('body.cornerRadius：接受非負、拒絕負值、缺省 undefined', () => {
+    expect(
+      partDefinitionSchema.parse({ ...validPart, body: { size: [20, 10, 1.6], cornerRadius: 10 } })
+        .body.cornerRadius,
+    ).toBe(10);
+    expect(
+      partDefinitionSchema.safeParse({ ...validPart, body: { size: [20, 10, 1.6], cornerRadius: -1 } })
+        .success,
+    ).toBe(false);
+    expect(partDefinitionSchema.parse(validPart).body.cornerRadius).toBeUndefined();
+  });
 });
