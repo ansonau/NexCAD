@@ -17,9 +17,9 @@ import { useTranslation } from 'react-i18next';
 import { EnclosurePanel } from './EnclosurePanel';
 import { ExportDialog } from './ExportDialog';
 import { ScrewToolsMenu } from './ScrewToolsMenu';
+import { CarPresetMenu } from './CarPresetMenu';
 import { IconButton, panelClass } from './ui';
 import { useDocumentStore } from '../store/documentStore';
-import { buildChassisAndWheels, buildSmartCarNodes } from '../parts/presets';
 import { createPrimitive } from '../types/document';
 import type { PrimitiveKind } from '../types/document';
 
@@ -31,10 +31,8 @@ const PRIMITIVES: { kind: PrimitiveKind; label: string; icon: LucideIcon }[] = [
 ];
 
 export function Toolbar() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const addNode = useDocumentStore((s) => s.addNode);
-  const addNodes = useDocumentStore((s) => s.addNodes);
-  const setSelection = useDocumentStore((s) => s.setSelection);
   const undo = useDocumentStore((s) => s.undo);
   const redo = useDocumentStore((s) => s.redo);
   const removeSelected = useDocumentStore((s) => s.removeSelected);
@@ -44,6 +42,7 @@ export function Toolbar() {
   const [showExport, setShowExport] = useState(false);
   const [showEnclosure, setShowEnclosure] = useState(false);
   const [showTools, setShowTools] = useState(false);
+  const [showCarMenu, setShowCarMenu] = useState(false);
 
   return (
     <>
@@ -73,15 +72,7 @@ export function Toolbar() {
         <IconButton title={t('enclosure.title')} onClick={() => setShowEnclosure(true)}>
           <PackageOpen size={18} strokeWidth={1.8} />
         </IconButton>
-        <IconButton
-          title={t('toolbar.smartCar')}
-          onClick={() => {
-            const carParts = buildSmartCarNodes(i18n.language);
-            const extras = buildChassisAndWheels(i18n.language);
-            addNodes([...carParts, ...extras]);
-            setSelection(carParts.map((n) => n.id));
-          }}
-        >
+        <IconButton title={t('toolbar.smartCar')} onClick={() => setShowCarMenu(true)}>
           <Car size={18} strokeWidth={1.8} />
         </IconButton>
         <IconButton title={t('tools.title')} onClick={() => setShowTools(true)}>
@@ -95,6 +86,7 @@ export function Toolbar() {
       {showExport && <ExportDialog onClose={() => setShowExport(false)} />}
       {showEnclosure && <EnclosurePanel onClose={() => setShowEnclosure(false)} />}
       {showTools && <ScrewToolsMenu onClose={() => setShowTools(false)} />}
+      {showCarMenu && <CarPresetMenu onClose={() => setShowCarMenu(false)} />}
     </>
   );
 }
