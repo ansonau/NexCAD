@@ -289,15 +289,19 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     name: 'TT Motor',
     nameZh: 'TT 減速馬達',
     category: 'power',
+    // 尺寸依 3d_models/tt-motor.stl 量測：本體 47×21×22，罐 Ø22×22 突出本體後端 3.5mm，
+    // 雙出軸 Ø5×15 各伸出 15mm，軸心距底面 11mm。v1 不支援自動支柱，僅供排位。
     body: {
-      size: [65, 22.5, 18.5],
+      size: [47, 21, 22],
       blocks: [
-        { shape: 'cylinder', position: [-30.5, 0, 0.5], size: [20, 20, 25], rotation: [0, 90, 0], label: '馬達罐' },
-        { shape: 'cylinder', position: [20, 19.25, -6.5], size: [5.4, 5.4, 8], rotation: [90, 0, 0], label: '輸出軸' },
-        { shape: 'cylinder', position: [20, -19.25, -6.5], size: [5.4, 5.4, 8], rotation: [-90, 0, 0], label: '輸出軸' },
+        // 馬達罐：Ø22×22，軸沿 X，罐底貼地、罐頂＝本體頂，後端突出 3.5mm
+        { shape: 'cylinder', position: [-16, 0, -11], size: [22, 22, 22], rotation: [0, 90, 0], label: '馬達罐' },
+        // 雙出軸：Ø5×15，軸心 x=+20、z=11，自 ±Y 面各伸出 15mm
+        { shape: 'cylinder', position: [20, 25.5, -11], size: [5, 5, 15], rotation: [90, 0, 0], label: '輸出軸' },
+        { shape: 'cylinder', position: [20, -25.5, -11], size: [5, 5, 15], rotation: [-90, 0, 0], label: '輸出軸' },
       ],
     },
-    clearanceHeight: 29,
+    clearanceHeight: 22,
   },
   {
     id: 'l298n',
