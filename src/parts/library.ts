@@ -420,9 +420,10 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     category: 'component',
     body: {
       size: [10, 27, 1],
-      // 輪胎用水平軸圓柱表達（rotation 繞 X 轉 90°）；position 為實測值，見 partGeometry probe 測試
+      // 輪胎/輪轂皆水平軸圓柱（rotX 90°）；position 為實測值，見 carWheel.test.ts probe
       blocks: [
-        { shape: 'cylinder', position: [0, 13.5, 31.5], size: [65, 65, 27], rotation: [90, 0, 0], label: '輪胎' },
+        { shape: 'cylinder', position: [0, 13.5, 31.5], size: [65, 65, 27], rotation: [90, 0, 0], color: '#2b2d30', label: '輪胎' },
+        { shape: 'cylinder', position: [0, 14.5, 31.5], size: [30, 30, 29], rotation: [90, 0, 0], color: '#c8ccd2', label: '輪轂' },
       ],
     },
     mountingHoles: [],
