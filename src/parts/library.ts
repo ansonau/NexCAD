@@ -289,9 +289,15 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     name: 'TT Motor',
     nameZh: 'TT 減速馬達',
     category: 'power',
-    // TT 馬達為側向安裝（水平軸），v1 不支援自動支柱；先提供外形供排位
-    body: { size: [65, 22.5, 18.5] },
-    clearanceHeight: 18.5,
+    body: {
+      size: [65, 22.5, 18.5],
+      blocks: [
+        { shape: 'cylinder', position: [-30.5, 0, 0.5], size: [20, 20, 25], rotation: [0, 90, 0], label: '馬達罐' },
+        { shape: 'cylinder', position: [20, 19.25, -6.5], size: [5.4, 5.4, 8], rotation: [90, 0, 0], label: '輸出軸' },
+        { shape: 'cylinder', position: [20, -19.25, -6.5], size: [5.4, 5.4, 8], rotation: [-90, 0, 0], label: '輸出軸' },
+      ],
+    },
+    clearanceHeight: 29,
   },
   {
     id: 'l298n',
