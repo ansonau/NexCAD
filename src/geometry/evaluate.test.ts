@@ -143,4 +143,27 @@ describe('evaluate', () => {
       expect(drilled[i].mesh.positions.length).not.toBe(baseline[i].mesh.positions.length);
     }
   });
+
+  it('enclosure 節點找不到任何來源零件定義時回傳 null（被略過而非拋錯）', () => {
+    const ghost: SceneNode = {
+      type: 'enclosure',
+      id: newId(),
+      name: '外殼底座',
+      role: 'solid',
+      transform: identityTransform(),
+      visible: true,
+      locked: false,
+      part: 'base',
+      params: {
+        wallThickness: 2,
+        clearanceMargin: 3,
+        cornerRadius: 3,
+        lidType: 'open',
+        screwSize: 'M3',
+        standoffWallPadding: 2,
+      },
+      sourceParts: [{ nodeId: 'x', partId: 'does-not-exist', transform: identityTransform() }],
+    };
+    expect(evaluateForExport([ghost], kernel)).toBeNull();
+  });
 });

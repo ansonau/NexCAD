@@ -3,7 +3,7 @@ import { partDefinitionSchema } from './schema';
 import { PART_LIBRARY, getPartDefinition } from './library';
 
 describe('PART_LIBRARY', () => {
-  it('共 25 個零件', () => {
+  it('共 26 個零件', () => {
     expect(PART_LIBRARY).toHaveLength(26);
   });
 
