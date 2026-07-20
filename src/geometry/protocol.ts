@@ -7,6 +7,8 @@ export type GeometryRequest =
 export interface NodeMeshPayload {
   nodeId: string;
   role: NodeRole;
+  /** 來自 PartBlock.color；缺省＝節點預設色 */
+  color?: string;
   positions: Float32Array;
   indices: Uint32Array;
 }

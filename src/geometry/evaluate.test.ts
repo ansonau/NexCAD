@@ -117,26 +117,30 @@ describe('evaluate', () => {
     expect(kernel.volume(solid!)).toBeGreaterThan(0);
   });
 
-  it('enclosure 節點找不到任何來源零件定義時回傳 null（被略過而非拋錯）', () => {
-    const ghost2: SceneNode = {
-      type: 'enclosure',
-      id: newId(),
-      name: '外殼底座',
-      role: 'solid',
-      transform: identityTransform(),
-      visible: true,
-      locked: false,
-      part: 'base',
-      params: {
-        wallThickness: 2,
-        clearanceMargin: 3,
-        cornerRadius: 3,
-        lidType: 'open',
-        screwSize: 'M3',
-        standoffWallPadding: 2,
-      },
-      sourceParts: [{ nodeId: 'x', partId: 'does-not-exist', transform: identityTransform() }],
-    };
-    expect(evaluateForExport([ghost2], kernel)).toBeNull();
+  it('含色零件在 render 路徑回多段（段帶 color）', () => {
+    const node = createPartNode('car-wheel', 'wheel');
+    const out = evaluateForRender([node], kernel).filter((e) => e.nodeId === node.id);
+    expect(out.length).toBeGreaterThanOrEqual(3); // 本體 + 輪胎 + 輪轂
+    const colors = out.map((e) => e.color);
+    expect(colors).toContain('#2b2d30');
+    expect(colors).toContain('#c8ccd2');
+    expect(colors).toContain(undefined);
+    for (const e of out) expect(e.mesh.indices.length).toBeGreaterThan(0);
+  });
+
+  it('hole 對含色零件的每一段都減料', () => {
+    const wheel = createPartNode('car-wheel', 'wheel');
+    const punch = createPrimitive('cylinder', {
+      role: 'hole',
+      params: { radius: 4, height: 100 },
+    });
+    punch.transform.position = [0, 0, -10]; // 貫穿輪胎與輪轂中心及本體
+    const drilled = evaluateForRender([wheel, punch], kernel).filter((e) => e.nodeId === wheel.id);
+    const baseline = evaluateForRender([wheel], kernel).filter((e) => e.nodeId === wheel.id);
+    expect(drilled).toHaveLength(baseline.length);
+    // 段序固定（主體段在前、有色段依 blocks 順序），逐段比較 mesh 因鑽孔改變
+    for (let i = 0; i < drilled.length; i += 1) {
+      expect(drilled[i].mesh.positions.length).not.toBe(baseline[i].mesh.positions.length);
+    }
   });
 });

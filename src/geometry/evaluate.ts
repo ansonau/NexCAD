@@ -1,5 +1,5 @@
 import { getPartDefinition } from '../parts/library';
-import { buildPartSolid } from '../parts/partGeometry';
+import { buildPartColoredSegments, buildPartSolid } from '../parts/partGeometry';
 import type { NodeRole, SceneNode } from '../types/document';
 import type { GeometryKernel, MeshData, Solid } from './kernel';
 import { buildEnclosureNodeSolid } from '../enclosure/generate';
@@ -8,6 +8,8 @@ export interface EvaluatedNode {
   nodeId: string;
   role: NodeRole;
   mesh: MeshData;
+  /** 來自 PartBlock.color；缺省＝節點預設色 */
+  color?: string;
 }
 
 function buildSolid(node: SceneNode, kernel: GeometryKernel): Solid | null {
@@ -55,7 +57,24 @@ export function combineScope(nodes: SceneNode[], kernel: GeometryKernel): Solid 
   return result;
 }
 
-/** 渲染用：每個頂層節點一個 mesh。solid 被同層 hole 減料；hole 回傳自身形狀 */
+/** 渲染路徑的分段 solid：part 依 block.color 分段；其餘節點恆單段 */
+function buildRenderSolids(
+  node: SceneNode,
+  kernel: GeometryKernel,
+): { solid: Solid; color?: string }[] | null {
+  if (node.type === 'part') {
+    const def = getPartDefinition(node.partId);
+    if (!def) return null;
+    return buildPartColoredSegments(def, kernel).map((seg) => ({
+      solid: kernel.transform(seg.solid, node.transform),
+      color: seg.color,
+    }));
+  }
+  const s = buildSolid(node, kernel);
+  return s ? [{ solid: s }] : null;
+}
+
+/** 渲染用：每個頂層節點一至多個 mesh（part 色段）。solid 段被同層 hole 減料；hole 回傳自身形狀 */
 export function evaluateForRender(nodes: SceneNode[], kernel: GeometryKernel): EvaluatedNode[] {
   const out: EvaluatedNode[] = [];
   // 每個 hole 只建一次 Solid（Manifold 布林運算不會消耗輸入，把手可重複使用）
@@ -68,17 +87,16 @@ export function evaluateForRender(nodes: SceneNode[], kernel: GeometryKernel): E
   }
   for (const node of nodes) {
     if (!node.visible) continue;
-    let s: Solid | null;
     if (node.role === 'hole') {
-      s = holeSolids.get(node.id) ?? null;
-    } else {
-      s = buildSolid(node, kernel);
-      if (s) {
-        for (const h of holeSolids.values()) s = kernel.difference(s, h);
-      }
+      const s = holeSolids.get(node.id);
+      if (s) out.push({ nodeId: node.id, role: node.role, mesh: kernel.toMesh(s) });
+      continue;
     }
-    if (!s) continue;
-    out.push({ nodeId: node.id, role: node.role, mesh: kernel.toMesh(s) });
+    for (const seg of buildRenderSolids(node, kernel) ?? []) {
+      let s = seg.solid;
+      for (const h of holeSolids.values()) s = kernel.difference(s, h);
+      out.push({ nodeId: node.id, role: node.role, mesh: kernel.toMesh(s), color: seg.color });
+    }
   }
   return out;
 }

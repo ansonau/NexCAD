@@ -37,21 +37,21 @@ export function Viewport() {
       camera={{ position: [115, 115, 115], fov: 45, near: 0.1, far: 5000 }}
       onPointerMissed={() => setSelection([])}
     >
-      <color attach="background" args={['#f7f8fa']} />
+      <color attach="background" args={['#eceff4']} />
       <ambientLight intensity={0.7} />
       <directionalLight position={[100, 200, 150]} intensity={1.2} />
       <Grid
         args={[500, 500]}
         cellSize={10}
         sectionSize={50}
-        cellColor="#dde1e7"
-        sectionColor="#c3c9d4"
+        cellColor="#d8dde5"
+        sectionColor="#bcc5d2"
         fadeDistance={600}
       />
       <group rotation={[-Math.PI / 2, 0, 0]}>
-        {meshes.map((m) => (
+        {meshes.map((m, i) => (
           <SceneMesh
-            key={m.nodeId}
+            key={`${m.nodeId}:${i}`}
             payload={m}
             selected={selection.includes(m.nodeId)}
             isPart={findNode(doc.nodes, m.nodeId)?.type === 'part'}
@@ -125,7 +125,13 @@ function SceneMesh({
       }}
     >
       <meshStandardMaterial
-        color={isHole ? '#ef4444' : selected ? '#3b82f6' : isPart ? '#2e7d5b' : '#9db4d0'}
+        color={
+          isHole
+            ? '#ef4444'
+            : selected
+              ? '#2563eb'
+              : (payload.color ?? (isPart ? '#2e7d5b' : '#9db4d0'))
+        }
         transparent={isHole || xray}
         opacity={isHole ? 0.45 : xray ? 0.35 : 1}
         depthWrite={isHole ? true : !xray}

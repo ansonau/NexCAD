@@ -16,6 +16,7 @@ self.onmessage = async (e: MessageEvent<GeometryRequest>) => {
       const meshes = evaluateForRender(req.nodes, kernel).map((entry) => ({
         nodeId: entry.nodeId,
         role: entry.role,
+        color: entry.color,
         positions: entry.mesh.positions,
         indices: entry.mesh.indices,
       }));
