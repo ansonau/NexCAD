@@ -83,7 +83,7 @@ standoff: z.boolean().optional(),
 
 ### D7 — 新零件 `car-chassis-2wd`（category: component），取代 primitive 底盤盒
 
-- 270×185×3 圓角板（r=10）：本體 [250,185,3] + blocks：端部方塊 [20,165,3]×2 @ (±125,0,-3)、角圓柱 [20,20,3]×4 @ (±125,±82.5,-3)（block z=-3 使底面與本體齊平）
+- 270×185×3 圓角板（r=10）：schema 的 `body` 加選填 `cornerRadius: z.number().nonnegative().optional()`，`buildPartSolid` 改用 `kernel.roundedBox(l, w, t, cornerRadius ?? 0)`（kernel 介面本就有 roundedBox，cornerRadius<=0 時等同 box——全部現有零件零影響）。比「本體+邊條+角圓柱 blocks」的拼裝更簡潔，AABB 不變
 - mountingHoles：
   - **4 個角落孔** Ø3 @ (±125,±82.5)，`standoff` 缺省（true）——外殼支柱自地板頂到底盤底面，螺絲穿孔鎖進支柱，三種 mountingStyle 皆物理成立
   - **14 個電子零件孔**（uno 4 + l298n 4 + hc-sr04 4 + battery 2），`standoff: false`，孔徑比照各零件 def（3.2/3.2/1.8/3）。孔位換算規則：chassis-local = 電子件世界 XY − 底盤節點 XY；實作由程式從 preset 佈局＋各 def 的 mountingHoles 算出寫死數值，並由**交叉對照測試**斷言一致（佈局漂移自動抓）
@@ -149,7 +149,8 @@ export function buildCarNodes(spec: CarPresetSpec, lang: string): {
 4. 新增 `ballCaster.test.ts`：總高 17.5、最低點觸地 z≈0
 5. 新增 `ttMotor.test.ts`：probe 斷言軸心距本體底面 12mm、軸自 ±Y 面伸出、罐頂 ≈29（clearanceHeight 一致）
 6. `partGeometry` 分段測試：uno → 1 段無色；wheel → 3 段且顏色歸屬正確；`buildPartSolid` 整體 union 行為不變
-7. schema 測試：`color` 接受合法 hex、拒絕非法字串；`standoff` 缺省/顯式 false 解析
+7. schema 測試：`color` 接受合法 hex、拒絕非法字串；`standoff` 缺省/顯式 false 解析；`cornerRadius` 缺省/拒絕負值
+7b. `library.test.ts` 的 clearanceHeight 全域檢查改為 **rotation-aware**：旋轉 90° 的圓柱 block 其垂直延伸 = 半徑（`size[0]/2`）而非柱長（`size[2]`）——現行天真公式會把 TT 馬達罐誤算成 44mm 高（實際罐頂 29mm）；車輪輪胎在新公式下恰為 65mm 不變。保護意圖（clearanceHeight ≥ 實際最高點）不變
 8. 外殼整合測試（plan 層）：對 2WD `defaultSelection` 跑 `planShell`+`planStandoffs`——斷言 `outer.minZ = −wallThickness`（預設參數 3mm 下即 −3，地板內面貼地 z=0，沿用 `plan.test.ts` 既有寫法）、支柱恰好 4 根（角孔）且 topZ=17.5、無 corner-post 碰撞旗標；另驗證 `standoff:false` 孔被跳過
 9. `evaluate.test.ts`：含色零件 → 多 payload 且帶 color；hole 對每段都減料
 10. e2e（`e2e/smoke.spec.ts`）：檢查是否點擊小車按鈕/數節點，如有則同步新節點數與選單互動
