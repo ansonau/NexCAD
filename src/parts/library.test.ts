@@ -4,7 +4,7 @@ import { PART_LIBRARY, getPartDefinition } from './library';
 
 describe('PART_LIBRARY', () => {
   it('共 25 個零件', () => {
-    expect(PART_LIBRARY).toHaveLength(25);
+    expect(PART_LIBRARY).toHaveLength(26);
   });
 
   it('每個定義都通過 schema 驗證', () => {
@@ -16,7 +16,7 @@ describe('PART_LIBRARY', () => {
 
   it('id 不重複', () => {
     const ids = new Set(PART_LIBRARY.map((p) => p.id));
-    expect(ids.size).toBe(25);
+    expect(ids.size).toBe(26);
   });
 
   it('分類數量符合規格 §7 + car-wheel 追加', () => {
@@ -24,7 +24,7 @@ describe('PART_LIBRARY', () => {
     expect(count('board')).toBe(6);
     expect(count('sensor')).toBe(5);
     expect(count('power')).toBe(6);
-    expect(count('component')).toBe(8);
+    expect(count('component')).toBe(9);
   });
 
   it('getPartDefinition 依 id 查詢', () => {
