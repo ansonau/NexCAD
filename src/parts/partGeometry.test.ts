@@ -1,7 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { ManifoldKernel } from '../geometry/manifoldKernel';
 import { getPartDefinition } from './library';
-import { buildPartSolid } from './partGeometry';
+import { buildPartColoredSegments, buildPartSolid } from './partGeometry';
+import type { PartDefinition } from './schema';
 
 const kernel = new ManifoldKernel();
 
@@ -49,5 +50,46 @@ describe('buildPartSolid', () => {
     const def = getPartDefinition('raspberry-pi-4')!;
     const mesh = kernel.toMesh(buildPartSolid(def, kernel));
     expect(mesh.indices.length).toBeGreaterThan(0);
+  });
+});
+
+describe('buildPartColoredSegments', () => {
+  const wheelLike: PartDefinition = {
+    id: 'test-wheel',
+    name: 'T',
+    nameZh: 'T',
+    category: 'component',
+    body: {
+      size: [10, 10, 1],
+      blocks: [
+        { shape: 'box', position: [0, 0, 0], size: [5, 5, 2] }, // 無色 → 併入主體段
+        { shape: 'box', position: [3, 0, 0], size: [2, 2, 2], color: '#a1b2c3' }, // 有色 → 獨立段
+      ],
+    },
+    mountingHoles: [],
+    ports: [],
+    clearanceHeight: 5,
+  };
+
+  it('無色 block 併入主體段；有色 block 獨立成段並帶色', () => {
+    const segs = buildPartColoredSegments(wheelLike, kernel);
+    expect(segs).toHaveLength(2);
+    expect(segs[0].color).toBeUndefined();
+    expect(segs[1].color).toBe('#a1b2c3');
+    expect(kernel.volume(segs[0].solid)).toBeCloseTo(10 * 10 * 1 + 5 * 5 * 2, 1);
+    expect(kernel.volume(segs[1].solid)).toBeCloseTo(2 * 2 * 2, 3);
+  });
+
+  it('安裝孔對主體段與有色段都鑽', () => {
+    const drilled: PartDefinition = { ...wheelLike, mountingHoles: [{ x: 3, y: 0, diameter: 2 }] };
+    const segs = buildPartColoredSegments(drilled, kernel);
+    // 有色段（2×2×2=8）被 Ø2 孔鑽穿 → 體積變小
+    expect(kernel.volume(segs[1].solid)).toBeLessThan(8);
+  });
+
+  it('buildPartSolid＝全段 union（幾何與分段前一致）', () => {
+    const v = kernel.volume(buildPartSolid(wheelLike, kernel));
+    // 無色 block (5×5×2) 與有色 block (2×2×2 at [3,0]) 局部重疊 0.5×2×2=2
+    expect(v).toBeCloseTo(10 * 10 * 1 + 5 * 5 * 2 + 2 * 2 * 2 - 2, 1);
   });
 });
