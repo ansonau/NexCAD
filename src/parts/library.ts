@@ -430,6 +430,23 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     ports: [],
     clearanceHeight: 65,
   },
+  {
+    id: 'ball-caster-16',
+    name: 'Ball Caster 16mm',
+    nameZh: '16mm 萬向滾珠',
+    category: 'component',
+    // 珠（主體直立圓柱近似）+ 珠座 + 安裝板；總高 17.5＝地面到 2WD 底盤底面
+    body: {
+      size: [14, 14, 9],
+      blocks: [
+        { shape: 'cylinder', position: [0, 0, 0], size: [18, 18, 5], label: '珠座' },
+        { shape: 'box', position: [0, 0, 5], size: [26, 26, 3.5], label: '安裝板' },
+      ],
+    },
+    mountingHoles: [],
+    ports: [],
+    clearanceHeight: 17.5,
+  },
 ];
 
 export const PART_LIBRARY: PartDefinition[] = RAW_LIBRARY.map((p) =>

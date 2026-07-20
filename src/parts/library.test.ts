@@ -3,8 +3,8 @@ import { partDefinitionSchema } from './schema';
 import { PART_LIBRARY, getPartDefinition } from './library';
 
 describe('PART_LIBRARY', () => {
-  it('共 24 個零件', () => {
-    expect(PART_LIBRARY).toHaveLength(24);
+  it('共 25 個零件', () => {
+    expect(PART_LIBRARY).toHaveLength(25);
   });
 
   it('每個定義都通過 schema 驗證', () => {
@@ -16,7 +16,7 @@ describe('PART_LIBRARY', () => {
 
   it('id 不重複', () => {
     const ids = new Set(PART_LIBRARY.map((p) => p.id));
-    expect(ids.size).toBe(24);
+    expect(ids.size).toBe(25);
   });
 
   it('分類數量符合規格 §7 + car-wheel 追加', () => {
@@ -24,7 +24,7 @@ describe('PART_LIBRARY', () => {
     expect(count('board')).toBe(6);
     expect(count('sensor')).toBe(5);
     expect(count('power')).toBe(6);
-    expect(count('component')).toBe(7);
+    expect(count('component')).toBe(8);
   });
 
   it('getPartDefinition 依 id 查詢', () => {
