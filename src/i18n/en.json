@@ -8,7 +8,9 @@
     "redo": "Redo",
     "delete": "Delete",
     "export": "Export STL",
-    "smartCar": "Smart Car"
+    "smartCar": "Smart Car",
+    "smartCar2wd": "Smart Car 2WD",
+    "smartCar4wd": "Smart Car 4WD"
   },
   "car": {
     "chassisShape": "Chassis Shape",

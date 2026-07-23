@@ -8,7 +8,9 @@
     "redo": "重做",
     "delete": "刪除",
     "export": "匯出 STL",
-    "smartCar": "智能小車"
+    "smartCar": "智能小車",
+    "smartCar2wd": "智能小車 2WD",
+    "smartCar4wd": "智能小車 4WD"
   },
   "car": {
     "chassisShape": "底盤形狀",
