@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createPartNode, createPrimitive, emptyDocument, identityTransform, newId } from './document';
+import { createCarAnchorNode, createPartNode, createPrimitive, emptyDocument, identityTransform, newId } from './document';
+import type { CarConfigParams } from '../parts/presets';
 
 describe('document model', () => {
   it('createPrimitive 套用該形狀的預設參數', () => {
@@ -42,6 +43,16 @@ describe('document model', () => {
     expect(node.partId).toBe('arduino-uno');
     expect(node.role).toBe('solid');
     expect(node.transform).toEqual(identityTransform());
+  });
+
+  it('createCarAnchorNode 建立錨點節點', () => {
+    const config: CarConfigParams = { shape: 'rounded-rect', length: 270, width: 185, thickness: 3, drive: '2wd', wheelSize: 65, includeCaster: true };
+    const anchor = createCarAnchorNode(config, 'smart-car-2wd', ['n1', 'n2']);
+    expect(anchor.type).toBe('car-anchor');
+    expect(anchor.config.length).toBe(270);
+    expect(anchor.presetId).toBe('smart-car-2wd');
+    expect(anchor.electronicsIds).toEqual(['n1', 'n2']);
+    expect(anchor.role).toBe('solid');
   });
 
   it('EnclosureNode 是合法的 SceneNode', () => {
