@@ -53,6 +53,9 @@ describe('document model', () => {
     expect(anchor.presetId).toBe('smart-car-2wd');
     expect(anchor.electronicsIds).toEqual(['n1', 'n2']);
     expect(anchor.role).toBe('solid');
+    expect(anchor.transform).toEqual(identityTransform());
+    expect(anchor.visible).toBe(true);
+    expect(anchor.locked).toBe(false);
   });
 
   it('EnclosureNode 是合法的 SceneNode', () => {

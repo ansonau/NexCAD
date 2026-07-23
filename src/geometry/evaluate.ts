@@ -35,6 +35,8 @@ function buildSolid(node: SceneNode, kernel: GeometryKernel): Solid | null {
     base = def ? buildPartSolid(def, kernel) : null;
   } else if (node.type === 'enclosure') {
     base = buildEnclosureNodeSolid(node, kernel);
+  } else if (node.type === 'car-anchor') {
+    return null;
   } else {
     base = combineScope(node.children, kernel);
   }

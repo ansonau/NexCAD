@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createPartNode, createPrimitive, emptyDocument, identityTransform, newId } from '../types/document';
+import { createCarAnchorNode, createPartNode, createPrimitive, emptyDocument, identityTransform, newId } from '../types/document';
+import type { CarConfigParams } from '../parts/presets';
 import type { EnclosureNode, GroupNode } from '../types/document';
 import { parseNexcadFile, serializeNexcadFile } from './nexcadFile';
 
@@ -45,6 +46,21 @@ describe('nexcadFile', () => {
     doc.nodes = [createPartNode('arduino-uno', 'Uno'), enclosure];
     const parsed = parseNexcadFile(serializeNexcadFile(doc));
     expect(parsed).toEqual(doc);
+  });
+
+  it('序列化後解析回相同文件（含 car-anchor 節點）', () => {
+    const config: CarConfigParams = {
+      shape: 'rounded-rect',
+      length: 270,
+      width: 185,
+      thickness: 3,
+      drive: '2wd',
+      wheelSize: 65,
+      includeCaster: true,
+    };
+    const doc = emptyDocument('測試小車錨點');
+    doc.nodes = [createCarAnchorNode(config, 'smart-car-2wd', ['n1'], { generatedNodeIds: ['n2'] })];
+    expect(parseNexcadFile(serializeNexcadFile(doc))).toEqual(doc);
   });
 
   it('舊版 enclosure params 無 standoffWallPadding 時以 wallThickness 補上', () => {

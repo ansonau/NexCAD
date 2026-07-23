@@ -71,8 +71,25 @@ const enclosureNodeSchema = z.object({
   ),
 });
 
+const carAnchorNodeSchema = z.object({
+  ...nodeCommonShape,
+  type: z.literal('car-anchor'),
+  config: z.object({
+    shape: z.enum(['rounded-rect', 'rect', 'ellipse']),
+    length: z.number(),
+    width: z.number(),
+    thickness: z.number(),
+    drive: z.enum(['2wd', '4wd']),
+    wheelSize: z.number(),
+    includeCaster: z.boolean(),
+  }),
+  presetId: z.enum(['smart-car-2wd', 'smart-car-4wd']),
+  electronicsIds: z.array(z.string()),
+  generatedNodeIds: z.array(z.string()).optional(),
+});
+
 const sceneNodeSchema: z.ZodType<SceneNode> = z.lazy(() =>
-  z.union([primitiveNodeSchema, partNodeSchema, groupNodeSchema, enclosureNodeSchema]),
+  z.union([primitiveNodeSchema, partNodeSchema, groupNodeSchema, enclosureNodeSchema, carAnchorNodeSchema]),
 );
 
 const documentSchema = z.object({
