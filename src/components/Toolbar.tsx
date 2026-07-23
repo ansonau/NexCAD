@@ -96,7 +96,7 @@ export function Toolbar() {
   return (
     <>
       <div
-        className={`pointer-events-auto absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-1 p-1 ${panelClass}`}
+        className={`pointer-events-auto absolute left-1/2 top-3 flex max-w-[calc(100vw-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1 whitespace-nowrap ${panelClass}`}
       >
         {PRIMITIVES.map((p) => (
           <PrimitiveButton key={p.kind} kind={p.kind} label={p.label} icon={p.icon} />
