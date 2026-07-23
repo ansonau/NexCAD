@@ -108,12 +108,11 @@ export function PropertyCard() {
 export function replaceCarAnchorGeneratedNodes(
   doc: NexcadDocument,
   anchorId: string,
-  oldGeneratedNodeIds: string[] | undefined,
   generatedNodes: SceneNode[],
 ) {
-  const oldIds = new Set(oldGeneratedNodeIds ?? []);
-  doc.nodes = doc.nodes.filter((n) => !oldIds.has(n.id));
   const anchor = findNode(doc.nodes, anchorId);
+  const oldIds = new Set(anchor?.type === 'car-anchor' ? anchor.generatedNodeIds ?? [] : []);
+  doc.nodes = doc.nodes.filter((n) => !oldIds.has(n.id));
   if (anchor?.type === 'car-anchor') {
     anchor.generatedNodeIds = generatedNodes.map((n) => n.id);
   }
@@ -213,7 +212,7 @@ function CarAnchorFields({ node }: { node: CarAnchorNode }) {
 
       const store = useDocumentStore.getState();
       store.mutate('更新底盤', (d) => {
-        replaceCarAnchorGeneratedNodes(d, node.id, node.generatedNodeIds, result.nodes);
+        replaceCarAnchorGeneratedNodes(d, node.id, result.nodes);
       });
       store.setSelection(result.defaultSelection);
     } finally {

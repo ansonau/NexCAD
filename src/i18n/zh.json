@@ -32,11 +32,13 @@
     "holeOutOfBounds": "部分電子零件超出底盤範圍，請調整錨點大小或零件位置後再試。"
   },
   "property": {
+    "selectHint": "選取一個物件以編輯其屬性。",
     "name": "名稱",
     "solid": "實體",
     "hole": "孔",
     "size": "尺寸 (mm)",
     "position": "位置 (mm)",
+    "rotation": "旋轉角度 (度)",
     "width": "寬",
     "depth": "深",
     "height": "高",

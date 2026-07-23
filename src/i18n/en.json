@@ -32,11 +32,13 @@
     "holeOutOfBounds": "Some electronics exceed the chassis bounds. Adjust the anchor size or part positions and try again."
   },
   "property": {
+    "selectHint": "Select one object to edit its properties.",
     "name": "Name",
     "solid": "Solid",
     "hole": "Hole",
     "size": "Size (mm)",
     "position": "Position (mm)",
+    "rotation": "Rotation (deg)",
     "width": "Width",
     "depth": "Depth",
     "height": "Height",
