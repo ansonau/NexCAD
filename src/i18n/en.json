@@ -8,9 +8,23 @@
     "redo": "Redo",
     "delete": "Delete",
     "export": "Export STL",
-    "smartCar": "Smart Car",
-    "smartCar2wd": "Smart Car 2WD",
-    "smartCar4wd": "Smart Car 4WD"
+    "smartCar": "Smart Car"
+  },
+  "car": {
+    "chassisShape": "Chassis Shape",
+    "chassisDimensions": "Chassis Dimensions",
+    "shapeRoundedRect": "Rounded Rectangle",
+    "shapeRect": "Sharp Rectangle",
+    "shapeEllipse": "Ellipse",
+    "length": "Length (mm)",
+    "width": "Width (mm)",
+    "thickness": "Thickness (mm)",
+    "driveType": "Drive Type",
+    "drive2wd": "2WD Two-Wheel Drive",
+    "drive4wd": "4WD Four-Wheel Drive",
+    "wheelSize": "Wheel Size",
+    "includeCaster": "Include Ball Caster",
+    "placeElectronics": "Place Electronics"
   },
   "property": {
     "name": "Name",
@@ -18,9 +32,11 @@
     "hole": "Hole",
     "size": "Size (mm)",
     "position": "Position (mm)",
+    "rotation": "Rotation (°)",
     "width": "Width",
     "depth": "Depth",
     "height": "Height",
+    "selectHint": "Select an object to edit its properties",
     "radius": "Radius",
     "radiusBottom": "Bottom radius",
     "radiusTop": "Top radius"
@@ -91,6 +107,8 @@
     "screwEntry": "Screw entry direction",
     "screwEntryFromLid": "From lid",
     "screwEntryFromBase": "From base",
+    "noPartsHint": "Add electronic parts to the scene first",
+    "noPartsDetail": "Open the parts library at the bottom of the screen, add components like Arduino Uno or sensors, then generate your enclosure",
     "params": "Enclosure parameters"
   },
   "tools": {
@@ -113,9 +131,13 @@
     "exportFailed": "Export failed"
   },
   "view": {
-    "xray": "Shell X-ray",
+    "xray": "X-ray",
     "wireframe": "Wireframe",
-    "sceneTree": "Scene objects"
+    "highRes": "High-res",
+    "sceneTree": "Scene objects",
+    "sceneTreeEmpty": "No objects yet — add from the toolbar or parts library",
+    "welcomeTitle": "Start Building",
+    "welcomeHint": "Add basic shapes from the toolbar above, or open the parts library at the bottom to place electronic components"
   },
   "common": {
     "close": "Close"
