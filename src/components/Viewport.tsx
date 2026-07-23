@@ -7,6 +7,7 @@ import type { NodeMeshPayload } from '../geometry/protocol';
 import i18n from '../i18n';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import { useToastStore } from '../store/toastStore';
+import type { CarAnchorNode } from '../types/document';
 import { useViewStore } from '../store/viewStore';
 import { SelectionGizmo } from './SelectionGizmo';
 
@@ -17,6 +18,7 @@ export function Viewport() {
   const shellXray = useViewStore((s) => s.shellXray);
   const wireframe = useViewStore((s) => s.wireframe);
   const [meshes, setMeshes] = useState<NodeMeshPayload[]>([]);
+  const carAnchors = doc.nodes.filter((n): n is CarAnchorNode => n.type === 'car-anchor' && n.visible);
 
   useEffect(() => {
     const client = getGeometryClient();
@@ -67,6 +69,25 @@ export function Viewport() {
                 );
               } else {
                 setSelection([m.nodeId]);
+              }
+            }}
+          />
+        ))}
+        {carAnchors.map((anchor) => (
+          <CarAnchorMesh
+            key={anchor.id}
+            anchor={anchor}
+            selected={selection.includes(anchor.id)}
+            onSelect={(shiftKey) => {
+              if (shiftKey) {
+                const current = useDocumentStore.getState().selection;
+                setSelection(
+                  current.includes(anchor.id)
+                    ? current.filter((id) => id !== anchor.id)
+                    : [...current, anchor.id],
+                );
+              } else {
+                setSelection([anchor.id]);
               }
             }}
           />
@@ -140,6 +161,43 @@ function SceneMesh({
         side={THREE.DoubleSide}
       />
       {wireframe && <Edges threshold={30} color="#334155" />}
+    </mesh>
+  );
+}
+
+function CarAnchorMesh({
+  anchor,
+  selected,
+  onSelect,
+}: {
+  anchor: CarAnchorNode;
+  selected: boolean;
+  onSelect: (shiftKey: boolean) => void;
+}) {
+  const { length, width } = anchor.config;
+  const [px, py, pz] = anchor.transform.position;
+  const rotZ = (anchor.transform.rotation[2] * Math.PI) / 180;
+
+  return (
+    <mesh
+      position={[px, py, pz + 0.5]}
+      rotation={[0, 0, rotZ]}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect(e.shiftKey);
+      }}
+    >
+      <boxGeometry args={[length, width, 1]} />
+      <meshStandardMaterial
+        color={selected ? '#2563eb' : '#38bdf8'}
+        transparent
+        opacity={selected ? 0.28 : 0.16}
+        roughness={0.5}
+        metalness={0.02}
+        side={THREE.DoubleSide}
+        depthWrite={false}
+      />
+      <Edges threshold={1} color={selected ? '#1d4ed8' : '#0ea5e9'} />
     </mesh>
   );
 }
