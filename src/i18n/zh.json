@@ -34,11 +34,9 @@
     "hole": "孔",
     "size": "尺寸 (mm)",
     "position": "位置 (mm)",
-    "rotation": "旋轉 (°)",
     "width": "寬",
     "depth": "深",
     "height": "高",
-    "selectHint": "選取物件以編輯屬性",
     "radius": "半徑",
     "radiusBottom": "底半徑",
     "radiusTop": "頂半徑"
@@ -109,8 +107,6 @@
     "screwEntry": "螺絲鎖固方向",
     "screwEntryFromLid": "從上蓋鎖入",
     "screwEntryFromBase": "從底座鎖入",
-    "noPartsHint": "請先在場景中加入電子零件",
-    "noPartsDetail": "點擊底部的「零件庫」按鈕，加入 Arduino、感測器等零件後，再回來產生外殼",
     "params": "外殼參數"
   },
   "tools": {
@@ -135,11 +131,7 @@
   "view": {
     "xray": "外殼透視",
     "wireframe": "稜線顯示",
-    "highRes": "High-res",
-    "sceneTree": "場景物件",
-    "sceneTreeEmpty": "尚無物件 — 使用工具列或底部零件庫加入",
-    "welcomeTitle": "開始建造",
-    "welcomeHint": "從上方工具列加入基本形狀，或點擊底部「零件庫」放入電子零件"
+    "sceneTree": "場景物件"
   },
   "common": {
     "close": "關閉"
