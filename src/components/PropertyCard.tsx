@@ -87,15 +87,17 @@ export function PropertyCard() {
             <SectionLabel>{t('property.rotation')}</SectionLabel>
             <div className="grid grid-cols-3 gap-1.5">
               {AXIS_LABELS.map((axis, i) => (
-                <StepperField
-                  key={axis}
-                  label={axis}
-                  value={node.transform.rotation[i]}
-                  step={5}
-                  onChange={(v) =>
-                    updateNode(node.id, (n) => void (n.transform.rotation[i] = v))
-                  }
-                />
+                node.type === 'car-anchor' && axis !== 'Z' ? null : (
+                  <StepperField
+                    key={axis}
+                    label={axis}
+                    value={node.transform.rotation[i]}
+                    step={5}
+                    onChange={(v) =>
+                      updateNode(node.id, (n) => void (n.transform.rotation[i] = v))
+                    }
+                  />
+                )
               ))}
             </div>
           </div>
