@@ -2,8 +2,12 @@ import { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { regenerateEnclosure } from '../enclosure/actions';
+import { buildCarChassisAndGround } from '../parts/presets';
+import type { CarChassisShape, CarConfigParams } from '../parts/presets';
 import { findNode, useDocumentStore } from '../store/documentStore';
+import { useToastStore } from '../store/toastStore';
 import type {
+  CarAnchorNode,
   EnclosureNode,
   EnclosureParams,
   NexcadDocument,
@@ -56,6 +60,7 @@ export function PropertyCard() {
           <EnclosureParamFields node={node} />
         </>
       )}
+      {node.type === 'car-anchor' && <CarAnchorFields node={node} />}
       <p className="mb-1 mt-3 text-xs text-slate-400">{t('property.position')}</p>
       <div className="grid grid-cols-3 gap-2">
         {AXIS_LABELS.map((axis, i) => (
@@ -137,6 +142,77 @@ function ParamFields({
           />
         ))}
       </div>
+    </>
+  );
+}
+
+function CarAnchorFields({ node }: { node: CarAnchorNode }) {
+  const { t, i18n } = useTranslation();
+  const updateNode = useDocumentStore((s) => s.updateNode);
+  const doc = useDocumentStore((s) => s.doc);
+  const [generating, setGenerating] = useState(false);
+
+  const setConfig = <K extends keyof CarConfigParams>(key: K, value: CarConfigParams[K]) => {
+    updateNode(node.id, (n) => {
+      if (n.type === 'car-anchor') n.config = { ...n.config, [key]: value };
+    });
+  };
+
+  const generate = () => {
+    setGenerating(true);
+    try {
+      const result = buildCarChassisAndGround(node, doc.nodes, i18n.language);
+      if (result.warnings.length > 0) {
+        useToastStore.getState().show(t('car.holeOutOfBounds'));
+        return;
+      }
+
+      const store = useDocumentStore.getState();
+      const oldIds = new Set(node.generatedNodeIds);
+      store.mutate('更新底盤', (d) => {
+        d.nodes = d.nodes.filter((n) => !oldIds.has(n.id));
+        const anchor = findNode(d.nodes, node.id);
+        if (anchor?.type === 'car-anchor') {
+          anchor.generatedNodeIds = result.nodes.map((n) => n.id);
+        }
+        d.nodes.push(...result.nodes);
+      });
+      store.setSelection(result.defaultSelection);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const hasGenerated = (node.generatedNodeIds?.length ?? 0) > 0;
+
+  return (
+    <>
+      <p className="mb-1 text-xs text-slate-400">{t('car.chassisShape')}</p>
+      <select
+        className="mb-3 h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+        value={node.config.shape}
+        onChange={(e) => setConfig('shape', e.target.value as CarChassisShape)}
+      >
+        <option value="rounded-rect">{t('car.shapeRoundedRect')}</option>
+        <option value="rect">{t('car.shapeRect')}</option>
+        <option value="ellipse">{t('car.shapeEllipse')}</option>
+      </select>
+      <p className="mb-1 text-xs text-slate-400">{t('car.chassisDimensions')}</p>
+      <div className="mb-3 grid grid-cols-3 gap-2">
+        <NumberField label={t('car.length')} value={node.config.length} min={150} onChange={(v) => setConfig('length', v)} />
+        <NumberField label={t('car.width')} value={node.config.width} min={120} onChange={(v) => setConfig('width', v)} />
+        <NumberField label={t('car.thickness')} value={node.config.thickness} min={2} onChange={(v) => setConfig('thickness', v)} />
+      </div>
+      <p className="mb-3 text-xs text-slate-500">
+        {t('car.driveType')}: {node.config.drive === '2wd' ? t('car.drive2wd') : t('car.drive4wd')}
+      </p>
+      <button
+        onClick={generate}
+        disabled={generating}
+        className="mb-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+      >
+        {hasGenerated ? t('car.regenerateChassis') : t('car.generateChassis')}
+      </button>
     </>
   );
 }
