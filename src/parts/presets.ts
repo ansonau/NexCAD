@@ -131,27 +131,6 @@ function computeCornerRadius(shape: CarChassisShape, length: number, width: numb
   }
 }
 
-function computeElectronicsHoles(
-  electronics: CarPresetElectronics[],
-  cx: number,
-  cy: number,
-): MountingHole[] {
-  const holes: MountingHole[] = [];
-  for (const e of electronics) {
-    const def = getPartDefinition(e.partId);
-    if (!def) continue;
-    for (const h of def.mountingHoles) {
-      holes.push({
-        x: e.x + h.x - cx,
-        y: e.y + h.y - cy,
-        diameter: h.diameter,
-        standoff: false,
-      });
-    }
-  }
-  return holes;
-}
-
 export function buildChassisDef(config: CarConfigParams): PartDefinition {
   const { shape, length, width, thickness } = config;
   const cornerRadius = computeCornerRadius(shape, length, width);
@@ -163,38 +142,6 @@ export function buildChassisDef(config: CarConfigParams): PartDefinition {
     category: 'component',
     body: { size: [length, width, thickness], cornerRadius, blocks: [] },
     mountingHoles: [],
-    ports: [],
-    clearanceHeight: thickness,
-  };
-}
-
-function buildChassisDefWithHoles(
-  config: CarConfigParams,
-  electronics: CarPresetElectronics[],
-  cx: number,
-  cy: number,
-): PartDefinition {
-  const { length, width, thickness } = config;
-  const cornerRadius = computeCornerRadius(config.shape, length, width);
-  const halfL = length / 2;
-  const halfW = width / 2;
-
-  const cornerHoles: MountingHole[] = [
-    { x: -(halfL - 10), y: -(halfW - 10), diameter: 3 },
-    { x: -(halfL - 10), y: halfW - 10, diameter: 3 },
-    { x: halfL - 10, y: -(halfW - 10), diameter: 3 },
-    { x: halfL - 10, y: halfW - 10, diameter: 3 },
-  ];
-
-  const electronicsHoles = computeElectronicsHoles(electronics, cx, cy);
-
-  return {
-    id: CHASSIS_DYNAMIC_PART_ID,
-    name: 'Car Chassis',
-    nameZh: '小車底盤',
-    category: 'component',
-    body: { size: [length, width, thickness], cornerRadius, blocks: [] },
-    mountingHoles: [...cornerHoles, ...electronicsHoles],
     ports: [],
     clearanceHeight: thickness,
   };
@@ -214,74 +161,44 @@ function adaptElectronicsLayout(
   }));
 }
 
-function adaptWheelLayout(
-  wheels: CarPresetGroundPart[],
-  config: CarConfigParams,
-): CarPresetGroundPart[] {
-  const scale = config.length / DEFAULT_CHASSIS_LENGTH;
-  const defaultCx = chassisCenterX(DEFAULT_CHASSIS_LENGTH);
-  const newCx = chassisCenterX(config.length);
-
-  return wheels.map((w) => ({
-    ...w,
-    x: newCx + (w.x - defaultCx) * scale,
-  }));
-}
-
-function adaptCasterPosition(
-  caster: CarPresetGroundPart,
-  config: CarConfigParams,
-): CarPresetGroundPart {
-  const scale = config.length / DEFAULT_CHASSIS_LENGTH;
-  const defaultCx = chassisCenterX(DEFAULT_CHASSIS_LENGTH);
-  const newCx = chassisCenterX(config.length);
-
-  return {
-    ...caster,
-    x: newCx + (caster.x - defaultCx) * scale,
-  };
-}
-
 /**
  * 由 preset 組整車節點。defaultSelection＝貼地結構組（底盤+輪+萬向輪）：
  * 外殼地板跟隨最低被選件底面，選貼地組才能讓「產生外殼」得到落地展示盒（design.md D10）。
  */
+export function buildCarNodes(spec: CarPresetSpec, lang: string): { nodes: SceneNode[]; defaultSelection: string[] };
+export function buildCarNodes(config: CarConfigParams, lang: string): { nodes: SceneNode[]; defaultSelection: string[] };
 export function buildCarNodes(
-  config: CarConfigParams,
+  specOrConfig: CarPresetSpec | CarConfigParams,
   lang: string,
 ): { nodes: SceneNode[]; defaultSelection: string[] } {
-  const spec = config.drive === '2wd' ? SMART_CAR_2WD : SMART_CAR_4WD;
-  const cx = chassisCenterX(config.length);
-  const cy = 0;
+  if ('drive' in specOrConfig) {
+    const { anchor, electronics } = buildCarAnchorAndElectronics(specOrConfig, lang);
+    const ground = buildCarChassisAndGround(anchor, electronics, lang);
+    if (ground.warnings.length > 0) throw new Error(ground.warnings.join('\n'));
+    return { nodes: [...electronics, ...ground.nodes], defaultSelection: ground.defaultSelection };
+  }
 
-  const adaptedElectronics = adaptElectronicsLayout(spec.electronics, config);
-  const adaptedWheels = adaptWheelLayout(spec.wheels, config);
-  const adaptedCaster = spec.caster ? adaptCasterPosition(spec.caster, config) : undefined;
-
-  const electronics: PartNode[] = adaptedElectronics.map(({ partId, x, y, z, rotZ }) =>
+  const spec = specOrConfig;
+  const electronics: PartNode[] = spec.electronics.map(({ partId, x, y, z, rotZ }) =>
     createPartNode(partId, partName(partId, lang), {
       transform: { position: [x, y, z], rotation: [0, 0, rotZ], scale: [1, 1, 1] },
     }),
   );
 
-  const chassisDef = buildChassisDefWithHoles(config, adaptedElectronics, cx, cy);
-  registerPartDefinition(chassisDef);
-
-  const chassisZ = CHASSIS_TOP_Z - config.thickness;
-  const chassis = createPartNode(CHASSIS_DYNAMIC_PART_ID, partNameDynamicChassis(config, lang), {
-    transform: { position: [cx, cy, chassisZ], rotation: [0, 0, 0], scale: [1, 1, 1] },
+  const chassis = createPartNode(spec.chassisPartId, partName(spec.chassisPartId, lang), {
+    transform: { position: spec.chassisPosition, rotation: [0, 0, 0], scale: [1, 1, 1] },
   });
 
-  const ground: PartNode[] = adaptedWheels.map(({ partId, x, y }) =>
+  const ground: PartNode[] = spec.wheels.map(({ partId, x, y }) =>
     createPartNode(partId, partName(partId, lang), {
       transform: { position: [x, y, 0], rotation: [0, 0, 0], scale: [1, 1, 1] },
     }),
   );
-  if (adaptedCaster && config.includeCaster) {
+  if (spec.caster) {
     ground.push(
-      createPartNode(adaptedCaster.partId, partName(adaptedCaster.partId, lang), {
+      createPartNode(spec.caster.partId, partName(spec.caster.partId, lang), {
         transform: {
-          position: [adaptedCaster.x, adaptedCaster.y, 0],
+          position: [spec.caster.x, spec.caster.y, 0],
           rotation: [0, 0, 0],
           scale: [1, 1, 1],
         },
