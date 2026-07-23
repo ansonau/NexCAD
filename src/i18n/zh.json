@@ -136,6 +136,8 @@
   "view": {
     "xray": "外殼透視",
     "wireframe": "稜線顯示",
+    "translate": "移動",
+    "rotate": "旋轉",
     "sceneTree": "場景物件"
   },
   "common": {

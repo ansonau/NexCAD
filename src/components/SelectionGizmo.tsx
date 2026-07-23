@@ -4,15 +4,19 @@ import { createPortal, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { collectHoleWorldPositions, snapToHoles } from '../geometry/holeSnap';
 import { findNode, useDocumentStore } from '../store/documentStore';
+import { useViewStore } from '../store/viewStore';
 import type { Vec3 } from '../types/document';
 
 const snap = (v: number) => Math.round(v);
+const degToRad = (v: number) => (v * Math.PI) / 180;
+const radToDeg = (v: number) => (v * 180) / Math.PI;
 
 export function SelectionGizmo() {
   const selection = useDocumentStore((s) => s.selection);
   const doc = useDocumentStore((s) => s.doc);
   const beginDrag = useDocumentStore((s) => s.beginDrag);
   const updateTransient = useDocumentStore((s) => s.updateTransient);
+  const gizmoMode = useViewStore((s) => s.gizmoMode);
   const proxyRef = useRef<THREE.Object3D>(null!);
   const holesRef = useRef<Vec3[]>([]);
   const scene = useThree((s) => s.scene);
@@ -22,6 +26,8 @@ export function SelectionGizmo() {
   useEffect(() => {
     if (selected && proxyRef.current) {
       proxyRef.current.position.set(...selected.transform.position);
+      const [rx, ry, rz] = selected.transform.rotation;
+      proxyRef.current.rotation.set(degToRad(rx), degToRad(ry), degToRad(rz));
     }
   }, [selected]);
 
@@ -32,6 +38,13 @@ export function SelectionGizmo() {
     const snapped = snapToHoles([snap(p.x), snap(p.y), snap(p.z)], holesRef.current);
     updateTransient(selected.id, (n) => {
       n.transform.position = snapped;
+    });
+  };
+
+  const commitRotation = () => {
+    const z = snap(radToDeg(proxyRef.current.rotation.z));
+    updateTransient(selected.id, (n) => {
+      n.transform.rotation = [n.transform.rotation[0], n.transform.rotation[1], z];
     });
   };
 
@@ -46,9 +59,13 @@ export function SelectionGizmo() {
       {createPortal(
         <TransformControls
           object={proxyRef}
-          mode="translate"
+          mode={gizmoMode}
           space="local"
           translationSnap={1}
+          rotationSnap={degToRad(5)}
+          showX={gizmoMode === 'translate'}
+          showY={gizmoMode === 'translate'}
+          showZ
           size={0.8}
           onMouseDown={() => {
             holesRef.current = collectHoleWorldPositions(
@@ -57,7 +74,7 @@ export function SelectionGizmo() {
             );
             beginDrag();
           }}
-          onObjectChange={commitPosition}
+          onObjectChange={gizmoMode === 'rotate' ? commitRotation : commitPosition}
         />,
         scene,
       )}

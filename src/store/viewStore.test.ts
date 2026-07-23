@@ -2,13 +2,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { useViewStore } from './viewStore';
 
 beforeEach(() => {
-  useViewStore.setState({ shellXray: false, wireframe: false });
+  useViewStore.setState({ shellXray: false, wireframe: false, gizmoMode: 'translate' });
 });
 
 describe('viewStore', () => {
   it('初始狀態皆為 false', () => {
     expect(useViewStore.getState().shellXray).toBe(false);
     expect(useViewStore.getState().wireframe).toBe(false);
+    expect(useViewStore.getState().gizmoMode).toBe('translate');
   });
 
   it('toggleShellXray 每次呼叫翻轉布林值', () => {
@@ -33,5 +34,12 @@ describe('viewStore', () => {
     useViewStore.getState().toggleWireframe();
     expect(useViewStore.getState().shellXray).toBe(true);
     expect(useViewStore.getState().wireframe).toBe(true);
+  });
+
+  it('setGizmoMode 切換 move/rotate 模式', () => {
+    useViewStore.getState().setGizmoMode('rotate');
+    expect(useViewStore.getState().gizmoMode).toBe('rotate');
+    useViewStore.getState().setGizmoMode('translate');
+    expect(useViewStore.getState().gizmoMode).toBe('translate');
   });
 });

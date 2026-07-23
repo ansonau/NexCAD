@@ -136,6 +136,8 @@
   "view": {
     "xray": "Shell X-ray",
     "wireframe": "Wireframe",
+    "translate": "Move",
+    "rotate": "Rotate",
     "sceneTree": "Scene objects"
   },
   "common": {
