@@ -26,7 +26,10 @@
     "drive4wd": "4WD Four-Wheel Drive",
     "wheelSize": "Wheel Size",
     "includeCaster": "Include Ball Caster",
-    "placeElectronics": "Place Electronics"
+    "placeElectronics": "Place Electronics",
+    "generateChassis": "Generate Chassis",
+    "regenerateChassis": "Regenerate Chassis",
+    "holeOutOfBounds": "Some electronics exceed the chassis bounds. Adjust the anchor size or part positions and try again."
   },
   "property": {
     "name": "Name",

@@ -26,7 +26,10 @@
     "drive4wd": "4WD 四輪驅動",
     "wheelSize": "輪子尺寸",
     "includeCaster": "包含萬向輪",
-    "placeElectronics": "放置電子零件"
+    "placeElectronics": "放置電子零件",
+    "generateChassis": "生成底盤",
+    "regenerateChassis": "重新生成底盤",
+    "holeOutOfBounds": "部分電子零件超出底盤範圍，請調整錨點大小或零件位置後再試。"
   },
   "property": {
     "name": "名稱",
