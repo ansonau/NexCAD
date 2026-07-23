@@ -15,7 +15,7 @@ function typeLabel(node: SceneNode): string {
     case 'enclosure':
       return `enclosure/${node.part}`;
     case 'car-anchor':
-      return 'car';
+      return 'anchor';
     default:
       return '';
   }
