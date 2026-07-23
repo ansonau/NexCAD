@@ -22,6 +22,7 @@ export function SelectionGizmo() {
   const scene = useThree((s) => s.scene);
 
   const selected = selection.length === 1 ? findNode(doc.nodes, selection[0]) : undefined;
+  const rotateZOnly = gizmoMode === 'rotate' && selected?.type === 'car-anchor';
 
   useEffect(() => {
     if (selected && proxyRef.current) {
@@ -42,9 +43,17 @@ export function SelectionGizmo() {
   };
 
   const commitRotation = () => {
-    const z = snap(radToDeg(proxyRef.current.rotation.z));
+    const rotation = proxyRef.current.rotation;
+    const nextRotation: Vec3 = [
+      snap(radToDeg(rotation.x)),
+      snap(radToDeg(rotation.y)),
+      snap(radToDeg(rotation.z)),
+    ];
     updateTransient(selected.id, (n) => {
-      n.transform.rotation = [n.transform.rotation[0], n.transform.rotation[1], z];
+      n.transform.rotation =
+        n.type === 'car-anchor'
+          ? [n.transform.rotation[0], n.transform.rotation[1], nextRotation[2]]
+          : nextRotation;
     });
   };
 
@@ -63,8 +72,8 @@ export function SelectionGizmo() {
           space="local"
           translationSnap={1}
           rotationSnap={degToRad(5)}
-          showX={gizmoMode === 'translate'}
-          showY={gizmoMode === 'translate'}
+          showX={!rotateZOnly}
+          showY={!rotateZOnly}
           showZ
           size={0.8}
           onMouseDown={() => {
