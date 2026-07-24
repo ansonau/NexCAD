@@ -15,6 +15,12 @@ export const panelClass =
   'rounded-2xl border border-line bg-white/85 shadow-panel backdrop-blur-xl';
 
 const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40';
+const focusableSelector =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function getVisibleFocusable(root: HTMLElement | null): HTMLElement[] {
+  return [...(root?.querySelectorAll<HTMLElement>(focusableSelector) ?? [])].filter((el) => el.offsetParent !== null);
+}
 
 export function IconButton({
   title,
@@ -155,9 +161,7 @@ export function Dialog({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
       if (e.key !== 'Tab') return;
-      const focusable = [...(dialogRef.current?.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      ) ?? [])];
+      const focusable = getVisibleFocusable(dialogRef.current);
       if (focusable.length === 0) {
         e.preventDefault();
         dialogRef.current?.focus();
@@ -166,9 +170,7 @@ export function Dialog({
         (e.shiftKey ? focusable.at(-1) : focusable[0])?.focus();
       }
     };
-    (dialogRef.current?.querySelector<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ) ?? dialogRef.current)?.focus();
+    (getVisibleFocusable(dialogRef.current)[0] ?? dialogRef.current)?.focus();
     window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('keydown', onKey);

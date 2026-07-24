@@ -9,6 +9,6 @@ export interface HighResModel {
 }
 
 export const HIGH_RES_MODELS: Record<string, HighResModel> = {
-  // STL X bounds are [-51.5, 18.5], so move its center (-16.5) to the part origin.
-  'tt-motor': { url: '/models/tt-motor.stl', originOffset: [16.5, 0, 0] },
+  // The STL gearbox is already centered on the part origin; keep visual and procedural models aligned.
+  'tt-motor': { url: '/models/tt-motor.stl', originOffset: [0, 0, 0] },
 };
