@@ -124,7 +124,7 @@ export function WorkspaceShell() {
         </div>
         {!isLargeScreen && <PartsDrawer />}
         {!isLargeScreen && (
-          <div className="pointer-events-none absolute left-3 top-3 z-30 flex max-h-[calc(100%-1.5rem)] w-60 flex-col gap-2">
+          <div className="pointer-events-none absolute left-3 top-16 z-30 flex max-h-[calc(100%-5rem)] w-60 flex-col gap-2">
             <div className="pointer-events-auto">
               <WorkflowTools />
             </div>
