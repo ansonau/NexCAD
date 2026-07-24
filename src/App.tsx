@@ -1,14 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PartsDrawer } from './components/PartsDrawer';
-import { PropertyCard } from './components/PropertyCard';
-import { LanguageToggle } from './components/LanguageToggle';
-import { ProjectsPanel } from './components/ProjectsPanel';
-import { SceneTreePanel } from './components/SceneTreePanel';
-import { ToastStack } from './components/ToastStack';
-import { Toolbar } from './components/Toolbar';
-import { Viewport } from './components/Viewport';
-import { ViewToggles } from './components/ViewToggles';
+import { WorkspaceShell } from './components/WorkspaceShell';
 import { useAutosave } from './hooks/useAutosave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { listProjects, saveProject } from './persistence/db';
@@ -24,6 +16,7 @@ export default function App() {
   useKeyboardShortcuts();
   useAutosave();
   const { t } = useTranslation();
+  const nodeCount = useDocumentStore((s) => s.doc.nodes.length);
 
   useEffect(() => {
     if (bootstrapped) return;
@@ -52,25 +45,24 @@ export default function App() {
   }, [t]);
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-slate-50">
-      <Viewport />
-      <ProjectsPanel />
-      <Toolbar />
-      <PropertyCard />
-      <PartsDrawer />
-      <ToastStack />
-      <div className="absolute right-4 top-4">
-        <LanguageToggle />
-      </div>
-      <div className="absolute right-4 top-16">
-        <ViewToggles />
-      </div>
-      <div className="absolute left-4 top-4">
-        <SceneTreePanel />
-      </div>
-      <div className="absolute bottom-4 left-4 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-sm font-medium text-slate-700 shadow-lg backdrop-blur">
-        NexCAD
-      </div>
+    <div className="relative h-full w-full overflow-hidden bg-canvas text-ink">
+      <WorkspaceShell />
+      {nodeCount === 0 && (
+        <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center">
+          <div className="pointer-events-auto flex max-w-xs flex-col items-center gap-3 rounded-2xl border border-line bg-white/95 px-8 py-6 text-center shadow-pop backdrop-blur-xl animate-pop-in">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 2.5 20.5 7v10L12 21.5 3.5 17V7L12 2.5Z" stroke="#2563eb" strokeWidth="2" strokeLinejoin="round" />
+                <path d="M12 12 20.5 7M12 12v9.5M12 12 3.5 7" stroke="#2563eb" strokeWidth="2" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[16px] font-semibold tracking-tight text-ink">{t('view.welcomeTitle')}</p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-ink-2">{t('view.welcomeHint')}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

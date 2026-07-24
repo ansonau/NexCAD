@@ -54,6 +54,7 @@
     "sensor": "Sensors & displays",
     "power": "Motion & power",
     "component": "Small parts",
+    "basicShapes": "Basic shapes",
     "noResults": "No matching parts"
   },
   "projects": {
@@ -136,9 +137,39 @@
   "view": {
     "xray": "Shell X-ray",
     "wireframe": "Wireframe",
+    "highRes": "High res",
     "translate": "Move",
     "rotate": "Rotate",
-    "sceneTree": "Scene objects"
+    "sceneTree": "Scene objects",
+    "welcomeTitle": "Start building your model",
+    "welcomeHint": "Add parts or basic geometry, then arrange them in the scene.",
+    "sceneTreeEmpty": "No objects yet",
+    "help": "Help",
+    "helpTitle": "Help & shortcuts",
+    "helpHint": "Tip: add parts first, arrange them, then generate the enclosure.",
+    "settings": "Settings",
+    "settingsTitle": "Settings",
+    "settingsHint": "Units: mm | Grid: visible | Default export: STL",
+    "language": "Language",
+    "user": "User",
+    "workflow": "Project flow",
+    "workflowTools": "Workflow tools",
+    "workflowAddParts": "Add parts",
+    "workflowAddPartsHint": "Add the first object from the parts library or toolbar",
+    "workflowArrange": "Arrange",
+    "workflowArrangeHint": "Move parts and check height and spacing",
+    "workflowEnclosure": "Generate enclosure",
+    "workflowEnclosureHint": "Choose lid, standoffs, and cutout settings",
+    "workflowCheck": "Check holes",
+    "workflowCheckHint": "Confirm standoffs, screw holes, and parts do not conflict",
+    "workflowExport": "Export STL",
+    "workflowExportHint": "Run a final check and download the print file",
+    "nextStep": "Next: {{step}}",
+    "objects": "Objects",
+    "addPart": "Add Part",
+    "partsLibrary": "Parts Library",
+    "sidebarTools": "Tools",
+    "sidebarObjectsHint": "Add a part or primitive first; objects will appear here."
   },
   "common": {
     "close": "Close"

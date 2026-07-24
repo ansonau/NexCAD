@@ -54,6 +54,7 @@
     "sensor": "感測器與顯示",
     "power": "動力與電源",
     "component": "小型元件",
+    "basicShapes": "基本形狀",
     "noResults": "找不到符合的零件"
   },
   "projects": {
@@ -136,9 +137,39 @@
   "view": {
     "xray": "外殼透視",
     "wireframe": "稜線顯示",
+    "highRes": "高精度模型",
     "translate": "移動",
     "rotate": "旋轉",
-    "sceneTree": "場景物件"
+    "sceneTree": "場景物件",
+    "welcomeTitle": "開始建立你的模型",
+    "welcomeHint": "加入零件或基本幾何，然後在場景中配置。",
+    "sceneTreeEmpty": "尚未加入任何物件",
+    "help": "說明",
+    "helpTitle": "說明與快捷鍵",
+    "helpHint": "提示：先加入零件，再調整位置，然後產生外殼。",
+    "settings": "設定",
+    "settingsTitle": "設定",
+    "settingsHint": "單位：mm｜格線：顯示｜預設匯出：STL",
+    "language": "語言",
+    "user": "使用者",
+    "workflow": "專案流程",
+    "workflowTools": "工作工具",
+    "workflowAddParts": "加入零件",
+    "workflowAddPartsHint": "從零件庫或工具列加入第一個物件",
+    "workflowArrange": "調整位置",
+    "workflowArrangeHint": "移動零件並檢查高度與邊距",
+    "workflowEnclosure": "產生外殼",
+    "workflowEnclosureHint": "選上蓋、螺絲柱和開孔參數",
+    "workflowCheck": "檢查孔位",
+    "workflowCheckHint": "確認螺絲柱、螺絲孔和零件沒有衝突",
+    "workflowExport": "匯出 STL",
+    "workflowExportHint": "最後檢查後下載列印檔",
+    "nextStep": "下一步：{{step}}",
+    "objects": "物件",
+    "addPart": "加入零件",
+    "partsLibrary": "零件庫",
+    "sidebarTools": "工具",
+    "sidebarObjectsHint": "先加入零件或基本形狀，物件會顯示在這裡。"
   },
   "common": {
     "close": "關閉"
