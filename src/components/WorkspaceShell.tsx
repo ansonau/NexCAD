@@ -123,18 +123,14 @@ export function WorkspaceShell() {
           </div>
         </div>
         {!isLargeScreen && <PartsDrawer />}
-        <div className="absolute bottom-3 left-3 z-20">
-          <ActionRail compact />
-        </div>
+        {isLargeScreen && (
+          <div className="absolute bottom-3 left-3 z-20">
+            <ActionRail compact />
+          </div>
+        )}
         {!isLargeScreen && (
-          <div>
-            <div className="absolute left-3 top-3 z-30 flex max-h-[calc(100%-1.5rem)] w-60 flex-col items-start gap-2 overflow-y-auto">
-              <WorkflowTools />
-              <SceneTreePanel />
-            </div>
-            <div className="pointer-events-none absolute right-3 top-3 z-30 flex max-h-[calc(100%-1.5rem)] w-64 flex-col items-end gap-2">
-              {hasSelection && <PropertyCard />}
-            </div>
+          <div className="pointer-events-none absolute right-3 top-3 z-30 flex max-h-[calc(100%-1.5rem)] w-64 flex-col items-end gap-2">
+            {hasSelection && <PropertyCard />}
           </div>
         )}
       </main>
