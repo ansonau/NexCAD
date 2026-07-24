@@ -148,13 +148,32 @@ export function Dialog({
   children: ReactNode;
 }) {
   const { t } = useTranslation();
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const previousFocus = document.activeElement as HTMLElement | null;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      if (e.key !== 'Tab') return;
+      const focusable = [...(dialogRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ) ?? [])];
+      if (focusable.length === 0) {
+        e.preventDefault();
+        dialogRef.current?.focus();
+      } else if (e.shiftKey ? document.activeElement === focusable[0] : document.activeElement === focusable.at(-1)) {
+        e.preventDefault();
+        (e.shiftKey ? focusable.at(-1) : focusable[0])?.focus();
+      }
     };
+    (dialogRef.current?.querySelector<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ) ?? dialogRef.current)?.focus();
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      previousFocus?.focus();
+    };
   }, [onClose]);
 
   const dialog = (
@@ -164,6 +183,8 @@ export function Dialog({
     >
       <div
         role="dialog"
+        ref={dialogRef}
+        tabIndex={-1}
         aria-modal="true"
         aria-label={title}
         className={`${width} max-w-[calc(100vw-1.5rem)] max-h-[80vh] animate-pop-in overflow-y-auto rounded-2xl border border-line bg-white/95 p-4 shadow-pop backdrop-blur-xl`}
@@ -201,6 +222,8 @@ export function StepperField({
   const [draft, setDraft] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
   const holdRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   // 外部改變 value 時（選到其他物件、拖曳等），若非編輯中就同步顯示
   useEffect(() => {
@@ -218,7 +241,7 @@ export function StepperField({
   );
 
   const adjust = (delta: number) => {
-    const v = clamp(value + delta * step);
+    const v = clamp(valueRef.current + delta * step);
     onChange(v);
   };
 

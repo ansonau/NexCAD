@@ -42,18 +42,41 @@ test('mobile object sidebar controls remain reachable at narrow widths', async (
   await page.goto('/');
 
   await expect(page.getByRole('combobox', { name: zh.view.language })).toBeVisible();
-  await expect(page.getByTitle(zh.view.xray)).toBeVisible();
-  await expect(page.getByTitle(zh.view.wireframe)).toBeVisible();
-  await expect(page.getByTitle(zh.view.highRes)).toBeVisible();
+  const toggles = [zh.view.xray, zh.view.wireframe, zh.view.highRes].map((label) => page.getByTitle(label));
+  for (const toggle of toggles) {
+    await expect(toggle).toBeVisible();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  }
+
+  const viewTogglesBox = await toggles[0].locator('..').boundingBox();
+  const workflowBox = await page.getByText(zh.view.workflowTools, { exact: true }).locator('..').boundingBox();
+  expect(viewTogglesBox).not.toBeNull();
+  expect(workflowBox).not.toBeNull();
+  expect(
+    (viewTogglesBox!.x + viewTogglesBox!.width <= workflowBox!.x) ||
+    (workflowBox!.x + workflowBox!.width <= viewTogglesBox!.x) ||
+    (viewTogglesBox!.y + viewTogglesBox!.height <= workflowBox!.y) ||
+    (workflowBox!.y + workflowBox!.height <= viewTogglesBox!.y),
+  ).toBe(true);
 
   await page.getByRole('button', { name: zh.view.partsLibrary }).click();
   await expect(page.getByPlaceholder(zh.drawer.search)).toBeVisible();
   await page.getByRole('button', { name: zh.drawer.close }).click();
 
-  await page.getByTitle(zh.enclosure.title).click();
-  const dialog = page.getByRole('dialog', { name: zh.enclosure.title });
-  await expect(dialog).toBeVisible();
-  const box = await dialog.boundingBox();
-  expect(box?.x).toBeGreaterThanOrEqual(0);
-  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(320);
+  const expectInViewport = async (dialog: ReturnType<typeof page.getByRole>) => {
+    await expect(dialog).toBeVisible();
+    const box = await dialog.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.y).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(700);
+  };
+
+  await page.getByRole('button', { name: zh.enclosure.title }).click();
+  await expectInViewport(page.getByRole('dialog', { name: zh.enclosure.title }));
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: zh.tools.title }).click();
+  await expectInViewport(page.getByRole('dialog', { name: zh.tools.title }));
 });

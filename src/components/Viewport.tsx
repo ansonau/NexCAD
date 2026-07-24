@@ -26,16 +26,16 @@ export function Viewport() {
   // 高清模型只換視覺：外殼規劃/碰撞/匯出仍全部走 worker 算出的程序化幾何
   // （meshes 不變）；這裡只是決定「畫面上」用哪個 nodeId 的哪組 mesh。
   const highResNodeIds = useMemo(() => {
-    if (!highResModels) return new Map<string, string>();
-    const map = new Map<string, string>();
+    if (!highResModels) return new Map<string, typeof HIGH_RES_MODELS[string]>();
+    const map = new Map<string, typeof HIGH_RES_MODELS[string]>();
     const seen = new Set<string>();
     for (const m of meshes) {
       if (seen.has(m.nodeId)) continue;
       seen.add(m.nodeId);
       const node = findNode(doc.nodes, m.nodeId);
       if (node?.type === 'part') {
-        const url = HIGH_RES_MODELS[(node as PartNode).partId];
-        if (url) map.set(m.nodeId, url);
+        const model = HIGH_RES_MODELS[(node as PartNode).partId];
+        if (model) map.set(m.nodeId, model);
       }
     }
     return map;
@@ -96,13 +96,14 @@ export function Viewport() {
               }}
             />
           ))}
-        {[...highResNodeIds.entries()].map(([nodeId, url]) => {
+        {[...highResNodeIds.entries()].map(([nodeId, model]) => {
           const node = findNode(doc.nodes, nodeId) as PartNode | undefined;
           if (!node) return null;
           return (
             <HighResPartMesh
               key={nodeId}
-              url={url}
+              url={model.url}
+              originOffset={model.originOffset}
               transform={node.transform}
               selected={selection.includes(nodeId)}
               wireframe={wireframe}
@@ -220,12 +221,14 @@ function SceneMesh({
  */
 function HighResPartMesh({
   url,
+  originOffset = [0, 0, 0],
   transform,
   selected,
   wireframe,
   onSelect,
 }: {
   url: string;
+  originOffset?: [number, number, number];
   transform: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] };
   selected: boolean;
   wireframe: boolean;
@@ -239,24 +242,32 @@ function HighResPartMesh({
   ];
 
   return (
-    <mesh
-      geometry={geometry}
-      position={transform.position}
+    <group
+      position={[
+        transform.position[0],
+        transform.position[1],
+        transform.position[2],
+      ]}
       rotation={rotationRad}
       scale={transform.scale}
+    >
+      <mesh
+        geometry={geometry}
+        position={originOffset}
       onClick={(e) => {
         e.stopPropagation();
         onSelect(e.shiftKey);
       }}
-    >
-      <meshStandardMaterial
-        color={selected ? '#2563eb' : '#2e7d5b'}
-        roughness={0.6}
-        metalness={0.05}
-        side={THREE.DoubleSide}
-      />
-      {wireframe && <Edges threshold={30} color="#334155" />}
-    </mesh>
+      >
+        <meshStandardMaterial
+          color={selected ? '#2563eb' : '#2e7d5b'}
+          roughness={0.6}
+          metalness={0.05}
+          side={THREE.DoubleSide}
+        />
+        {wireframe && <Edges threshold={30} color="#334155" />}
+      </mesh>
+    </group>
   );
 }
 

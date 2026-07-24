@@ -3,14 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useDocumentStore } from '../store/documentStore';
 import type { SceneNode } from '../types/document';
 
-export type GuidedWorkbenchStep = 'addParts' | 'arrange' | 'enclosure' | 'check' | 'export';
+export type GuidedWorkbenchStep = 'addParts' | 'enclosure' | 'check';
 
 const STEP_KEYS: { id: GuidedWorkbenchStep; label: string; hint: string }[] = [
   { id: 'addParts', label: 'view.workflowAddParts', hint: 'view.workflowAddPartsHint' },
-  { id: 'arrange', label: 'view.workflowArrange', hint: 'view.workflowArrangeHint' },
   { id: 'enclosure', label: 'view.workflowEnclosure', hint: 'view.workflowEnclosureHint' },
   { id: 'check', label: 'view.workflowCheck', hint: 'view.workflowCheckHint' },
-  { id: 'export', label: 'view.workflowExport', hint: 'view.workflowExportHint' },
 ];
 
 export function getGuidedWorkbenchStep(nodes: SceneNode[]): GuidedWorkbenchStep {
