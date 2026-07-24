@@ -85,9 +85,7 @@ function SceneTreeRow({ node, depth }: { node: SceneNode; depth: number }) {
           type="button"
           onClick={toggleVisible}
           aria-label={node.visible === false ? `Show ${node.name}` : `Hide ${node.name}`}
-          className={`ml-auto flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors duration-100 hover:bg-slate-900/[0.06] hover:text-ink focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
-            node.visible === false ? 'text-ink-3' : 'text-ink-3 opacity-0 group-hover:opacity-100'
-          }`}
+          className="ml-auto flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-ink-3 transition-colors duration-100 hover:bg-slate-900/[0.06] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
         >
           {node.visible === false ? <EyeOff size={13} /> : <Eye size={13} />}
         </button>
@@ -95,7 +93,7 @@ function SceneTreeRow({ node, depth }: { node: SceneNode; depth: number }) {
           type="button"
           onClick={handleDelete}
           aria-label={`Delete ${node.name}`}
-          className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-ink-3 opacity-0 transition-colors duration-100 hover:bg-red-500/10 hover:text-red-500 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40"
+          className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-ink-3 transition-colors duration-100 hover:bg-red-500/10 hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40"
         >
           <Trash2 size={13} />
         </button>
