@@ -126,26 +126,25 @@ export function WorkspaceShell() {
         <div className="absolute bottom-3 left-3 z-20">
           <ActionRail compact />
         </div>
+        {!isLargeScreen && (
+          <div>
+            <div className="absolute left-3 top-3 z-30 flex max-h-[calc(100%-1.5rem)] w-60 flex-col items-start gap-2 overflow-y-auto">
+              <WorkflowTools />
+              <SceneTreePanel />
+            </div>
+            <div className="pointer-events-none absolute right-3 top-3 z-30 flex max-h-[calc(100%-1.5rem)] w-64 flex-col items-end gap-2">
+              {hasSelection && <PropertyCard />}
+            </div>
+          </div>
+        )}
       </main>
 
       {isLargeScreen && (
         <aside className="min-w-0 border-l border-line bg-white/82 backdrop-blur-xl lg:flex lg:flex-col">
           <div className="min-h-0 flex-1 p-3">
-            <PropertyCard docked />
+            <PropertyCard />
           </div>
         </aside>
-      )}
-
-      {!isLargeScreen && (
-        <div>
-        <div className="absolute left-3 top-3 z-30 flex max-h-[calc(100%-1.5rem)] w-60 flex-col items-start gap-2 overflow-y-auto">
-          <WorkflowTools />
-          <SceneTreePanel />
-        </div>
-        <div className="pointer-events-none absolute right-3 top-3 z-30 flex max-h-[calc(100%-1.5rem)] w-64 flex-col items-end gap-2">
-          {hasSelection && <PropertyCard />}
-        </div>
-      </div>
       )}
 
       <ToastStack />

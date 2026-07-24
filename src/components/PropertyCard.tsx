@@ -27,19 +27,15 @@ const PARAM_LABELS: Record<string, string> = {
 
 const AXIS_LABELS = ['X', 'Y', 'Z'] as const;
 
-export function PropertyCard({ docked = false }: { docked?: boolean }) {
+export function PropertyCard() {
   const { t } = useTranslation();
   const selection = useDocumentStore((s) => s.selection);
   const doc = useDocumentStore((s) => s.doc);
   const updateNode = useDocumentStore((s) => s.updateNode);
 
   const node = selection.length === 1 ? findNode(doc.nodes, selection[0]) : undefined;
-  const wrapperClass = docked
-    ? 'pointer-events-auto h-full w-full overflow-y-auto rounded-2xl border border-line bg-white/72 p-3.5'
-    : `pointer-events-auto max-h-full w-full animate-pop-in overflow-y-auto p-3.5 ${panelClass}`;
-
   return (
-    <div className={wrapperClass}>
+    <div className={`pointer-events-auto max-h-full w-full animate-pop-in overflow-y-auto p-3.5 ${panelClass}`}>
       {!node ? (
         <p className="px-1 py-2 text-center text-[12px] leading-relaxed text-ink-3">
           {t('property.selectHint')}
