@@ -1,34 +1,17 @@
 import { useState } from 'react';
 import {
-  Box,
-  Car,
-  Circle,
-  Cone,
-  Cylinder,
   Download,
-  PackageOpen,
+  Move,
   Redo2,
+  Rotate3D,
   Trash2,
   Undo2,
-  Wrench,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { EnclosurePanel } from './EnclosurePanel';
 import { ExportDialog } from './ExportDialog';
-import { ScrewToolsMenu } from './ScrewToolsMenu';
-import { CarConfigPanel } from './CarConfigPanel';
 import { panelClass } from './ui';
 import { useDocumentStore } from '../store/documentStore';
-import { createPrimitive } from '../types/document';
-import type { PrimitiveKind } from '../types/document';
-
-const PRIMITIVES: { kind: PrimitiveKind; label: string; icon: LucideIcon }[] = [
-  { kind: 'box', label: 'toolbar.box', icon: Box },
-  { kind: 'cylinder', label: 'toolbar.cylinder', icon: Cylinder },
-  { kind: 'sphere', label: 'toolbar.sphere', icon: Circle },
-  { kind: 'cone', label: 'toolbar.cone', icon: Cone },
-];
+import { useViewStore } from '../store/viewStore';
 
 const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40';
 
@@ -61,26 +44,7 @@ function ToolButton({
   );
 }
 
-function PrimitiveButton({
-  kind,
-  label,
-  icon: Icon,
-}: {
-  kind: PrimitiveKind;
-  label: string;
-  icon: LucideIcon;
-}) {
-  const { t } = useTranslation();
-  const addNode = useDocumentStore((s) => s.addNode);
-  return (
-    <ToolButton title={t(label)} onClick={() => addNode(createPrimitive(kind))}>
-      <Icon size={16} strokeWidth={1.8} />
-      <span className="text-[11px] font-medium leading-none text-ink-3">{t(label)}</span>
-    </ToolButton>
-  );
-}
-
-export function Toolbar() {
+export function Toolbar({ docked = false }: { docked?: boolean }) {
   const { t } = useTranslation();
   const undo = useDocumentStore((s) => s.undo);
   const redo = useDocumentStore((s) => s.redo);
@@ -88,19 +52,35 @@ export function Toolbar() {
   const selection = useDocumentStore((s) => s.selection);
   const canUndo = useDocumentStore((s) => s.past.length > 0);
   const canRedo = useDocumentStore((s) => s.future.length > 0);
+  const gizmoMode = useViewStore((s) => s.gizmoMode);
+  const setGizmoMode = useViewStore((s) => s.setGizmoMode);
   const [showExport, setShowExport] = useState(false);
-  const [showEnclosure, setShowEnclosure] = useState(false);
-  const [showTools, setShowTools] = useState(false);
-  const [showCarMenu, setShowCarMenu] = useState(false);
 
   return (
     <>
       <div
-        className={`pointer-events-auto absolute left-1/2 top-3 flex max-w-[calc(100vw-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1 whitespace-nowrap ${panelClass}`}
+        className={
+          docked
+            ? 'pointer-events-auto flex min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap'
+            : `pointer-events-auto absolute left-1/2 top-3 flex max-w-[calc(100%_-_1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1 whitespace-nowrap ${panelClass}`
+        }
       >
-        {PRIMITIVES.map((p) => (
-          <PrimitiveButton key={p.kind} kind={p.kind} label={p.label} icon={p.icon} />
-        ))}
+        <ToolButton
+          title={t('view.translate')}
+          onClick={() => setGizmoMode('translate')}
+          active={gizmoMode === 'translate'}
+        >
+          <Move size={16} strokeWidth={1.8} />
+          <span className="text-[11px] font-medium leading-none text-ink-3">{t('view.translate')}</span>
+        </ToolButton>
+        <ToolButton
+          title={t('view.rotate')}
+          onClick={() => setGizmoMode('rotate')}
+          active={gizmoMode === 'rotate'}
+        >
+          <Rotate3D size={16} strokeWidth={1.8} />
+          <span className="text-[11px] font-medium leading-none text-ink-3">{t('view.rotate')}</span>
+        </ToolButton>
         <Divider />
         <ToolButton title={t('toolbar.undo')} onClick={undo} disabled={!canUndo}>
           <Undo2 size={16} strokeWidth={1.8} />
@@ -111,41 +91,12 @@ export function Toolbar() {
         <ToolButton title={t('toolbar.delete')} onClick={removeSelected} disabled={selection.length === 0}>
           <Trash2 size={16} strokeWidth={1.8} />
         </ToolButton>
-        <Divider />
-        <ToolButton
-          title={t('enclosure.title')}
-          onClick={() => setShowEnclosure((v) => !v)}
-          active={showEnclosure}
-        >
-          <PackageOpen size={16} strokeWidth={1.8} />
-          <span className="text-[11px] font-medium leading-none text-ink-3">{t('enclosure.title')}</span>
-        </ToolButton>
-        <ToolButton
-          title={t('toolbar.smartCar')}
-          onClick={() => setShowCarMenu((v) => !v)}
-          active={showCarMenu}
-        >
-          <Car size={16} strokeWidth={1.8} />
-          <span className="text-[11px] font-medium leading-none text-ink-3">{t('toolbar.smartCar')}</span>
-        </ToolButton>
-        <ToolButton
-          title={t('tools.title')}
-          onClick={() => setShowTools((v) => !v)}
-          active={showTools}
-        >
-          <Wrench size={16} strokeWidth={1.8} />
-          <span className="text-[11px] font-medium leading-none text-ink-3">{t('tools.title')}</span>
-        </ToolButton>
-        <Divider />
         <ToolButton title={t('toolbar.export')} onClick={() => setShowExport(true)}>
           <Download size={16} strokeWidth={1.8} />
           <span className="text-[11px] font-medium leading-none text-ink-3">{t('toolbar.export')}</span>
         </ToolButton>
       </div>
       {showExport && <ExportDialog onClose={() => setShowExport(false)} />}
-      {showEnclosure && <EnclosurePanel onClose={() => setShowEnclosure(false)} />}
-      {showTools && <ScrewToolsMenu onClose={() => setShowTools(false)} />}
-      {showCarMenu && <CarConfigPanel onClose={() => setShowCarMenu(false)} />}
     </>
   );
 }
