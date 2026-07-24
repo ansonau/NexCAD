@@ -161,7 +161,7 @@ export function PartsDrawer({
   }
 
   return (
-    <div className="absolute inset-x-0 bottom-0 z-40 animate-toast-in rounded-t-2xl border-t border-line bg-white/92 shadow-pop backdrop-blur-xl">
+    <div className="absolute inset-x-0 bottom-0 z-50 animate-toast-in rounded-t-2xl border-t border-line bg-white/92 shadow-pop backdrop-blur-xl">
       <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-slate-900/10" />
       {content}
     </div>

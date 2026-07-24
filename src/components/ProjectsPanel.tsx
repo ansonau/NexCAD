@@ -117,7 +117,7 @@ export function ProjectsPanel() {
             <FolderOpen size={18} strokeWidth={1.8} />
           </IconButton>
         </div>
-        <div className={`flex h-9 items-center px-2.5 ${panelClass}`}>
+        <div className={`hidden h-9 items-center px-2.5 sm:flex ${panelClass}`}>
           <input
             value={docName}
             onChange={(e) => mutate('rename', (d) => void (d.name = e.target.value))}

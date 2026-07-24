@@ -124,7 +124,7 @@ export function WorkspaceShell() {
         </div>
         {!isLargeScreen && <PartsDrawer />}
         {!isLargeScreen && (
-          <div className="pointer-events-none absolute left-3 top-28 z-[45] flex max-h-[calc(100%-8rem)] w-60 flex-col gap-2">
+          <div className="pointer-events-none absolute left-3 top-40 z-[45] flex max-h-[calc(100%-11rem)] w-60 flex-col gap-2">
             <div className="pointer-events-auto">
               <WorkflowTools />
             </div>
@@ -133,7 +133,7 @@ export function WorkspaceShell() {
             </div>
           </div>
         )}
-        <div className="absolute bottom-3 left-3 z-[45] lg:z-20">
+        <div className="absolute bottom-16 left-3 z-[45] lg:bottom-3 lg:z-20">
           <ActionRail compact />
         </div>
         {!isLargeScreen && (
