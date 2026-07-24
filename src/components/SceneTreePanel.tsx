@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+import { ChevronUp, Eye, EyeOff, ListTree, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDocumentStore } from '../store/documentStore';
 import type { SceneNode } from '../types/document';
+import { IconButton, panelClass } from './ui';
 
 function typeLabel(node: SceneNode): string {
   switch (node.type) {
@@ -48,26 +49,55 @@ function SceneTreeRow({ node, depth }: { node: SceneNode; depth: number }) {
     });
   };
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const store = useDocumentStore.getState();
+    store.setSelection([node.id]);
+    store.removeSelected();
+  };
+
   return (
     <div>
       <div
-        onClick={handleClick}
-        role="button"
-        style={{ paddingLeft: 8 + depth * 16 }}
-        className={`flex items-center gap-2 rounded-lg py-1.5 pr-2 text-sm ${
-          selected ? 'bg-blue-50 text-blue-900' : 'text-slate-700 hover:bg-slate-50'
-        } ${node.visible === false ? 'opacity-50' : ''}`}
+        className={`group flex items-center gap-2 rounded-lg pr-1.5 text-[13px] transition-colors duration-100 ${
+          selected
+            ? 'bg-accent-soft font-medium text-accent shadow-[inset_2px_0_0_0_var(--color-accent)]'
+            : 'text-ink-2 hover:bg-slate-900/[0.04] hover:text-ink'
+        } ${node.visible === false ? 'opacity-45' : ''}`}
       >
-        <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium uppercase text-slate-500">
-          {typeLabel(node)}
-        </span>
-        <span className="truncate">{node.name}</span>
         <button
-          onClick={toggleVisible}
-          aria-label="toggle-visibility"
-          className="ml-auto shrink-0 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+          type="button"
+          onClick={handleClick}
+          aria-label={`${node.name}, ${typeLabel(node)}`}
+          style={{ paddingLeft: 8 + depth * 14 }}
+          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-1.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
         >
-          {node.visible === false ? <EyeOff size={14} /> : <Eye size={14} />}
+          <span
+            className={`shrink-0 rounded px-1 py-px font-mono text-[9px] font-medium uppercase tracking-wide ${
+              selected ? 'bg-accent/10 text-accent' : 'bg-slate-900/[0.06] text-ink-3'
+            }`}
+          >
+            {typeLabel(node)}
+          </span>
+          <span className="truncate">{node.name}</span>
+        </button>
+        <button
+          type="button"
+          onClick={toggleVisible}
+          aria-label={node.visible === false ? `Show ${node.name}` : `Hide ${node.name}`}
+          className={`ml-auto flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors duration-100 hover:bg-slate-900/[0.06] hover:text-ink focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+            node.visible === false ? 'text-ink-3' : 'text-ink-3 opacity-0 group-hover:opacity-100'
+          }`}
+        >
+          {node.visible === false ? <EyeOff size={13} /> : <Eye size={13} />}
+        </button>
+        <button
+          type="button"
+          onClick={handleDelete}
+          aria-label={`Delete ${node.name}`}
+          className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-ink-3 opacity-0 transition-colors duration-100 hover:bg-red-500/10 hover:text-red-500 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40"
+        >
+          <Trash2 size={13} />
         </button>
       </div>
       {children.map((child) => (
@@ -77,38 +107,50 @@ function SceneTreeRow({ node, depth }: { node: SceneNode; depth: number }) {
   );
 }
 
-export function SceneTreePanel() {
+export function SceneTreePanel({ docked = false, onAddPart }: { docked?: boolean; onAddPart?: () => void }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const nodes = useDocumentStore((s) => s.doc.nodes);
 
-  if (!open) {
+  if (!docked && !open) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white/90 px-4 text-sm font-medium text-slate-700 shadow-lg backdrop-blur hover:bg-slate-100"
+        className={`flex h-9 cursor-pointer items-center gap-2 px-3 text-[13px] font-medium text-ink-2 transition-colors duration-150 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${panelClass}`}
       >
-        <ChevronDown size={16} />
+        <ListTree size={16} strokeWidth={1.8} />
         {t('view.sceneTree')}
       </button>
     );
   }
 
   return (
-    <div className="flex max-h-[70vh] w-64 flex-col rounded-2xl border border-slate-200 bg-white/95 shadow-2xl backdrop-blur">
-      <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2">
-        <span className="text-sm font-medium text-slate-700">{t('view.sceneTree')}</span>
-        <button
-          onClick={() => setOpen(false)}
-          aria-label={t('view.sceneTree')}
-          className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-        >
-          <ChevronUp size={16} />
-        </button>
+    <div className={docked ? 'flex h-full min-h-0 w-full flex-col' : `flex max-h-[60vh] w-60 animate-pop-in flex-col ${panelClass}`}>
+      <div className="flex items-center justify-between border-b border-line py-1.5 pl-3 pr-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
+          {t('view.sceneTree')}
+        </span>
+        {!docked && (
+          <IconButton title={t('view.sceneTree')} onClick={() => setOpen(false)} className="h-7 w-7">
+            <ChevronUp size={15} />
+          </IconButton>
+        )}
       </div>
-      <div className="overflow-y-auto p-2">
+      <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
         {nodes.length === 0 ? (
-          <p className="px-2 py-1 text-sm text-slate-400">—</p>
+          <div className="px-2 py-5 text-center">
+            <p className="text-[12px] font-semibold text-ink-2">{t('view.sceneTreeEmpty')}</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-ink-3">{t('view.sidebarObjectsHint')}</p>
+            {onAddPart && (
+              <button
+                type="button"
+                onClick={onAddPart}
+                className="mt-3 inline-flex h-8 cursor-pointer items-center justify-center rounded-lg bg-accent px-3 text-[12px] font-semibold text-white transition-colors hover:bg-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+              >
+                {t('view.addPart')}
+              </button>
+            )}
+          </div>
         ) : (
           nodes.map((n) => <SceneTreeRow key={n.id} node={n} depth={0} />)
         )}
