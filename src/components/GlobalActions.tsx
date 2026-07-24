@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const controlClass =
-  'flex h-11 min-w-11 items-center justify-center rounded-full border border-line bg-white px-2.5 text-[12px] font-semibold text-ink-2 shadow-panel transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40';
+  'flex h-9 min-w-9 items-center justify-center rounded-full border border-line bg-white px-2.5 text-[12px] font-semibold text-ink-2 shadow-panel transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 sm:h-11 sm:min-w-11';
 
 export function GlobalActions() {
   const { t, i18n } = useTranslation();
@@ -14,7 +14,7 @@ export function GlobalActions() {
     <div className="relative flex items-center justify-end gap-2">
       <button
         type="button"
-        className={controlClass}
+        className={`${controlClass} hidden sm:flex`}
         aria-label={t('view.help')}
         aria-expanded={popover === 'help'}
         onClick={() => setPopover((value) => (value === 'help' ? null : 'help'))}
@@ -32,14 +32,14 @@ export function GlobalActions() {
       </select>
       <button
         type="button"
-        className={controlClass}
+        className={`${controlClass} hidden sm:flex`}
         aria-label={t('view.settings')}
         aria-expanded={popover === 'settings'}
         onClick={() => setPopover((value) => (value === 'settings' ? null : 'settings'))}
       >
         <Settings size={16} strokeWidth={1.9} />
       </button>
-      <button type="button" className={`${controlClass} bg-slate-800 text-white hover:text-white`} aria-label={t('view.user')}>
+      <button type="button" className={`${controlClass} hidden bg-slate-800 text-white hover:text-white sm:flex`} aria-label={t('view.user')}>
         <UserRound size={16} strokeWidth={1.9} />
       </button>
       {popover && (

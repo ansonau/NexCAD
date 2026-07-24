@@ -117,14 +117,14 @@ export function WorkspaceShell() {
       <main className="relative min-h-0 min-w-0 overflow-hidden">
         <Viewport />
         {!isLargeScreen && <Toolbar />}
-        <div className="pointer-events-none absolute left-1/2 top-16 z-20 -translate-x-1/2 lg:top-3">
+        <div className="pointer-events-none absolute right-3 top-16 z-[45] lg:left-1/2 lg:right-auto lg:top-3 lg:z-20 lg:-translate-x-1/2">
           <div className="pointer-events-auto">
             <ViewToggles />
           </div>
         </div>
         {!isLargeScreen && <PartsDrawer />}
         {!isLargeScreen && (
-          <div className="pointer-events-none absolute left-3 top-40 z-[45] flex max-h-[calc(100%-11rem)] w-60 flex-col gap-2">
+          <div className="pointer-events-none absolute left-3 top-32 z-[45] flex max-h-[calc(100%-10rem)] w-60 flex-col gap-2">
             <div className="pointer-events-auto">
               <WorkflowTools />
             </div>
@@ -137,7 +137,7 @@ export function WorkspaceShell() {
           <ActionRail compact />
         </div>
         {!isLargeScreen && (
-          <div className="pointer-events-none absolute right-3 top-3 z-30 flex max-h-[calc(100%-1.5rem)] w-64 flex-col items-end gap-2">
+          <div className="pointer-events-none absolute bottom-28 right-3 z-30 flex max-h-[calc(100%-12rem)] w-64 flex-col items-end gap-2">
             {hasSelection && <PropertyCard />}
           </div>
         )}

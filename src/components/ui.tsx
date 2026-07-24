@@ -166,7 +166,7 @@ export function Dialog({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`${width} max-h-[80vh] animate-pop-in overflow-y-auto rounded-2xl border border-line bg-white/95 p-4 shadow-pop backdrop-blur-xl`}
+        className={`${width} max-w-[calc(100vw-1.5rem)] max-h-[80vh] animate-pop-in overflow-y-auto rounded-2xl border border-line bg-white/95 p-4 shadow-pop backdrop-blur-xl`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between gap-2">
