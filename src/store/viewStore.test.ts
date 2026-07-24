@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { useViewStore } from './viewStore';
 
 beforeEach(() => {
-  useViewStore.setState({ shellXray: false, wireframe: false, gizmoMode: 'translate' });
+  useViewStore.setState({ shellXray: false, wireframe: false, highResModels: false, gizmoMode: 'translate' });
 });
 
 describe('viewStore', () => {
@@ -24,6 +24,13 @@ describe('viewStore', () => {
     expect(useViewStore.getState().wireframe).toBe(true);
     useViewStore.getState().toggleWireframe();
     expect(useViewStore.getState().wireframe).toBe(false);
+  });
+
+  it('toggleHighResModels 每次呼叫翻轉布林值', () => {
+    useViewStore.getState().toggleHighResModels();
+    expect(useViewStore.getState().highResModels).toBe(true);
+    useViewStore.getState().toggleHighResModels();
+    expect(useViewStore.getState().highResModels).toBe(false);
   });
 
   it('兩個 toggle 互不影響', () => {

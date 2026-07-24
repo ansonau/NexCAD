@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useLoader } from '@react-three/fiber';
 import { Edges, Grid, GizmoHelper, GizmoViewcube, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { getGeometryClient } from '../geometry/client';
 import type { NodeMeshPayload } from '../geometry/protocol';
 import i18n from '../i18n';
+import { HIGH_RES_MODELS } from '../parts/highResModels';
 import { findNode, useDocumentStore } from '../store/documentStore';
+import type { CarAnchorNode, PartNode } from '../types/document';
 import { useToastStore } from '../store/toastStore';
-import type { CarAnchorNode } from '../types/document';
 import { useViewStore } from '../store/viewStore';
 import { SelectionGizmo } from './SelectionGizmo';
 
@@ -17,8 +19,27 @@ export function Viewport() {
   const setSelection = useDocumentStore((s) => s.setSelection);
   const shellXray = useViewStore((s) => s.shellXray);
   const wireframe = useViewStore((s) => s.wireframe);
+  const highResModels = useViewStore((s) => s.highResModels);
   const [meshes, setMeshes] = useState<NodeMeshPayload[]>([]);
   const carAnchors = doc.nodes.filter((n): n is CarAnchorNode => n.type === 'car-anchor' && n.visible);
+
+  // 高清模型只換視覺：外殼規劃/碰撞/匯出仍全部走 worker 算出的程序化幾何
+  // （meshes 不變）；這裡只是決定「畫面上」用哪個 nodeId 的哪組 mesh。
+  const highResNodeIds = useMemo(() => {
+    if (!highResModels) return new Map<string, string>();
+    const map = new Map<string, string>();
+    const seen = new Set<string>();
+    for (const m of meshes) {
+      if (seen.has(m.nodeId)) continue;
+      seen.add(m.nodeId);
+      const node = findNode(doc.nodes, m.nodeId);
+      if (node?.type === 'part') {
+        const url = HIGH_RES_MODELS[(node as PartNode).partId];
+        if (url) map.set(m.nodeId, url);
+      }
+    }
+    return map;
+  }, [meshes, doc, highResModels]);
 
   useEffect(() => {
     const client = getGeometryClient();
@@ -51,28 +72,55 @@ export function Viewport() {
         fadeDistance={600}
       />
       <group rotation={[-Math.PI / 2, 0, 0]}>
-        {meshes.map((m, i) => (
-          <SceneMesh
-            key={`${m.nodeId}:${i}`}
-            payload={m}
-            selected={selection.includes(m.nodeId)}
-            isPart={findNode(doc.nodes, m.nodeId)?.type === 'part'}
-            xray={findNode(doc.nodes, m.nodeId)?.type === 'enclosure' && shellXray}
-            wireframe={wireframe}
-            onSelect={(shiftKey) => {
-              if (shiftKey) {
-                const current = useDocumentStore.getState().selection;
-                setSelection(
-                  current.includes(m.nodeId)
-                    ? current.filter((id) => id !== m.nodeId)
-                    : [...current, m.nodeId],
-                );
-              } else {
-                setSelection([m.nodeId]);
-              }
-            }}
-          />
-        ))}
+        {meshes
+          .filter((m) => !highResNodeIds.has(m.nodeId))
+          .map((m, i) => (
+            <SceneMesh
+              key={`${m.nodeId}:${i}`}
+              payload={m}
+              selected={selection.includes(m.nodeId)}
+              isPart={findNode(doc.nodes, m.nodeId)?.type === 'part'}
+              xray={findNode(doc.nodes, m.nodeId)?.type === 'enclosure' && shellXray}
+              wireframe={wireframe}
+              onSelect={(shiftKey) => {
+                if (shiftKey) {
+                  const current = useDocumentStore.getState().selection;
+                  setSelection(
+                    current.includes(m.nodeId)
+                      ? current.filter((id) => id !== m.nodeId)
+                      : [...current, m.nodeId],
+                  );
+                } else {
+                  setSelection([m.nodeId]);
+                }
+              }}
+            />
+          ))}
+        {[...highResNodeIds.entries()].map(([nodeId, url]) => {
+          const node = findNode(doc.nodes, nodeId) as PartNode | undefined;
+          if (!node) return null;
+          return (
+            <HighResPartMesh
+              key={nodeId}
+              url={url}
+              transform={node.transform}
+              selected={selection.includes(nodeId)}
+              wireframe={wireframe}
+              onSelect={(shiftKey) => {
+                if (shiftKey) {
+                  const current = useDocumentStore.getState().selection;
+                  setSelection(
+                    current.includes(nodeId)
+                      ? current.filter((id) => id !== nodeId)
+                      : [...current, nodeId],
+                  );
+                } else {
+                  setSelection([nodeId]);
+                }
+              }}
+            />
+          );
+        })}
         {carAnchors.map((anchor) => (
           <CarAnchorMesh
             key={anchor.id}
@@ -156,6 +204,53 @@ function SceneMesh({
         transparent={isHole || xray}
         opacity={isHole ? 0.45 : xray ? 0.35 : 1}
         depthWrite={isHole ? true : !xray}
+        roughness={0.6}
+        metalness={0.05}
+        side={THREE.DoubleSide}
+      />
+      {wireframe && <Edges threshold={30} color="#334155" />}
+    </mesh>
+  );
+}
+
+/**
+ * 高清模型視覺覆蓋層：載入外部量測用 STL，套用節點 transform 顯示。
+ * 純視覺——外殼規劃/碰撞/匯出完全不讀這裡，一律用 SceneMesh 那條路徑的
+ * 程序化幾何（見 Viewport 內 highResNodeIds 的註解）。
+ */
+function HighResPartMesh({
+  url,
+  transform,
+  selected,
+  wireframe,
+  onSelect,
+}: {
+  url: string;
+  transform: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] };
+  selected: boolean;
+  wireframe: boolean;
+  onSelect: (shiftKey: boolean) => void;
+}) {
+  const geometry = useLoader(STLLoader, url);
+  const rotationRad: [number, number, number] = [
+    (transform.rotation[0] * Math.PI) / 180,
+    (transform.rotation[1] * Math.PI) / 180,
+    (transform.rotation[2] * Math.PI) / 180,
+  ];
+
+  return (
+    <mesh
+      geometry={geometry}
+      position={transform.position}
+      rotation={rotationRad}
+      scale={transform.scale}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect(e.shiftKey);
+      }}
+    >
+      <meshStandardMaterial
+        color={selected ? '#2563eb' : '#2e7d5b'}
         roughness={0.6}
         metalness={0.05}
         side={THREE.DoubleSide}

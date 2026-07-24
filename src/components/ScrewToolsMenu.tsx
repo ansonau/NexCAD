@@ -5,6 +5,7 @@ import { primitiveZRange, projectPartHoles } from '../enclosure/holeProjection';
 import type { HoleStyle, ScrewSize } from '../enclosure/screws';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import { useToastStore } from '../store/toastStore';
+import { Dialog, FieldLabel, OutlineButton, PrimaryButton, fieldClass } from './ui';
 
 const SIZES: ScrewSize[] = ['M2', 'M2.5', 'M3', 'M4'];
 const STYLES: { value: HoleStyle; key: string }[] = [
@@ -47,56 +48,43 @@ export function ScrewToolsMenu({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/30"
-      onClick={onClose}
-    >
-      <div
-        className="w-72 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <p className="mb-3 text-sm font-medium text-slate-800">{t('tools.title')}</p>
-        <label className="mb-3 block">
-          <span className="text-xs text-slate-400">{t('tools.size')}</span>
-          <select
-            className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
-            value={size}
-            onChange={(e) => setSize(e.target.value as ScrewSize)}
-          >
-            {SIZES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="mb-4 block">
-          <span className="text-xs text-slate-400">{t('tools.style')}</span>
-          <select
-            className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
-            value={style}
-            onChange={(e) => setStyle(e.target.value as HoleStyle)}
-          >
-            {STYLES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {t(s.key)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button
-          onClick={addScrewHole}
-          className="mb-2 h-11 w-full rounded-xl bg-slate-800 text-sm font-medium text-white hover:bg-slate-700"
+    <Dialog title={t('tools.title')} onClose={onClose} width="w-72">
+      <label className="mb-2 block">
+        <FieldLabel>{t('tools.size')}</FieldLabel>
+        <select
+          className={fieldClass}
+          value={size}
+          onChange={(e) => setSize(e.target.value as ScrewSize)}
         >
-          {t('tools.screwHole')}：{t('tools.add')}
-        </button>
-        <button
-          onClick={projectHoles}
-          className="h-11 w-full rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-100"
+          {SIZES.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="mb-4 block">
+        <FieldLabel>{t('tools.style')}</FieldLabel>
+        <select
+          className={fieldClass}
+          value={style}
+          onChange={(e) => setStyle(e.target.value as HoleStyle)}
         >
+          {STYLES.map((s) => (
+            <option key={s.value} value={s.value}>
+              {t(s.key)}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="flex flex-col gap-1.5">
+        <PrimaryButton onClick={addScrewHole} className="w-full">
+          {t('tools.screwHole')}
+        </PrimaryButton>
+        <OutlineButton onClick={projectHoles} className="w-full">
           {t('tools.projectHoles')}
-        </button>
+        </OutlineButton>
       </div>
-    </div>
+    </Dialog>
   );
 }

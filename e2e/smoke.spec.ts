@@ -35,3 +35,25 @@ test('建立零件、產生外殼、匯出 STL', async ({ page }) => {
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toMatch(/\.stl$/);
 });
+
+test('mobile object sidebar controls remain reachable at narrow widths', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.addInitScript(() => window.localStorage.setItem('i18nextLng', 'zh'));
+  await page.goto('/');
+
+  await expect(page.getByRole('combobox', { name: zh.view.language })).toBeVisible();
+  await expect(page.getByTitle(zh.view.xray)).toBeVisible();
+  await expect(page.getByTitle(zh.view.wireframe)).toBeVisible();
+  await expect(page.getByTitle(zh.view.highRes)).toBeVisible();
+
+  await page.getByRole('button', { name: zh.view.partsLibrary }).click();
+  await expect(page.getByPlaceholder(zh.drawer.search)).toBeVisible();
+  await page.getByRole('button', { name: zh.drawer.close }).click();
+
+  await page.getByTitle(zh.enclosure.title).click();
+  const dialog = page.getByRole('dialog', { name: zh.enclosure.title });
+  await expect(dialog).toBeVisible();
+  const box = await dialog.boundingBox();
+  expect(box?.x).toBeGreaterThanOrEqual(0);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(320);
+});
