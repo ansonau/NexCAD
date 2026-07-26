@@ -131,4 +131,85 @@ describe('documentStore', () => {
     store().undo();
     expect(store().doc.nodes).toHaveLength(0);
   });
+
+  it('addNodes 可指定加入後的選取節點', () => {
+    const anchor = createPrimitive('box');
+    const motor = createPrimitive('cylinder');
+    store().addNodes([anchor, motor], [anchor.id]);
+    expect(store().doc.nodes).toHaveLength(2);
+    expect(store().selection).toEqual([anchor.id]);
+  });
+
+  it('groupSelected 將同層選取節點放入群組並可 undo', () => {
+    const a = createPrimitive('box');
+    const b = createPrimitive('cylinder');
+    const c = createPrimitive('sphere');
+    store().addNodes([a, b, c]);
+    store().setSelection([a.id, c.id]);
+    store().groupSelected('群組');
+    expect(store().doc.nodes).toHaveLength(2);
+    const grouped = store().doc.nodes[0];
+    expect(grouped.type).toBe('group');
+    expect(grouped.name).toBe('群組');
+    expect(store().selection).toEqual([grouped.id]);
+    if (grouped.type !== 'group') throw new Error('expected group');
+    expect(grouped.children.map((node) => node.id)).toEqual([a.id, c.id]);
+    store().undo();
+    expect(store().doc.nodes.map((node) => node.id)).toEqual([a.id, b.id, c.id]);
+  });
+
+  it('alignSelected 以第一個選取節點對齊 X/Y/Z 並保留 selection', () => {
+    const a = createPrimitive('box', { transform: { position: [10, 1, 1], rotation: [0, 0, 0], scale: [1, 1, 1] } });
+    const b = createPrimitive('cylinder', { transform: { position: [30, 2, 2], rotation: [0, 0, 0], scale: [1, 1, 1] } });
+    store().addNodes([a, b]);
+    store().setSelection([a.id, b.id]);
+    store().alignSelected(0);
+    expect(findNode(store().doc.nodes, b.id)?.transform.position).toEqual([10, 2, 2]);
+    expect(store().selection).toEqual([a.id, b.id]);
+    store().alignSelected(1);
+    expect(findNode(store().doc.nodes, b.id)?.transform.position).toEqual([10, 1, 2]);
+    store().alignSelected(2);
+    expect(findNode(store().doc.nodes, b.id)?.transform.position).toEqual([10, 1, 1]);
+  });
+
+  it('alignSelected 產生可 undo 的單一步驟', () => {
+    const a = createPrimitive('box', { transform: { position: [10, 1, 1], rotation: [0, 0, 0], scale: [1, 1, 1] } });
+    const b = createPrimitive('cylinder', { transform: { position: [30, 2, 2], rotation: [0, 0, 0], scale: [1, 1, 1] } });
+    store().addNodes([a, b]);
+    store().setSelection([a.id, b.id]);
+    store().alignSelected(0);
+    store().undo();
+    expect(findNode(store().doc.nodes, b.id)?.transform.position).toEqual([30, 2, 2]);
+  });
+
+  it('alignSelected 可對齊第二個選取節點', () => {
+    const a = createPrimitive('box', { transform: { position: [10, 1, 1], rotation: [0, 0, 0], scale: [1, 1, 1] } });
+    const b = createPrimitive('cylinder', { transform: { position: [30, 2, 2], rotation: [0, 0, 0], scale: [1, 1, 1] } });
+    store().addNodes([a, b]);
+    store().setSelection([a.id, b.id]);
+    store().alignSelected(0, 'second');
+    expect(findNode(store().doc.nodes, a.id)?.transform.position).toEqual([30, 1, 1]);
+    expect(findNode(store().doc.nodes, b.id)?.transform.position).toEqual([30, 2, 2]);
+  });
+
+  it('alignSelected 可對齊到選取節點平均位置', () => {
+    const a = createPrimitive('box', { transform: { position: [10, 1, 1], rotation: [0, 0, 0], scale: [1, 1, 1] } });
+    const b = createPrimitive('cylinder', { transform: { position: [30, 2, 2], rotation: [0, 0, 0], scale: [1, 1, 1] } });
+    store().addNodes([a, b]);
+    store().setSelection([a.id, b.id]);
+    store().alignSelected(0, 'average');
+    expect(findNode(store().doc.nodes, a.id)?.transform.position).toEqual([20, 1, 1]);
+    expect(findNode(store().doc.nodes, b.id)?.transform.position).toEqual([20, 2, 2]);
+  });
+
+  it('alignSelected 不會移動鎖定的非基準節點', () => {
+    const a = createPrimitive('box', { transform: { position: [10, 1, 1], rotation: [0, 0, 0], scale: [1, 1, 1] } });
+    const b = createPrimitive('cylinder', { transform: { position: [30, 2, 2], rotation: [0, 0, 0], scale: [1, 1, 1] } });
+    b.locked = true;
+    store().addNodes([a, b]);
+    store().setSelection([a.id, b.id]);
+    store().alignSelected(0);
+    expect(findNode(store().doc.nodes, b.id)?.transform.position).toEqual([30, 2, 2]);
+    expect(findNode(store().doc.nodes, b.id)?.locked).toBe(true);
+  });
 });

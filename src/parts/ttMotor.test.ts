@@ -9,37 +9,43 @@ beforeAll(async () => {
   await kernel.init();
 });
 
-describe('tt-motor 幾何（馬達罐 + 雙出軸）', () => {
+describe('tt-motor 幾何（馬達罐 + 齒輪箱 + 雙出軸）', () => {
   const def = getPartDefinition('tt-motor')!;
 
-  it('罐頂 ≈22mm 且 clearanceHeight 一致', () => {
+  function bounds() {
     const mesh = kernel.toMesh(buildPartSolid(def, kernel));
-    let maxZ = -Infinity;
-    for (let i = 2; i < mesh.positions.length; i += 3) maxZ = Math.max(maxZ, mesh.positions[i]);
-    expect(maxZ).toBeCloseTo(22, 0);
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, minZ = Infinity, maxZ = -Infinity;
+    for (let i = 1; i < mesh.positions.length; i += 3) {
+      const x = mesh.positions[i - 1];
+      const y = mesh.positions[i];
+      const z = mesh.positions[i + 1];
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+      minZ = Math.min(minZ, z);
+      maxZ = Math.max(maxZ, z);
+    }
+    return { minX, maxX, minY, maxY, minZ, maxZ };
+  }
+
+  it('整體 envelope 約 70×40×22mm 且 clearanceHeight 一致', () => {
+    const b = bounds();
+    expect(b.maxX - b.minX).toBeCloseTo(70, 0);
+    expect(b.maxY - b.minY).toBeCloseTo(40, 0);
+    expect(b.maxZ - b.minZ).toBeCloseTo(22, 0);
     expect(def.clearanceHeight).toBeGreaterThanOrEqual(22);
   });
 
-  it('雙出軸自 ±Y 面伸出（軸端 y≈±25.5）', () => {
-    const mesh = kernel.toMesh(buildPartSolid(def, kernel));
-    let maxY = -Infinity;
-    let minY = Infinity;
-    for (let i = 1; i < mesh.positions.length; i += 3) {
-      maxY = Math.max(maxY, mesh.positions[i]);
-      minY = Math.min(minY, mesh.positions[i]);
-    }
-    expect(maxY).toBeCloseTo(25.5, 1);
-    expect(minY).toBeCloseTo(-25.5, 1);
-  });
-
-  it('軸心距本體底面 11mm', () => {
+  it('軸徑約 5mm，軸心距本體底面約 11mm', () => {
     const mesh = kernel.toMesh(buildPartSolid(def, kernel));
     const zs: number[] = [];
     for (let i = 0; i < mesh.positions.length; i += 3) {
-      if (Math.abs(mesh.positions[i + 1]) > 11.5) zs.push(mesh.positions[i + 2]);
+      if (Math.abs(mesh.positions[i + 1]) > 11) zs.push(mesh.positions[i + 2]);
     }
     expect(zs.length).toBeGreaterThan(0);
     const avg = zs.reduce((a, b) => a + b, 0) / zs.length;
+    expect(Math.max(...zs) - Math.min(...zs)).toBeCloseTo(5, 0);
     expect(avg).toBeCloseTo(11, 0);
   });
 });

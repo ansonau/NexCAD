@@ -1,96 +1,119 @@
 import { useState } from 'react';
 import {
-  Box,
-  Car,
-  Circle,
-  Cone,
-  Cylinder,
   Download,
-  PackageOpen,
+  Move,
   Redo2,
+  Rotate3D,
   Trash2,
   Undo2,
-  Wrench,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { EnclosurePanel } from './EnclosurePanel';
 import { ExportDialog } from './ExportDialog';
-import { ScrewToolsMenu } from './ScrewToolsMenu';
-import { CarPresetMenu } from './CarPresetMenu';
-import { IconButton, panelClass } from './ui';
+import { panelClass } from './ui';
 import { useDocumentStore } from '../store/documentStore';
-import { createPrimitive } from '../types/document';
-import type { PrimitiveKind } from '../types/document';
+import { useViewStore } from '../store/viewStore';
 
-const PRIMITIVES: { kind: PrimitiveKind; label: string; icon: LucideIcon }[] = [
-  { kind: 'box', label: 'toolbar.box', icon: Box },
-  { kind: 'cylinder', label: 'toolbar.cylinder', icon: Cylinder },
-  { kind: 'sphere', label: 'toolbar.sphere', icon: Circle },
-  { kind: 'cone', label: 'toolbar.cone', icon: Cone },
-];
+const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40';
 
-export function Toolbar() {
+function ToolButton({
+  title,
+  onClick,
+  disabled,
+  active,
+  label,
+  children,
+}: {
+  title: string;
+  onClick: () => void;
+  disabled?: boolean;
+  active?: boolean;
+  label?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex h-8 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 text-[12px] font-semibold transition-colors duration-150 hover:bg-slate-900/5 active:scale-95 disabled:pointer-events-none disabled:opacity-35 ${focusRing} ${
+        active ? 'bg-accent-soft text-accent' : 'text-ink-2 hover:text-ink'
+      }`}
+    >
+      {children}
+      {label && <span className="leading-none">{label}</span>}
+    </button>
+  );
+}
+
+export function Toolbar({ docked = false }: { docked?: boolean }) {
   const { t } = useTranslation();
-  const addNode = useDocumentStore((s) => s.addNode);
   const undo = useDocumentStore((s) => s.undo);
   const redo = useDocumentStore((s) => s.redo);
   const removeSelected = useDocumentStore((s) => s.removeSelected);
   const selection = useDocumentStore((s) => s.selection);
   const canUndo = useDocumentStore((s) => s.past.length > 0);
   const canRedo = useDocumentStore((s) => s.future.length > 0);
+  const gizmoMode = useViewStore((s) => s.gizmoMode);
+  const setGizmoMode = useViewStore((s) => s.setGizmoMode);
   const [showExport, setShowExport] = useState(false);
-  const [showEnclosure, setShowEnclosure] = useState(false);
-  const [showTools, setShowTools] = useState(false);
-  const [showCarMenu, setShowCarMenu] = useState(false);
 
   return (
     <>
       <div
-        className={`absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-0.5 p-1 ${panelClass}`}
+        className={
+          docked
+            ? 'pointer-events-auto flex min-w-0 items-center justify-center gap-1 overflow-x-auto whitespace-nowrap rounded-2xl border border-line bg-white/82 p-1 shadow-sm'
+            : `pointer-events-auto absolute left-1/2 top-3 flex max-w-[calc(100%_-_1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1 whitespace-nowrap ${panelClass}`
+        }
       >
-        {PRIMITIVES.map((p) => (
-          <IconButton key={p.kind} title={t(p.label)} onClick={() => addNode(createPrimitive(p.kind))}>
-            <p.icon size={18} strokeWidth={1.8} />
-          </IconButton>
-        ))}
+        <ToolGroup>
+          <ToolButton
+            title={t('view.translate')}
+            label={t('view.translate')}
+            onClick={() => setGizmoMode('translate')}
+            active={gizmoMode === 'translate'}
+          >
+            <Move size={16} strokeWidth={1.8} />
+          </ToolButton>
+          <ToolButton
+            title={t('view.rotate')}
+            label={t('view.rotate')}
+            onClick={() => setGizmoMode('rotate')}
+            active={gizmoMode === 'rotate'}
+          >
+            <Rotate3D size={16} strokeWidth={1.8} />
+          </ToolButton>
+        </ToolGroup>
         <Divider />
-        <IconButton title={t('toolbar.undo')} onClick={undo} disabled={!canUndo}>
-          <Undo2 size={18} strokeWidth={1.8} />
-        </IconButton>
-        <IconButton title={t('toolbar.redo')} onClick={redo} disabled={!canRedo}>
-          <Redo2 size={18} strokeWidth={1.8} />
-        </IconButton>
-        <IconButton
-          title={t('toolbar.delete')}
-          onClick={removeSelected}
-          disabled={selection.length === 0}
-        >
-          <Trash2 size={18} strokeWidth={1.8} />
-        </IconButton>
+        <ToolGroup>
+          <ToolButton title={t('toolbar.undo')} onClick={undo} disabled={!canUndo}>
+            <Undo2 size={16} strokeWidth={1.8} />
+          </ToolButton>
+          <ToolButton title={t('toolbar.redo')} onClick={redo} disabled={!canRedo}>
+            <Redo2 size={16} strokeWidth={1.8} />
+          </ToolButton>
+          <ToolButton title={t('toolbar.delete')} onClick={removeSelected} disabled={selection.length === 0}>
+            <Trash2 size={16} strokeWidth={1.8} />
+          </ToolButton>
+        </ToolGroup>
         <Divider />
-        <IconButton title={t('enclosure.title')} onClick={() => setShowEnclosure(true)}>
-          <PackageOpen size={18} strokeWidth={1.8} />
-        </IconButton>
-        <IconButton title={t('toolbar.smartCar')} onClick={() => setShowCarMenu(true)}>
-          <Car size={18} strokeWidth={1.8} />
-        </IconButton>
-        <IconButton title={t('tools.title')} onClick={() => setShowTools(true)}>
-          <Wrench size={18} strokeWidth={1.8} />
-        </IconButton>
-        <Divider />
-        <IconButton title={t('toolbar.export')} onClick={() => setShowExport(true)}>
-          <Download size={18} strokeWidth={1.8} />
-        </IconButton>
+        <ToolGroup>
+          <ToolButton title={t('toolbar.export')} label={t('toolbar.export')} onClick={() => setShowExport(true)}>
+            <Download size={16} strokeWidth={1.8} />
+          </ToolButton>
+        </ToolGroup>
       </div>
       {showExport && <ExportDialog onClose={() => setShowExport(false)} />}
-      {showEnclosure && <EnclosurePanel onClose={() => setShowEnclosure(false)} />}
-      {showTools && <ScrewToolsMenu onClose={() => setShowTools(false)} />}
-      {showCarMenu && <CarPresetMenu onClose={() => setShowCarMenu(false)} />}
     </>
   );
 }
 
+function ToolGroup({ children }: { children: React.ReactNode }) {
+  return <div className="flex items-center gap-0.5">{children}</div>;
+}
+
 function Divider() {
-  return <div className="mx-1 h-5 w-px bg-line" />;
+  return <div className="mx-1 h-6 w-px self-center bg-slate-900/10" />;
 }

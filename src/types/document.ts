@@ -1,3 +1,5 @@
+import type { CarConfigParams } from '../parts/presets';
+
 export type Vec3 = [number, number, number];
 
 export interface Transform {
@@ -77,7 +79,15 @@ export interface EnclosureNode extends NodeCommon {
   sourceParts: EnclosureSourcePart[];
 }
 
-export type SceneNode = PrimitiveNode | GroupNode | PartNode | EnclosureNode;
+export interface CarAnchorNode extends NodeCommon {
+  type: 'car-anchor';
+  config: CarConfigParams;
+  presetId: 'smart-car-2wd' | 'smart-car-4wd';
+  electronicsIds: string[];
+  generatedNodeIds?: string[];
+}
+
+export type SceneNode = PrimitiveNode | GroupNode | PartNode | EnclosureNode | CarAnchorNode;
 
 export interface NexcadDocument {
   version: 1;
@@ -139,6 +149,27 @@ export function createPartNode(
     visible: true,
     locked: false,
     partId,
+    ...overrides,
+  };
+}
+
+export function createCarAnchorNode(
+  config: CarConfigParams,
+  presetId: 'smart-car-2wd' | 'smart-car-4wd',
+  electronicsIds: string[],
+  overrides: Partial<Omit<CarAnchorNode, 'type' | 'config' | 'presetId' | 'electronicsIds'>> = {},
+): CarAnchorNode {
+  return {
+    type: 'car-anchor',
+    id: newId(),
+    name: '小車錨點',
+    role: 'solid',
+    transform: identityTransform(),
+    visible: true,
+    locked: false,
+    config,
+    presetId,
+    electronicsIds,
     ...overrides,
   };
 }

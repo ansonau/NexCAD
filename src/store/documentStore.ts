@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import type { NexcadDocument, SceneNode } from '../types/document';
-import { emptyDocument } from '../types/document';
+import { emptyDocument, identityTransform, newId } from '../types/document';
 
 const MAX_HISTORY = 100;
+export type AlignTarget = 'first' | 'second' | 'average';
 
 interface DocumentState {
   doc: NexcadDocument;
@@ -15,9 +16,11 @@ interface DocumentState {
   redo: () => void;
   setSelection: (ids: string[]) => void;
   addNode: (node: SceneNode) => void;
-  addNodes: (nodes: SceneNode[]) => void;
+  addNodes: (nodes: SceneNode[], selection?: string[]) => void;
   updateNode: (id: string, fn: (node: SceneNode) => void) => void;
   removeSelected: () => void;
+  groupSelected: (name: string) => void;
+  alignSelected: (axis: 0 | 1 | 2, target?: AlignTarget) => void;
   beginDrag: () => void;
   updateTransient: (id: string, fn: (node: SceneNode) => void) => void;
 }
@@ -41,6 +44,36 @@ function removeNodes(nodes: SceneNode[], ids: Set<string>): SceneNode[] {
   return nodes
     .filter((n) => !ids.has(n.id))
     .map((n) => (n.type === 'group' ? { ...n, children: removeNodes(n.children, ids) } : n));
+}
+
+function groupSelectedInPlace(nodes: SceneNode[], ids: Set<string>, name: string): string | null {
+  const selected = nodes.filter((n) => ids.has(n.id));
+  if (selected.length >= 2) {
+    const groupId = newId();
+    const firstIndex = nodes.findIndex((n) => ids.has(n.id));
+    const group: SceneNode = {
+      type: 'group',
+      id: groupId,
+      name,
+      role: 'solid',
+      transform: identityTransform(),
+      visible: true,
+      locked: false,
+      children: selected,
+    };
+    nodes.splice(firstIndex, 0, group);
+    for (let i = nodes.length - 1; i >= 0; i -= 1) {
+      if (ids.has(nodes[i].id)) nodes.splice(i, 1);
+    }
+    return groupId;
+  }
+  for (const n of nodes) {
+    if (n.type === 'group') {
+      const groupId = groupSelectedInPlace(n.children, ids, name);
+      if (groupId) return groupId;
+    }
+  }
+  return null;
 }
 
 export const useDocumentStore = create<DocumentState>((set, get) => ({
@@ -92,12 +125,12 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     set({ selection: [node.id] });
   },
 
-  addNodes: (nodes) => {
+  addNodes: (nodes, selection) => {
     if (nodes.length === 0) return;
     get().mutate('新增節點', (d) => {
       d.nodes.push(...nodes);
     });
-    set({ selection: nodes.map((n) => n.id) });
+    set({ selection: selection ?? nodes.map((n) => n.id) });
   },
 
   updateNode: (id, fn) =>
@@ -113,6 +146,36 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
       d.nodes = removeNodes(d.nodes, selected);
     });
     set({ selection: [] });
+  },
+
+  groupSelected: (name) => {
+    const selected = new Set(get().selection);
+    if (selected.size < 2) return;
+    let groupId: string | null = null;
+    get().mutate('群組節點', (d) => {
+      groupId = groupSelectedInPlace(d.nodes, selected, name);
+    });
+    if (groupId) set({ selection: [groupId] });
+  },
+
+  alignSelected: (axis, target = 'first') => {
+    const { selection } = get();
+    if (selection.length < 2) return;
+    get().mutate('對齊節點', (d) => {
+      const nodes = selection.map((id) => findNode(d.nodes, id)).filter((node): node is SceneNode => Boolean(node));
+      const anchor = target === 'second' ? nodes[1] : nodes[0];
+      if (!anchor) return;
+      const targetPosition =
+        target === 'average'
+          ? nodes.reduce((sum, node) => sum + node.transform.position[axis], 0) / nodes.length
+          : anchor.transform.position[axis];
+      const referenceId = target === 'average' ? null : anchor.id;
+      for (const id of selection) {
+        if (id === referenceId) continue;
+        const node = findNode(d.nodes, id);
+        if (node && !node.locked) node.transform.position[axis] = targetPosition;
+      }
+    });
   },
 
   beginDrag: () => set({ dragBase: get().doc }),

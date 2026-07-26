@@ -140,12 +140,20 @@ describe('planTopWindowCutouts', () => {
     expect(cut.h).toBeCloseTo(8 + TOLERANCE_MM * 2); // 對調自 w
   });
 
-  it('非 90 倍數旋轉時該零件的視窗被整個跳過', () => {
+  it('非 90 倍數旋轉時仍以世界 XY 包圍盒產生開孔', () => {
     const part: PartInstance = {
       def: topPortDef,
       transform: { ...identityTransform(), rotation: [0, 0, 45] },
     };
-    expect(planTopWindowCutouts([part])).toEqual([]);
+    const [cut] = planTopWindowCutouts([part]);
+    expect(cut).toBeDefined();
+    // 8x4 矩形繞 Z 45° 後 XY 包圍盒寬高 = (8+4)/√2
+    const bb = (8 + 4) / Math.sqrt(2);
+    expect(cut.w).toBeCloseTo(bb + TOLERANCE_MM * 2, 10);
+    expect(cut.h).toBeCloseTo(bb + TOLERANCE_MM * 2, 10);
+    // port 中心 (5, -3) 繞 Z 45° -> (5.657, 1.414)
+    expect(cut.x).toBeCloseTo(4 * Math.sqrt(2), 10);
+    expect(cut.y).toBeCloseTo(Math.sqrt(2), 10);
   });
 
   it('無 top face 接口的零件回傳空陣列', () => {
@@ -166,6 +174,29 @@ describe('planTopWindowCutouts', () => {
       ],
     };
     const part: PartInstance = { def: sideOnly, transform: identityTransform() };
+    expect(planTopWindowCutouts([part])).toEqual([]);
+  });
+
+  it('繞 X 軸傾斜時仍依世界 XY 投影產生開孔', () => {
+    const part: PartInstance = {
+      def: topPortDef,
+      transform: { ...identityTransform(), rotation: [30, 0, 0] },
+    };
+    const [cut] = planTopWindowCutouts([part]);
+    expect(cut).toBeDefined();
+    // port 中心 (5, -3, 0) 繞 X 30° -> (5, -3*cos30, -3*sin30)
+    expect(cut.x).toBeCloseTo(5, 10);
+    expect(cut.y).toBeCloseTo(-3 * Math.cos(30 * Math.PI / 180), 10);
+    // 寬維持 8，高因傾斜變為 4*cos30
+    expect(cut.w).toBeCloseTo(8 + TOLERANCE_MM * 2, 10);
+    expect(cut.h).toBeCloseTo(4 * Math.cos(30 * Math.PI / 180) + TOLERANCE_MM * 2, 10);
+  });
+
+  it('繞 X 軸 90° 時視窗朝側面，不產生上蓋開孔', () => {
+    const part: PartInstance = {
+      def: topPortDef,
+      transform: { ...identityTransform(), rotation: [90, 0, 0] },
+    };
     expect(planTopWindowCutouts([part])).toEqual([]);
   });
 

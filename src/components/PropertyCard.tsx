@@ -1,15 +1,20 @@
 import { useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { MousePointer2, Move3D, RefreshCw, Rotate3D, SlidersHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { regenerateEnclosure } from '../enclosure/actions';
+import { buildCarChassisAndGround } from '../parts/presets';
+import type { CarChassisShape, CarConfigParams } from '../parts/presets';
 import { findNode, useDocumentStore } from '../store/documentStore';
+import { useToastStore } from '../store/toastStore';
 import type {
+  CarAnchorNode,
   EnclosureNode,
   EnclosureParams,
   NexcadDocument,
   PrimitiveNode,
   SceneNode,
 } from '../types/document';
+import { FieldLabel, OutlineButton, StepperField, fieldClass, panelClass } from './ui';
 
 const PARAM_LABELS: Record<string, string> = {
   width: 'property.width',
@@ -29,51 +34,126 @@ export function PropertyCard() {
   const updateNode = useDocumentStore((s) => s.updateNode);
 
   const node = selection.length === 1 ? findNode(doc.nodes, selection[0]) : undefined;
-  if (!node) return null;
-
   return (
-    <div className="absolute right-4 top-20 w-64 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-lg backdrop-blur">
-      <input
-        className="mb-3 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm font-medium text-slate-800"
-        value={node.name}
-        onChange={(e) => updateNode(node.id, (n) => void (n.name = e.target.value))}
-        aria-label={t('property.name')}
-      />
-      <RoleToggle node={node} onChange={(role) => updateNode(node.id, (n) => void (n.role = role))} />
-      {node.type === 'primitive' && <ParamFields node={node} updateNode={updateNode} />}
-      {node.type === 'enclosure' && (
+    <div className={`pointer-events-auto max-h-full w-full animate-pop-in overflow-y-auto p-3 ${panelClass}`}>
+      {!node ? (
+        <div className="flex min-h-40 flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-slate-900/[0.018] px-4 py-8 text-center">
+          <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+            <MousePointer2 size={18} strokeWidth={1.8} />
+          </span>
+          <p className="text-[13px] font-semibold text-ink-2">{t('property.selectHint')}</p>
+        </div>
+      ) : (
         <>
-          {isEnclosureStale(node, doc) && (
-            <p className="mb-2 text-xs text-amber-700">{t('enclosure.staleWarning')}</p>
+          <PropertySection title={t('property.name')}>
+            <input
+              className={`${fieldClass} font-semibold`}
+              value={node.name}
+              onChange={(e) => updateNode(node.id, (n) => void (n.name = e.target.value))}
+              aria-label={t('property.name')}
+            />
+            <RoleToggle node={node} onChange={(role) => updateNode(node.id, (n) => void (n.role = role))} />
+          </PropertySection>
+
+          {node.type === 'primitive' && (
+            <PropertySection title={t('property.size')} icon={<SlidersHorizontal size={14} />}>
+              <ParamFields node={node} updateNode={updateNode} />
+            </PropertySection>
           )}
-          <button
-            onClick={() => regenerateEnclosure(node.id)}
-            className="mb-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-100"
-          >
-            <RefreshCw size={16} />
-            {t('enclosure.regenerate')}
-          </button>
-          <EnclosureParamFields node={node} />
+          {node.type === 'enclosure' && (
+            <PropertySection title={t('enclosure.params')} icon={<SlidersHorizontal size={14} />}>
+              {isEnclosureStale(node, doc) && (
+                <p className="mb-2 flex items-start gap-1.5 rounded-lg border border-amber-200/70 bg-amber-50 px-2 py-1.5 text-[11px] leading-snug text-amber-800">
+                  <RefreshCw size={13} className="mt-px shrink-0" />
+                  {t('enclosure.staleWarning')}
+                </p>
+              )}
+              <OutlineButton onClick={() => regenerateEnclosure(node.id)} className="mb-1 w-full">
+                <RefreshCw size={14} />
+                {t('enclosure.regenerate')}
+              </OutlineButton>
+              <EnclosureParamFields node={node} />
+            </PropertySection>
+          )}
+          {node.type === 'car-anchor' && (
+            <PropertySection title={t('toolbar.smartCar')} icon={<SlidersHorizontal size={14} />}>
+              <CarAnchorFields node={node} />
+            </PropertySection>
+          )}
+
+          <PropertySection title={t('property.position')} icon={<Move3D size={14} />}>
+            <div className="grid grid-cols-3 gap-1.5">
+              {AXIS_LABELS.map((axis, i) => (
+                <StepperField
+                  key={axis}
+                  label={axis}
+                  value={node.transform.position[i]}
+                  step={0.5}
+                  onChange={(v) =>
+                    updateNode(node.id, (n) => void (n.transform.position[i] = v))
+                  }
+                />
+              ))}
+            </div>
+          </PropertySection>
+
+          <PropertySection title={t('property.rotation')} icon={<Rotate3D size={14} />}>
+            <div className="grid grid-cols-3 gap-1.5">
+              {AXIS_LABELS.map((axis, i) => (
+                node.type === 'car-anchor' && axis !== 'Z' ? null : (
+                  <StepperField
+                    key={axis}
+                    label={axis}
+                    value={node.transform.rotation[i]}
+                    step={5}
+                    onChange={(v) =>
+                      updateNode(node.id, (n) => void (n.transform.rotation[i] = v))
+                    }
+                  />
+                )
+              ))}
+            </div>
+          </PropertySection>
         </>
       )}
-      <p className="mb-1 mt-3 text-xs text-slate-400">{t('property.position')}</p>
-      <div className="grid grid-cols-3 gap-2">
-        {AXIS_LABELS.map((axis, i) => (
-          <NumberField
-            key={axis}
-            label={axis}
-            value={node.transform.position[i]}
-            onChange={(v) =>
-              updateNode(node.id, (n) => void (n.transform.position[i] = v))
-            }
-          />
-        ))}
-      </div>
     </div>
   );
 }
 
-// 缺少對應 live part 節點的來源零件（已刪除）不計入過期判斷，交由既有重新產生流程處理
+function PropertySection({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mb-3 rounded-2xl border border-line bg-white/82 p-3 last:mb-0">
+      <h3 className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-ink">
+        {icon && <span className="text-ink-3">{icon}</span>}
+        {title}
+      </h3>
+      {children}
+    </section>
+  );
+}
+
+export function replaceCarAnchorGeneratedNodes(
+  doc: NexcadDocument,
+  anchorId: string,
+  generatedNodes: SceneNode[],
+) {
+  const anchor = findNode(doc.nodes, anchorId);
+  const oldIds = new Set(anchor?.type === 'car-anchor' ? anchor.generatedNodeIds ?? [] : []);
+  doc.nodes = doc.nodes.filter((n) => !oldIds.has(n.id));
+  if (anchor?.type === 'car-anchor') {
+    anchor.generatedNodeIds = generatedNodes.map((n) => n.id);
+  }
+  doc.nodes.push(...generatedNodes);
+}
+
 function isEnclosureStale(node: EnclosureNode, doc: NexcadDocument): boolean {
   return node.sourceParts.some((s) => {
     const live = findNode(doc.nodes, s.nodeId);
@@ -94,14 +174,16 @@ function RoleToggle({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="mb-3 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
+    <div className="mt-2 grid grid-cols-2 gap-0.5 rounded-xl bg-slate-900/[0.05] p-0.5">
       {(['solid', 'hole'] as const).map((role) => (
         <button
           key={role}
           onClick={() => onChange(role)}
           aria-pressed={node.role === role}
-          className={`rounded-lg py-1.5 text-sm ${
-            node.role === role ? 'bg-white font-medium text-slate-800 shadow-sm' : 'text-slate-500'
+          className={`rounded-lg py-1.5 text-[13px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+            node.role === role
+              ? 'bg-white text-ink shadow-sm'
+              : 'text-ink-2 hover:text-ink'
           }`}
         >
           {role === 'solid' ? t('property.solid') : t('property.hole')}
@@ -120,15 +202,15 @@ function ParamFields({
 }) {
   const { t } = useTranslation();
   return (
-    <>
-      <p className="mb-1 text-xs text-slate-400">{t('property.size')}</p>
-      <div className="grid grid-cols-2 gap-2">
+    <div>
+      <div className="grid grid-cols-2 gap-1.5">
         {Object.entries(node.params).map(([key, value]) => (
-          <NumberField
+          <StepperField
             key={key}
             label={t(PARAM_LABELS[key] ?? key)}
             value={value}
             min={key === 'radiusTop' ? 0 : 0.1}
+            step={key.startsWith('radius') ? 0.5 : 1}
             onChange={(v) =>
               updateNode(node.id, (n) => {
                 if (n.type === 'primitive') n.params[key] = v;
@@ -137,6 +219,71 @@ function ParamFields({
           />
         ))}
       </div>
+    </div>
+  );
+}
+
+function CarAnchorFields({ node }: { node: CarAnchorNode }) {
+  const { t, i18n } = useTranslation();
+  const updateNode = useDocumentStore((s) => s.updateNode);
+  const doc = useDocumentStore((s) => s.doc);
+  const [generating, setGenerating] = useState(false);
+
+  const setConfig = <K extends keyof CarConfigParams>(key: K, value: CarConfigParams[K]) => {
+    updateNode(node.id, (n) => {
+      if (n.type === 'car-anchor') n.config = { ...n.config, [key]: value };
+    });
+  };
+
+  const generate = () => {
+    setGenerating(true);
+    try {
+      const result = buildCarChassisAndGround(node, doc.nodes, i18n.language);
+      if (result.warnings.length > 0) {
+        useToastStore.getState().show(t('car.holeOutOfBounds'));
+        return;
+      }
+
+      const store = useDocumentStore.getState();
+      store.mutate('更新底盤', (d) => {
+        replaceCarAnchorGeneratedNodes(d, node.id, result.nodes);
+      });
+      store.setSelection(result.defaultSelection);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const hasGenerated = (node.generatedNodeIds?.length ?? 0) > 0;
+
+  return (
+    <>
+      <div className="mb-3">
+        <FieldLabel>{t('car.chassisShape')}</FieldLabel>
+        <select
+          className={fieldClass}
+          value={node.config.shape}
+          onChange={(e) => setConfig('shape', e.target.value as CarChassisShape)}
+        >
+          <option value="rounded-rect">{t('car.shapeRoundedRect')}</option>
+          <option value="rect">{t('car.shapeRect')}</option>
+          <option value="ellipse">{t('car.shapeEllipse')}</option>
+        </select>
+      </div>
+      <div className="mb-3">
+        <FieldLabel>{t('car.chassisDimensions')}</FieldLabel>
+        <div className="grid grid-cols-3 gap-1.5">
+          <StepperField label={t('car.lengthShort')} value={node.config.length} min={150} max={400} step={1} onChange={(v) => setConfig('length', v)} />
+          <StepperField label={t('car.widthShort')} value={node.config.width} min={120} max={300} step={1} onChange={(v) => setConfig('width', v)} />
+          <StepperField label={t('car.thicknessShort')} value={node.config.thickness} min={2} max={6} step={1} onChange={(v) => setConfig('thickness', v)} />
+        </div>
+      </div>
+      <div className="mb-3 text-[11px] text-ink-3">
+        {t('car.driveType')}: {node.config.drive === '2wd' ? t('car.drive2wd') : t('car.drive4wd')}
+      </div>
+      <OutlineButton onClick={generate} disabled={generating} className="w-full">
+        {hasGenerated ? t('car.regenerateChassis') : t('car.generateChassis')}
+      </OutlineButton>
     </>
   );
 }
@@ -155,37 +302,40 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
   const p = node.params;
   return (
     <>
-      <p className="mb-1 mt-3 text-xs text-slate-400">{t('enclosure.params')}</p>
-      <div className="grid grid-cols-2 gap-2">
-        <NumberField
-          label={t('enclosure.wallThickness')}
+      <div className="grid grid-cols-2 gap-1.5">
+        <StepperField
+          label={t('enclosure.wallThicknessShort')}
           value={p.wallThickness}
           min={0.5}
+          step={0.5}
           onChange={(v) => setParam('wallThickness', v)}
         />
-        <NumberField
-          label={t('enclosure.clearanceMargin')}
+        <StepperField
+          label={t('enclosure.clearanceMarginShort')}
           value={p.clearanceMargin}
           min={0}
+          step={0.5}
           onChange={(v) => setParam('clearanceMargin', v)}
         />
-        <NumberField
-          label={t('enclosure.cornerRadius')}
+        <StepperField
+          label={t('enclosure.cornerRadiusShort')}
           value={p.cornerRadius}
           min={0}
+          step={0.5}
           onChange={(v) => setParam('cornerRadius', v)}
         />
-        <NumberField
+        <StepperField
           label={t('enclosure.standoffWallPadding')}
           value={p.standoffWallPadding}
           min={0.5}
+          step={0.5}
           onChange={(v) => setParam('standoffWallPadding', v)}
         />
       </div>
       <label className="mt-2 block">
-        <span className="text-xs text-slate-400">{t('enclosure.lidType')}</span>
+        <FieldLabel>{t('enclosure.lidType')}</FieldLabel>
         <select
-          className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+          className={fieldClass}
           value={p.lidType}
           onChange={(e) => setParam('lidType', e.target.value as EnclosureParams['lidType'])}
         >
@@ -195,9 +345,9 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
         </select>
       </label>
       <label className="mt-2 block">
-        <span className="text-xs text-slate-400">{t('enclosure.screwSize')}</span>
+        <FieldLabel>{t('enclosure.screwSize')}</FieldLabel>
         <select
-          className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+          className={fieldClass}
           value={p.screwSize}
           onChange={(e) => setParam('screwSize', e.target.value as EnclosureParams['screwSize'])}
         >
@@ -209,9 +359,9 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
         </select>
       </label>
       <label className="mt-2 block">
-        <span className="text-xs text-slate-400">{t('enclosure.mountingStyle')}</span>
+        <FieldLabel>{t('enclosure.mountingStyle')}</FieldLabel>
         <select
-          className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+          className={fieldClass}
           value={p.mountingStyle ?? 'screw'}
           onChange={(e) =>
             setParam('mountingStyle', e.target.value as EnclosureParams['mountingStyle'])
@@ -224,9 +374,9 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
       </label>
       {p.lidType === 'screw' && (
         <label className="mt-2 block">
-          <span className="text-xs text-slate-400">{t('enclosure.screwLidProfile')}</span>
+          <FieldLabel>{t('enclosure.screwLidProfile')}</FieldLabel>
           <select
-            className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+            className={fieldClass}
             value={p.screwLidProfile ?? 'flatRecessed'}
             onChange={(e) =>
               setParam('screwLidProfile', e.target.value as EnclosureParams['screwLidProfile'])
@@ -239,9 +389,9 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
       )}
       {p.lidType === 'screw' && (
         <label className="mt-2 block">
-          <span className="text-xs text-slate-400">{t('enclosure.screwEntry')}</span>
+          <FieldLabel>{t('enclosure.screwEntry')}</FieldLabel>
           <select
-            className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
+            className={fieldClass}
             value={p.screwEntry ?? 'fromLid'}
             onChange={(e) => setParam('screwEntry', e.target.value as EnclosureParams['screwEntry'])}
           >
@@ -251,9 +401,10 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
         </label>
       )}
       {p.lidType === 'screw' && (
-        <label className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+        <label className="mt-2 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
           <input
             type="checkbox"
+            className="h-3.5 w-3.5 rounded accent-blue-600"
             checked={p.reserveCornerSpace !== false}
             onChange={(e) => setParam('reserveCornerSpace', e.target.checked)}
           />
@@ -261,9 +412,10 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
         </label>
       )}
       {p.lidType !== 'open' && (
-        <label className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+        <label className="mt-2 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
           <input
             type="checkbox"
+            className="h-3.5 w-3.5 rounded accent-blue-600"
             checked={p.lidDisplayCutout !== false}
             onChange={(e) => setParam('lidDisplayCutout', e.target.checked)}
           />
@@ -271,38 +423,5 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
         </label>
       )}
     </>
-  );
-}
-
-function NumberField({
-  label,
-  value,
-  onChange,
-  min,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  min?: number;
-}) {
-  const [draft, setDraft] = useState<string | null>(null);
-  return (
-    <label className="block">
-      <span className="text-xs text-slate-400">{label}</span>
-      <input
-        type="number"
-        className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm text-slate-800"
-        value={draft ?? value}
-        min={min}
-        step={1}
-        onFocus={() => setDraft(String(value))}
-        onBlur={() => setDraft(null)}
-        onChange={(e) => {
-          setDraft(e.target.value);
-          const v = Number.parseFloat(e.target.value);
-          if (!Number.isNaN(v) && (min === undefined || v >= min)) onChange(v);
-        }}
-      />
-    </label>
   );
 }

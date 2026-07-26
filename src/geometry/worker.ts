@@ -1,6 +1,7 @@
 import { evaluateForExport, evaluateForRender } from './evaluate';
 import { ManifoldKernel } from './manifoldKernel';
 import type { GeometryRequest, GeometryResponse } from './protocol';
+import { registerPartDefinition } from '../parts/library';
 
 const kernel = new ManifoldKernel();
 const ready = kernel.init();
@@ -12,6 +13,11 @@ self.onmessage = async (e: MessageEvent<GeometryRequest>) => {
   const req = e.data;
   try {
     await ready;
+    if (req.definitions) {
+      for (const def of req.definitions) {
+        registerPartDefinition(def);
+      }
+    }
     if (req.type === 'evaluate') {
       const meshes = evaluateForRender(req.nodes, kernel).map((entry) => ({
         nodeId: entry.nodeId,

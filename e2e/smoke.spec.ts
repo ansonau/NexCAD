@@ -4,21 +4,24 @@ import zh from '../src/i18n/zh.json' with { type: 'json' };
 // 完整流程：放零件 → 產生外殼 → 匯出 STL。
 // E2E 在功能已存在後撰寫，用來驗證整合是否正常運作（規格 §13）。
 test('建立零件、產生外殼、匯出 STL', async ({ page }) => {
+  test.setTimeout(60_000);
   await page.goto('/');
 
-  // 等待畫布就緒（零件庫收合按鈕出現代表 App 已掛載）
-  const partsLibraryButton = page.getByRole('button', { name: zh.drawer.title });
-  await expect(partsLibraryButton).toBeVisible();
+  // 桌面版預設開在「零件」Tab。
+  const drawerSearch = page.getByPlaceholder(zh.drawer.search);
+  await expect(drawerSearch).toBeVisible();
 
-  // 開啟零件庫並搜尋 Arduino Nano
-  await partsLibraryButton.click();
-  await page.getByPlaceholder(zh.drawer.search).fill('nano');
+  await drawerSearch.fill('nano');
   await page.getByRole('button', { name: 'Arduino Nano' }).click();
 
   // 確認場景中出現屬性卡，且新零件已被選取
   await expect(page.getByLabel(zh.property.name)).toHaveValue('Arduino Nano');
+  await page.getByTitle(zh.view.dimensions).click();
+  await page.getByRole('menuitem', { name: zh.view.dimensionsHoles }).click();
+  await expect(page.getByText(/\d+(\.\d+)?mm/).first()).toBeVisible({ timeout: 10_000 });
 
-  // 產生外殼：先開啟工具列上的外殼面板，再按面板內的產生按鈕
+  // 產生外殼：先切到「工具」Tab，再按面板內的產生按鈕
+  await page.getByRole('tab', { name: zh.view.sidebarTools }).click();
   await page.getByTitle(zh.enclosure.title).click();
   // 面板標題文字與產生按鈕文字皆為「產生外殼」，取最後一個（面板內的按鈕，DOM 順序在工具列按鈕之後）
   await page.getByRole('button', { name: zh.enclosure.generate, exact: true }).last().click();
@@ -33,4 +36,80 @@ test('建立零件、產生外殼、匯出 STL', async ({ page }) => {
   await downloadButton.click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toMatch(/\.stl$/);
+});
+
+test('desktop sidebar tabs expose parts, tools, and scene objects', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.getByRole('tab', { name: zh.view.sidebarParts })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByPlaceholder(zh.drawer.search)).toBeVisible();
+
+  await page.getByRole('tab', { name: zh.view.sidebarTools }).click();
+  await expect(page.getByTitle(zh.enclosure.title)).toBeVisible();
+  await expect(page.getByTitle(zh.toolbar.smartCar)).toBeVisible();
+  await expect(page.getByTitle(zh.tools.title)).toBeVisible();
+  await page.getByTitle(zh.align.title).click();
+  const toolsPanel = page.getByRole('tabpanel', { name: zh.view.sidebarTools });
+  await expect(toolsPanel.getByText(zh.align.inlineHint)).toBeVisible();
+  await expect(toolsPanel.getByText(zh.align.disabled.replace('{{count}}', '0'))).toBeVisible();
+  await expect(toolsPanel.getByTitle(zh.align.undo)).toBeDisabled();
+  const disabledAlignButtons = toolsPanel.locator('button:disabled').filter({ hasText: /X|Y|Z/ });
+  await expect(disabledAlignButtons).toHaveCount(9);
+
+  await page.getByRole('tab', { name: zh.view.sidebarScene }).click();
+  await expect(page.getByText(zh.view.sceneTreeEmpty)).toBeVisible();
+  await page.getByRole('button', { name: zh.view.addPart }).click();
+  await expect(page.getByRole('tab', { name: zh.view.sidebarParts })).toHaveAttribute('aria-selected', 'true');
+});
+
+test('mobile object sidebar controls remain reachable at narrow widths', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.addInitScript(() => window.localStorage.setItem('i18nextLng', 'zh'));
+  await page.goto('/');
+
+  await expect(page.getByRole('combobox', { name: zh.view.language })).toBeVisible();
+  const toggles = [zh.view.xray, zh.view.wireframe, zh.view.highRes].map((label) => page.getByTitle(label));
+  for (const toggle of toggles) {
+    await expect(toggle).toBeVisible();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  }
+  const dimensions = page.getByTitle(zh.view.dimensions);
+  await expect(dimensions).toBeVisible();
+  await dimensions.click();
+  await expect(page.getByRole('menuitem', { name: zh.view.dimensionsParts })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: zh.view.dimensionsHoles })).toBeVisible();
+  await page.getByRole('menuitem', { name: zh.view.dimensionsEnclosure }).click();
+  await expect(dimensions).toHaveAttribute('aria-pressed', 'true');
+
+  const viewTogglesBox = await toggles[0].locator('..').boundingBox();
+  const workflowBox = await page.getByText(zh.view.workflowTools, { exact: true }).locator('..').boundingBox();
+  expect(viewTogglesBox).not.toBeNull();
+  expect(workflowBox).not.toBeNull();
+  expect(
+    (viewTogglesBox!.x + viewTogglesBox!.width <= workflowBox!.x) ||
+    (workflowBox!.x + workflowBox!.width <= viewTogglesBox!.x) ||
+    (viewTogglesBox!.y + viewTogglesBox!.height <= workflowBox!.y) ||
+    (workflowBox!.y + workflowBox!.height <= viewTogglesBox!.y),
+  ).toBe(true);
+
+  await page.getByRole('button', { name: zh.view.partsLibrary }).click();
+  await expect(page.getByPlaceholder(zh.drawer.search)).toBeVisible();
+  await page.getByRole('button', { name: zh.drawer.close }).click();
+
+  const expectInViewport = async (dialog: ReturnType<typeof page.getByRole>) => {
+    await expect(dialog).toBeVisible();
+    const box = await dialog.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.y).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(700);
+  };
+
+  await page.getByRole('button', { name: zh.enclosure.title }).click();
+  await expectInViewport(page.getByRole('dialog', { name: zh.enclosure.title }));
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: zh.tools.title }).click();
+  await expectInViewport(page.getByRole('dialog', { name: zh.tools.title }));
 });

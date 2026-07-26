@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createScrewHoleNode } from '../enclosure/screwHoleNode';
 import { primitiveZRange, projectPartHoles } from '../enclosure/holeProjection';
 import type { HoleStyle, ScrewSize } from '../enclosure/screws';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import { useToastStore } from '../store/toastStore';
+import { Dialog, GhostButton, OutlineButton, PrimaryButton } from './ui';
 
 const SIZES: ScrewSize[] = ['M2', 'M2.5', 'M3', 'M4'];
 const STYLES: { value: HoleStyle; key: string }[] = [
@@ -47,56 +49,63 @@ export function ScrewToolsMenu({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/30"
-      onClick={onClose}
-    >
-      <div
-        className="w-72 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <p className="mb-3 text-sm font-medium text-slate-800">{t('tools.title')}</p>
-        <label className="mb-3 block">
-          <span className="text-xs text-slate-400">{t('tools.size')}</span>
-          <select
-            className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
-            value={size}
-            onChange={(e) => setSize(e.target.value as ScrewSize)}
-          >
-            {SIZES.map((s) => (
-              <option key={s} value={s}>
+    <Dialog title={t('tools.title')} onClose={onClose} width="w-[30rem]">
+      <PanelGroup title={t('tools.size')}>
+        <div className="grid grid-cols-4 gap-2">
+          {SIZES.map((s) => {
+            const active = size === s;
+            return (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setSize(s)}
+                className={`h-10 rounded-2xl border text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                  active ? 'border-accent bg-accent-soft text-accent shadow-sm' : 'border-line bg-white text-ink-2 hover:border-accent/50 hover:text-ink'
+                }`}
+              >
                 {s}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="mb-4 block">
-          <span className="text-xs text-slate-400">{t('tools.style')}</span>
-          <select
-            className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
-            value={style}
-            onChange={(e) => setStyle(e.target.value as HoleStyle)}
-          >
-            {STYLES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {t(s.key)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button
-          onClick={addScrewHole}
-          className="mb-2 h-11 w-full rounded-xl bg-slate-800 text-sm font-medium text-white hover:bg-slate-700"
-        >
-          {t('tools.screwHole')}：{t('tools.add')}
-        </button>
-        <button
-          onClick={projectHoles}
-          className="h-11 w-full rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-100"
-        >
-          {t('tools.projectHoles')}
-        </button>
+              </button>
+            );
+          })}
+        </div>
+      </PanelGroup>
+
+      <PanelGroup title={t('tools.style')}>
+        <div className="grid grid-cols-2 gap-2">
+          {STYLES.map((s) => {
+            const active = style === s.value;
+            return (
+              <button
+                key={s.value}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setStyle(s.value)}
+                className={`rounded-2xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                  active ? 'border-accent bg-accent-soft text-accent shadow-sm' : 'border-line bg-white text-ink-2 hover:border-accent/50 hover:text-ink'
+                }`}
+              >
+                <span className="block text-[13px] font-semibold">{t(s.key)}</span>
+              </button>
+            );
+          })}
+        </div>
+      </PanelGroup>
+
+      <div className="sticky bottom-0 -mx-4 -mb-4 mt-4 flex justify-end gap-2 border-t border-line bg-white/98 px-4 py-3">
+        <GhostButton onClick={onClose}>{t('export.cancel')}</GhostButton>
+        <OutlineButton onClick={projectHoles}>{t('tools.projectHoles')}</OutlineButton>
+        <PrimaryButton onClick={addScrewHole}>{t('tools.screwHole')}</PrimaryButton>
       </div>
-    </div>
+    </Dialog>
+  );
+}
+
+function PanelGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="mb-3 rounded-2xl border border-line bg-white/82 p-3">
+      <h3 className="mb-2 text-[13px] font-semibold text-ink">{title}</h3>
+      {children}
+    </section>
   );
 }

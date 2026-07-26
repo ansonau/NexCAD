@@ -14,6 +14,7 @@ import { useProjectStore } from '../store/projectStore';
 import { useToastStore } from '../store/toastStore';
 import { emptyDocument, newId } from '../types/document';
 import type { SceneNode } from '../types/document';
+import { Dialog, GhostButton, IconButton, panelClass } from './ui';
 
 function loadDocIntoStore(doc: ProjectRecord['doc'], id: string): void {
   useDocumentStore.setState({
@@ -44,15 +45,6 @@ export function ProjectsPanel() {
 
   useEffect(() => {
     if (open) void listProjects().then(setProjects);
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
   const openProject = async (record: ProjectRecord) => {
@@ -119,106 +111,80 @@ export function ProjectsPanel() {
 
   return (
     <>
-      <div className="absolute left-4 top-4 flex items-center gap-2">
-        <button
-          onClick={() => setOpen(true)}
-          aria-label={t('projects.title')}
-          className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white/90 text-slate-600 shadow-lg backdrop-blur hover:bg-slate-100"
-        >
-          <FolderOpen size={20} />
-        </button>
-        <input
-          value={docName}
-          onChange={(e) => mutate('rename', (d) => void (d.name = e.target.value))}
-          aria-label={t('projects.title')}
-          className="h-11 w-44 rounded-xl border border-slate-200 bg-white/90 px-3 text-sm font-medium text-slate-700 shadow-lg backdrop-blur"
-        />
+      <div className="flex items-center gap-2">
+        <div className={`flex p-0.5 ${panelClass}`}>
+          <IconButton title={t('projects.title')} onClick={() => setOpen(true)}>
+            <FolderOpen size={18} strokeWidth={1.8} />
+          </IconButton>
+        </div>
+        <div className={`hidden h-9 items-center px-2.5 sm:flex ${panelClass}`}>
+          <input
+            value={docName}
+            onChange={(e) => mutate('rename', (d) => void (d.name = e.target.value))}
+            aria-label={t('projects.title')}
+            className="w-40 bg-transparent text-[13px] font-medium text-ink outline-none placeholder:text-ink-3"
+          />
+        </div>
       </div>
       {open && (
-        <div
-          className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/30"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={t('projects.title')}
-            className="max-h-[70vh] w-96 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-medium text-slate-800">{t('projects.title')}</p>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => void newProject()}
-                  title={t('projects.new')}
-                  aria-label={t('projects.new')}
-                  className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100"
-                >
-                  <Plus size={18} />
-                </button>
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  title={t('projects.import')}
-                  aria-label={t('projects.import')}
-                  className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100"
-                >
-                  <Upload size={18} />
-                </button>
-                <button
-                  onClick={exportFile}
-                  className="h-11 rounded-lg px-2 text-sm text-slate-600 hover:bg-slate-100"
-                >
-                  {t('projects.exportFile')}
-                </button>
-              </div>
-            </div>
-            {projects.length === 0 && (
-              <p className="py-6 text-center text-sm text-slate-400">{t('projects.empty')}</p>
-            )}
+        <Dialog title={t('projects.title')} onClose={() => setOpen(false)} width="w-96">
+          <div className="mb-3 flex items-center gap-1.5">
+            <IconButton title={t('projects.new')} onClick={() => void newProject()}>
+              <Plus size={18} strokeWidth={1.8} />
+            </IconButton>
+            <IconButton title={t('projects.import')} onClick={() => fileRef.current?.click()}>
+              <Upload size={18} strokeWidth={1.8} />
+            </IconButton>
+            <GhostButton onClick={exportFile} className="ml-auto h-8 px-2.5 text-[12px]">
+              {t('projects.exportFile')}
+            </GhostButton>
+          </div>
+          {projects.length === 0 && (
+            <p className="py-8 text-center text-[13px] text-ink-3">{t('projects.empty')}</p>
+          )}
+          <div className="space-y-1">
             {projects.map((p) => (
               <div
                 key={p.id}
-                className={`mb-1 flex items-center justify-between rounded-xl border px-3 py-2 ${
-                  p.id === currentId ? 'border-blue-200 bg-blue-50' : 'border-slate-100'
+                className={`group flex items-center justify-between rounded-xl border px-3 py-2 transition-colors duration-150 ${
+                  p.id === currentId
+                    ? 'border-accent-line bg-accent-soft'
+                    : 'border-line hover:border-line-strong hover:bg-slate-900/[0.03]'
                 }`}
               >
-                <div>
-                  <p className="text-sm text-slate-800">{p.name}</p>
-                  <p className="text-xs text-slate-400">
+                <div className="min-w-0">
+                  <p className="truncate text-[13px] font-medium text-ink">{p.name}</p>
+                  <p className="mt-0.5 font-mono text-[11px] tabular-nums text-ink-3">
                     {new Date(p.updatedAt).toLocaleString()}
                   </p>
                 </div>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => void openProject(p)}
-                    className="h-11 rounded-lg px-2 text-sm text-slate-600 hover:bg-slate-100"
-                  >
+                <div className="flex shrink-0 items-center gap-0.5">
+                  <GhostButton onClick={() => void openProject(p)} className="h-8 px-2.5 text-[12px]">
                     {t('projects.open')}
-                  </button>
+                  </GhostButton>
                   <button
                     onClick={() => void removeProject(p)}
                     aria-label={t('projects.delete')}
-                    className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500"
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-ink-3 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={15} />
                   </button>
                 </div>
               </div>
             ))}
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".nexcad,application/json"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void importFile(file);
-                e.target.value = '';
-              }}
-            />
           </div>
-        </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".nexcad,application/json"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void importFile(file);
+              e.target.value = '';
+            }}
+          />
+        </Dialog>
       )}
     </>
   );

@@ -27,6 +27,15 @@ describe('collectHoleWorldPositions', () => {
     expect(collectHoleWorldPositions([a, b], a.id)).toHaveLength(0);
   });
 
+  it('X 軸旋轉 90° 時孔位 Z 座標跟著更新', () => {
+    const uno = createPartNode('arduino-uno', 'uno');
+    uno.transform.rotation = [90, 0, 0];
+    const holes = collectHoleWorldPositions([uno]);
+    // arduino-uno 有一孔在 (-20.3, -24.2, 0)，繞 X 90° 後 (x,y,z) -> (x, -z, y)
+    const target = holes.find((h) => Math.abs(h[0] + 20.3) < 1e-6 && Math.abs(h[2] + 24.2) < 1e-6);
+    expect(target).toBeDefined();
+  });
+
   it('未知 partId 與非零件節點被略過', () => {
     const ghost = createPartNode('nope', 'ghost');
     expect(collectHoleWorldPositions([ghost])).toHaveLength(0);

@@ -47,6 +47,19 @@ describe('partWorldBounds', () => {
     expect(b.maxY - b.minY).toBeCloseTo(40, 6);
   });
 
+  it('繞 X 軸旋轉 90° 後高度對應原 clearanceHeight', () => {
+    // 40x20x2 的板，clearanceHeight=10；繞 X 轉 90° 後 Z 方向由原高度 10 變為深度 20
+    const b = partWorldBounds(instance({ rotation: [90, 0, 0] }));
+    expect(b.maxZ - b.minZ).toBeCloseTo(20, 6);
+    expect(b.maxY - b.minY).toBeCloseTo(10, 6);
+  });
+
+  it('繞 Y 軸旋轉 90° 後高度對應原長度', () => {
+    const b = partWorldBounds(instance({ rotation: [0, 90, 0] }));
+    expect(b.maxZ - b.minZ).toBeCloseTo(40, 6);
+    expect(b.maxX - b.minX).toBeCloseTo(10, 6);
+  });
+
   it('位移正確反映在範圍上', () => {
     const b = partWorldBounds(instance({ position: [100, 50, 5] }));
     expect(b.minX).toBeCloseTo(80, 6);
@@ -69,7 +82,7 @@ describe('combinedBounds', () => {
 
 describe('planShell', () => {
   // reserveCornerSpace: false 隔離基本 margin/wall 幾何計算，不受 D1 擴殼影響（擴殼另有專屬測試）。
-  const NO_EXPANSION_PARAMS = { ...DEFAULT_ENCLOSURE_PARAMS, reserveCornerSpace: false };
+  const NO_EXPANSION_PARAMS = { ...DEFAULT_ENCLOSURE_PARAMS, reserveCornerSpace: false, mountingStyle: 'hole' as const };
 
   it('內腔比零件範圍多出 clearanceMargin，外殼比內腔多出 wallThickness', () => {
     const plan = planShell([instance()], NO_EXPANSION_PARAMS);
@@ -86,6 +99,12 @@ describe('planShell', () => {
     expect(plan.outer.minZ).toBeCloseTo(-NO_EXPANSION_PARAMS.wallThickness, 6);
     expect(plan.outer.maxZ).toBeCloseTo(plan.inner.maxZ, 6);
     expect(plan.floorZ).toBeCloseTo(plan.outer.minZ, 6);
+  });
+
+  it('螺絲柱固定時，內腔底部會向下預留支柱高度', () => {
+    const plan = planShell([instance()], { ...NO_EXPANSION_PARAMS, mountingStyle: 'screw' });
+    expect(plan.inner.minZ).toBeCloseTo(-6, 6);
+    expect(plan.outer.minZ).toBeCloseTo(-6 - NO_EXPANSION_PARAMS.wallThickness, 6);
   });
 
   it('cornerRadius 被限制在不超過外形寬/深的一半', () => {
@@ -127,6 +146,14 @@ describe('planStandoffs', () => {
     expect(standoffs).toHaveLength(2);
     expect(standoffs[0].x).toBeCloseTo(10 - 15, 6);
     expect(standoffs[0].topZ).toBeCloseTo(5, 6);
+  });
+
+  it('繞 X 軸旋轉 90° 後安裝孔的世界高度正確更新', () => {
+    const standoffs = planStandoffs([instance({ rotation: [90, 0, 0], position: [0, 0, 0] })], 'M3');
+    expect(standoffs).toHaveLength(2);
+    // hole.z=0，hole.y 會映射到世界 Z；boardDef hole.y 為 -5 與 5
+    expect(standoffs[0].topZ).toBeCloseTo(-5, 6);
+    expect(standoffs[1].topZ).toBeCloseTo(5, 6);
   });
 
   it('可覆寫導孔深度', () => {

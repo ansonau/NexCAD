@@ -1,14 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PartsDrawer } from './components/PartsDrawer';
-import { PropertyCard } from './components/PropertyCard';
-import { LanguageToggle } from './components/LanguageToggle';
-import { ProjectsPanel } from './components/ProjectsPanel';
-import { SceneTreePanel } from './components/SceneTreePanel';
-import { ToastStack } from './components/ToastStack';
-import { Toolbar } from './components/Toolbar';
-import { Viewport } from './components/Viewport';
-import { ViewToggles } from './components/ViewToggles';
+import { WorkspaceShell } from './components/WorkspaceShell';
 import { useAutosave } from './hooks/useAutosave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { listProjects, saveProject } from './persistence/db';
@@ -52,25 +44,8 @@ export default function App() {
   }, [t]);
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-slate-50">
-      <Viewport />
-      <ProjectsPanel />
-      <Toolbar />
-      <PropertyCard />
-      <PartsDrawer />
-      <ToastStack />
-      <div className="absolute right-4 top-4">
-        <LanguageToggle />
-      </div>
-      <div className="absolute right-4 top-16">
-        <ViewToggles />
-      </div>
-      <div className="absolute left-4 top-4">
-        <SceneTreePanel />
-      </div>
-      <div className="absolute bottom-4 left-4 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-sm font-medium text-slate-700 shadow-lg backdrop-blur">
-        NexCAD
-      </div>
+    <div className="relative h-full w-full overflow-hidden bg-canvas text-ink">
+      <WorkspaceShell />
     </div>
   );
 }

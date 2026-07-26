@@ -1,33 +1,135 @@
+import { BoxSelect, ChevronDown, Ruler, ScanLine, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { panelClass } from './ui';
 import { useViewStore } from '../store/viewStore';
+import type { DimensionMode } from '../store/viewStore';
 
 export function ViewToggles() {
   const { t } = useTranslation();
   const shellXray = useViewStore((s) => s.shellXray);
   const wireframe = useViewStore((s) => s.wireframe);
+  const highResModels = useViewStore((s) => s.highResModels);
+  const dimensionMode = useViewStore((s) => s.dimensionMode);
   const toggleShellXray = useViewStore((s) => s.toggleShellXray);
   const toggleWireframe = useViewStore((s) => s.toggleWireframe);
+  const toggleHighResModels = useViewStore((s) => s.toggleHighResModels);
+  const setDimensionMode = useViewStore((s) => s.setDimensionMode);
 
   return (
-    <div className="flex flex-col gap-2">
-      <button
-        onClick={toggleShellXray}
-        aria-pressed={shellXray}
-        className={`flex h-11 items-center justify-center rounded-xl border border-slate-200 px-3 text-sm font-medium shadow-lg backdrop-blur ${
-          shellXray ? 'bg-slate-800 text-white' : 'bg-white/90 text-slate-600 hover:bg-slate-100'
-        }`}
-      >
-        {t('view.xray')}
-      </button>
-      <button
-        onClick={toggleWireframe}
-        aria-pressed={wireframe}
-        className={`flex h-11 items-center justify-center rounded-xl border border-slate-200 px-3 text-sm font-medium shadow-lg backdrop-blur ${
-          wireframe ? 'bg-slate-800 text-white' : 'bg-white/90 text-slate-600 hover:bg-slate-100'
-        }`}
-      >
-        {t('view.wireframe')}
-      </button>
+    <div className={`flex items-center gap-1 p-1 ${panelClass}`}>
+      <ToggleButton active={shellXray} onClick={toggleShellXray} label={t('view.xray')} icon={ScanLine} />
+      <ToggleButton active={wireframe} onClick={toggleWireframe} label={t('view.wireframe')} icon={BoxSelect} />
+      <DimensionDropdown
+        mode={dimensionMode}
+        onChange={setDimensionMode}
+        labels={{
+          title: t('view.dimensions'),
+          enclosure: t('view.dimensionsEnclosure'),
+          parts: t('view.dimensionsParts'),
+          holes: t('view.dimensionsHoles'),
+        }}
+      />
+      <ToggleButton
+        active={highResModels}
+        onClick={toggleHighResModels}
+        label={t('view.highRes')}
+        icon={Sparkles}
+      />
     </div>
+  );
+}
+
+function DimensionDropdown({
+  mode,
+  onChange,
+  labels,
+}: {
+  mode: DimensionMode;
+  onChange: (mode: DimensionMode) => void;
+  labels: { title: string; enclosure: string; parts: string; holes: string };
+}) {
+  const [open, setOpen] = useState(false);
+  const active = mode !== 'off';
+  const setMode = (next: Exclude<DimensionMode, 'off'>) => {
+    onChange(mode === next ? 'off' : next);
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <button
+        title={labels.title}
+        aria-label={labels.title}
+        aria-pressed={active}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className={`flex h-8 cursor-pointer items-center justify-center gap-1 rounded-[10px] px-2 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+          active ? 'bg-accent-soft text-accent' : 'text-ink-2 hover:bg-slate-900/5 hover:text-ink'
+        }`}
+      >
+        <Ruler size={15} strokeWidth={1.8} />
+        <span className={`font-mono text-[10px] font-semibold tracking-[-0.02em] ${active ? 'text-accent-strong' : 'text-ink-3'}`}>mm</span>
+        <ChevronDown size={12} strokeWidth={1.8} />
+      </button>
+      {open && (
+        <div role="menu" className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-line bg-white p-1 shadow-pop">
+          <DimensionMenuItem active={mode === 'enclosure'} label={labels.enclosure} onClick={() => setMode('enclosure')} />
+          <DimensionMenuItem active={mode === 'parts'} label={labels.parts} onClick={() => setMode('parts')} />
+          <DimensionMenuItem active={mode === 'holes'} label={labels.holes} onClick={() => setMode('holes')} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DimensionMenuItem({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      onClick={onClick}
+      className={`flex h-8 w-full cursor-pointer items-center rounded-lg px-2 text-left text-[12px] font-medium transition-colors ${
+        active ? 'bg-accent-soft text-accent-strong' : 'text-ink-2 hover:bg-slate-900/5 hover:text-ink'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function ToggleButton({
+  active,
+  onClick,
+  label,
+  icon: Icon,
+  badge,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  icon: typeof ScanLine;
+  badge?: string;
+}) {
+  return (
+    <button
+      title={label}
+      aria-label={label}
+      onClick={onClick}
+      aria-pressed={active}
+      className={`flex h-8 cursor-pointer items-center justify-center rounded-[10px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+        active
+          ? 'bg-accent-soft text-accent'
+          : 'text-ink-2 hover:bg-slate-900/5 hover:text-ink'
+      } ${badge ? 'w-auto gap-1 px-2' : 'w-8'}`}
+    >
+      <Icon size={15} strokeWidth={1.8} />
+      {badge && (
+        <span className={`font-mono text-[10px] font-semibold tracking-[-0.02em] ${active ? 'text-accent-strong' : 'text-ink-3'}`}>
+          {badge}
+        </span>
+      )}
+    </button>
   );
 }
