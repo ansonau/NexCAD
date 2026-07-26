@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Car, PackageOpen, Wrench } from 'lucide-react';
+import { AlignHorizontalSpaceAround, Car, PackageOpen, Wrench } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { AlignToolsPanel } from './AlignToolsPanel';
 import { CarConfigPanel } from './CarConfigPanel';
 import { EnclosurePanel } from './EnclosurePanel';
 import { ScrewToolsMenu } from './ScrewToolsMenu';
@@ -10,7 +11,7 @@ const buttonClass =
 
 export function WorkflowTools({ showTitle = true, compact = false }: { showTitle?: boolean; compact?: boolean }) {
   const { t } = useTranslation();
-  const [panel, setPanel] = useState<'enclosure' | 'car' | 'screw' | null>(null);
+  const [panel, setPanel] = useState<'enclosure' | 'car' | 'screw' | 'align' | null>(null);
 
   return (
     <section className={`${compact ? 'rounded-xl shadow-sm' : 'rounded-2xl shadow-panel'} border border-line bg-white/72 p-2`}>
@@ -50,7 +51,22 @@ export function WorkflowTools({ showTitle = true, compact = false }: { showTitle
           <Wrench size={16} strokeWidth={1.8} />
           {t('tools.title')}
         </button>
+        <button
+          type="button"
+          title={t('align.title')}
+          aria-label={t('align.title')}
+          className={`${buttonClass} ${panel === 'align' ? 'border-accent-line bg-accent-soft/60 text-accent-strong' : ''}`}
+          onClick={() => setPanel(panel === 'align' ? null : 'align')}
+        >
+          <AlignHorizontalSpaceAround size={16} strokeWidth={1.8} />
+          {t('align.title')}
+        </button>
       </div>
+      {panel === 'align' && (
+        <div className="mt-2">
+          <AlignToolsPanel onClose={() => setPanel(null)} />
+        </div>
+      )}
       {panel === 'enclosure' && <EnclosurePanel onClose={() => setPanel(null)} />}
       {panel === 'car' && <CarConfigPanel onClose={() => setPanel(null)} />}
       {panel === 'screw' && <ScrewToolsMenu onClose={() => setPanel(null)} />}

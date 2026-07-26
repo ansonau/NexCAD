@@ -5,13 +5,13 @@ import { generateEnclosure } from '../enclosure/actions';
 import { DEFAULT_ENCLOSURE_PARAMS } from '../enclosure/plan';
 import type { EnclosureParams, SceneNode } from '../types/document';
 import { useDocumentStore } from '../store/documentStore';
-import { Dialog, FieldLabel, GhostButton, PrimaryButton, SectionLabel, StepperField, fieldClass } from './ui';
+import { Dialog, FieldLabel, GhostButton, PrimaryButton, StepperField, fieldClass } from './ui';
 
 export function EnclosurePanel({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const [params, setParams] = useState<EnclosureParams>(DEFAULT_ENCLOSURE_PARAMS);
   const [paddingTouched, setPaddingTouched] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(true);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const set = <K extends keyof EnclosureParams>(key: K, value: EnclosureParams[K]) =>
     setParams((p) => ({ ...p, [key]: value }));
@@ -30,51 +30,51 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <Dialog title={t('enclosure.title')} onClose={onClose} width="w-96">
+    <Dialog title={t('enclosure.title')} onClose={onClose} width="w-[30rem]">
       {allParts.length === 0 ? (
-        <div className="mb-3 rounded-lg bg-slate-50 px-3 py-3 text-center">
+        <div className="mb-3 rounded-2xl border border-line bg-slate-900/[0.025] px-3 py-4 text-center">
           <p className="text-[12px] font-medium text-ink-2">{t('enclosure.noPartsHint')}</p>
           <p className="mt-1 text-[11px] text-ink-3">{t('enclosure.noPartsDetail')}</p>
         </div>
       ) : (
-        <p className="mb-3 rounded-lg bg-accent-soft px-2.5 py-1.5 text-[11px] font-medium text-accent">
+        <p className="mb-3 rounded-xl border border-accent-line bg-accent-soft px-3 py-2 text-[12px] font-semibold text-accent">
           {t(scopeKey, { count: scopeCount })}
         </p>
       )}
 
-      <SectionLabel>{t('enclosure.params')}</SectionLabel>
-      <div className="mb-3 grid grid-cols-3 gap-1.5">
-        <StepperField
-          label={t('enclosure.wallThickness')}
-          value={params.wallThickness}
-          min={0.5}
-          step={0.5}
-          onChange={(v) =>
-            setParams((p) => ({
-              ...p,
-              wallThickness: v,
-              standoffWallPadding: paddingTouched ? p.standoffWallPadding : v,
-            }))
-          }
-        />
-        <StepperField
-          label={t('enclosure.clearanceMargin')}
-          value={params.clearanceMargin}
-          min={0}
-          step={0.5}
-          onChange={(v) => set('clearanceMargin', v)}
-        />
-        <StepperField
-          label={t('enclosure.cornerRadius')}
-          value={params.cornerRadius}
-          min={0}
-          step={0.5}
-          onChange={(v) => set('cornerRadius', v)}
-        />
-      </div>
+      <PanelGroup title={`${t('enclosure.params')} (mm)`}>
+        <div className="grid grid-cols-3 gap-2">
+          <StepperField
+            label={t('enclosure.wallThicknessShort')}
+            value={params.wallThickness}
+            min={0.5}
+            step={0.5}
+            onChange={(v) =>
+              setParams((p) => ({
+                ...p,
+                wallThickness: v,
+                standoffWallPadding: paddingTouched ? p.standoffWallPadding : v,
+              }))
+            }
+          />
+          <StepperField
+            label={t('enclosure.clearanceMarginShort')}
+            value={params.clearanceMargin}
+            min={0}
+            step={0.5}
+            onChange={(v) => set('clearanceMargin', v)}
+          />
+          <StepperField
+            label={t('enclosure.cornerRadiusShort')}
+            value={params.cornerRadius}
+            min={0}
+            step={0.5}
+            onChange={(v) => set('cornerRadius', v)}
+          />
+        </div>
+      </PanelGroup>
 
-      <div className="mb-2">
-        <FieldLabel>{t('enclosure.lidType')}</FieldLabel>
+      <PanelGroup title={t('enclosure.lidType')}>
         <div className="grid grid-cols-3 gap-2">
           {([
             { value: 'screw', label: t('enclosure.lidScrew'), image: '/enclosure-lid-type-screw.png' },
@@ -88,43 +88,43 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
                 type="button"
                 aria-pressed={active}
                 onClick={() => set('lidType', option.value)}
-                className={`overflow-hidden rounded-xl border bg-white text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
-                  active ? 'border-accent ring-2 ring-accent/20' : 'border-line hover:border-accent/50'
+                className={`overflow-hidden rounded-2xl border text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                  active ? 'border-accent bg-accent-soft shadow-sm' : 'border-line bg-white hover:border-accent/50'
                 }`}
               >
-                <img src={option.image} alt="" className="aspect-[4/3] w-full bg-slate-50 object-contain p-1" />
-                <span className={`block px-2 py-1.5 text-[11px] font-medium ${active ? 'text-accent' : 'text-ink-2'}`}>
+                <img src={option.image} alt="" className="aspect-[4/3] w-full bg-slate-900/[0.025] object-contain p-1" />
+                <span className={`block px-2 py-2 text-[11px] font-semibold ${active ? 'text-accent' : 'text-ink-2'}`}>
                   {option.label}
                 </span>
               </button>
             );
           })}
         </div>
-      </div>
-      <label className="mb-3 block">
-        <FieldLabel>{t('enclosure.screwSize')}</FieldLabel>
-        <select
-          className={fieldClass}
-          value={params.screwSize}
-          onChange={(e) => set('screwSize', e.target.value as EnclosureParams['screwSize'])}
-        >
-          {(['M2', 'M2.5', 'M3', 'M4'] as const).map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-      </label>
+        <label className="mt-3 block">
+          <FieldLabel>{t('enclosure.screwSize')}</FieldLabel>
+          <select
+            className={fieldClass}
+            value={params.screwSize}
+            onChange={(e) => set('screwSize', e.target.value as EnclosureParams['screwSize'])}
+          >
+            {(['M2', 'M2.5', 'M3', 'M4'] as const).map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </label>
+      </PanelGroup>
 
       <button
         onClick={() => setAdvancedOpen((o) => !o)}
-        className="mb-2 flex cursor-pointer items-center gap-1 text-[12px] font-medium text-ink-2 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+        className="mb-2 flex h-9 w-full cursor-pointer items-center justify-between rounded-xl px-3 text-[12px] font-semibold text-ink-2 transition-colors hover:bg-slate-900/[0.035] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
       >
-        {t('enclosure.advanced')}
-        {advancedOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        <span>{t('enclosure.advanced')}</span>
+        {advancedOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
       </button>
       {advancedOpen && (
-        <div className="mb-3 space-y-2">
+        <div className="mb-3 space-y-2 rounded-2xl border border-line bg-slate-900/[0.018] p-3">
           <div className="grid grid-cols-2 gap-1.5">
             <StepperField
               label={t('enclosure.standoffWallPadding')}
@@ -144,7 +144,7 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
                 value={params.pilotDepthOverride ?? ''}
                 min={0.5}
                 step={0.5}
-                placeholder="—"
+                placeholder="auto"
                 onChange={(e) => {
                   if (e.target.value === '') {
                     set('pilotDepthOverride', undefined);
@@ -194,12 +194,12 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
                         type="button"
                         aria-pressed={active}
                         onClick={() => set('screwLidProfile', option.value)}
-                        className={`overflow-hidden rounded-xl border bg-white text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
-                          active ? 'border-accent ring-2 ring-accent/20' : 'border-line hover:border-accent/50'
+                        className={`overflow-hidden rounded-2xl border text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                          active ? 'border-accent bg-accent-soft shadow-sm' : 'border-line bg-white hover:border-accent/50'
                         }`}
                       >
-                        <img src={option.image} alt="" className="mx-auto aspect-[4/3] w-3/4 bg-slate-50 object-contain p-1" />
-                        <span className={`block px-2 py-1.5 text-[11px] font-medium ${active ? 'text-accent' : 'text-ink-2'}`}>
+                        <img src={option.image} alt="" className="mx-auto aspect-[4/3] w-3/4 bg-slate-900/[0.025] object-contain p-1" />
+                        <span className={`block px-2 py-2 text-[11px] font-semibold ${active ? 'text-accent' : 'text-ink-2'}`}>
                           {option.label}
                         </span>
                       </button>
@@ -245,11 +245,20 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
         </div>
       )}
 
-      <div className="flex justify-end gap-1.5">
+      <div className="sticky bottom-0 -mx-4 -mb-4 mt-4 flex justify-end gap-2 border-t border-line bg-white/98 px-4 py-3">
         <GhostButton onClick={onClose}>{t('export.cancel')}</GhostButton>
         <PrimaryButton onClick={generate} disabled={allParts.length === 0}>{t('enclosure.generate')}</PrimaryButton>
       </div>
     </Dialog>
+  );
+}
+
+function PanelGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="mb-3 rounded-2xl border border-line bg-white/82 p-3">
+      <h3 className="mb-2 text-[13px] font-semibold text-ink">{title}</h3>
+      {children}
+    </section>
   );
 }
 

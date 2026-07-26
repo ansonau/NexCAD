@@ -7,12 +7,12 @@ import { useTranslation } from 'react-i18next';
 
 /**
  * NexCAD design system — shared primitives.
- * Light "precision instrument" theme: floating frosted panels over the canvas,
- * hairline borders, one accent blue, mono numerals for dimensions.
+ * Light precision theme: crisp panels, hairline borders, one blue accent,
+ * mono numerals for dimensions.
  */
 
 export const panelClass =
-  'rounded-2xl border border-line bg-white/85 shadow-panel backdrop-blur-xl';
+  'rounded-2xl border border-line bg-white/94 shadow-panel';
 
 const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40';
 const focusableSelector =
@@ -45,7 +45,7 @@ export function IconButton({
       aria-pressed={active}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-[10px] transition-colors duration-150 active:scale-95 disabled:pointer-events-none disabled:opacity-35 ${focusRing} ${
+      className={`inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl transition-colors duration-150 active:scale-95 disabled:pointer-events-none disabled:opacity-35 ${focusRing} ${
         active
           ? 'bg-accent-soft text-accent hover:text-accent-strong'
           : 'text-ink-2 hover:bg-slate-900/5 hover:text-ink'
@@ -72,7 +72,7 @@ export function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-[10px] bg-accent px-3.5 text-[13px] font-medium text-white shadow-sm transition-colors duration-150 hover:bg-accent-strong active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${focusRing} ${className}`}
+      className={`inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-accent px-3.5 text-[13px] font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-accent-strong active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${focusRing} ${className}`}
     >
       {children}
     </button>
@@ -95,7 +95,7 @@ export function GhostButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-[10px] px-3.5 text-[13px] font-medium text-ink-2 transition-colors duration-150 hover:bg-slate-900/5 hover:text-ink active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${focusRing} ${className}`}
+      className={`inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-3.5 text-[13px] font-medium text-ink-2 transition-colors duration-150 hover:bg-slate-900/5 hover:text-ink active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${focusRing} ${className}`}
     >
       {children}
     </button>
@@ -118,7 +118,7 @@ export function OutlineButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-[10px] border border-line bg-white/70 px-3.5 text-[13px] font-medium text-ink-2 transition-colors duration-150 hover:border-line-strong hover:bg-white hover:text-ink active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${focusRing} ${className}`}
+      className={`inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line bg-white/82 px-3.5 text-[13px] font-medium text-ink-2 transition-colors duration-150 hover:border-line-strong hover:bg-white hover:text-ink active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${focusRing} ${className}`}
     >
       {children}
     </button>
@@ -134,7 +134,7 @@ export function SectionLabel({ children }: { children: ReactNode }) {
   );
 }
 
-export const fieldClass = `h-9 w-full rounded-[10px] border border-line bg-white/80 px-2.5 text-[13px] text-ink transition-colors duration-150 placeholder:text-ink-3 hover:border-line-strong focus:border-accent-line focus:outline-none focus:ring-2 focus:ring-accent/25`;
+export const fieldClass = `h-9 w-full rounded-xl border border-line bg-white/86 px-2.5 text-[13px] text-ink transition-colors duration-150 placeholder:text-ink-3 hover:border-line-strong focus:border-accent-line focus:outline-none focus:ring-2 focus:ring-accent/25`;
 
 export const numberFieldClass = `${fieldClass} font-mono tabular-nums`;
 
@@ -180,7 +180,7 @@ export function Dialog({
 
   const dialog = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/25 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/25"
       onClick={onClose}
     >
       <div
@@ -189,7 +189,7 @@ export function Dialog({
         tabIndex={-1}
         aria-modal="true"
         aria-label={title}
-        className={`${width} max-w-[calc(100vw-1.5rem)] max-h-[80vh] animate-pop-in overflow-y-auto rounded-2xl border border-line bg-white/95 p-4 shadow-pop backdrop-blur-xl`}
+        className={`${width} max-w-[calc(100vw-1.5rem)] max-h-[80vh] animate-pop-in overflow-y-auto rounded-2xl border border-line bg-white/98 p-4 shadow-pop`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between gap-2">

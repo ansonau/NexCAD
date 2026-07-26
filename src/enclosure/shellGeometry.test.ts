@@ -105,20 +105,16 @@ describe('buildShellSolid', () => {
     expect(kernel.volume(intersection)).toBeGreaterThan(probeVolume * 0.9);
   });
 
-  it('零件貼齊內腔底時（topZ=inner.minZ 觸發 pilotDepth 高度下限），導孔仍鑽到支柱實際頂面，柱頂不留實心錯誤外觀', () => {
+  it('零件貼齊內腔底時，螺絲支柱不會高過零件安裝孔平面', () => {
     const plan = planShell(parts, DEFAULT_ENCLOSURE_PARAMS);
     const standoffs = planStandoffs(parts, DEFAULT_ENCLOSURE_PARAMS.screwSize);
     const solid = buildShellSolid(plan, DEFAULT_ENCLOSURE_PARAMS.wallThickness, standoffs, kernel);
     const s = standoffs[0];
-    // 這組預設參數下 s.topZ === plan.inner.minZ（零件貼地），標準案例會觸發
-    // standoffHeight 的 pilotDepth 高度下限，柱體實際頂面因此高於 topZ。
-    expect(s.topZ).toBeCloseTo(plan.inner.minZ, 5);
-    const standoffHeight = Math.max(s.topZ - plan.floorZ, s.pilotDepth);
-    const standoffTop = plan.floorZ + standoffHeight;
-    expect(standoffTop).toBeGreaterThan(s.topZ);
-    // 探測柱體實際頂面附近：修復前這裡是實心（導孔幾乎沒鑽到），修復後應為空（導孔開口在此）
-    const nearTop = probeSolidRatio(solid, s.x, s.y, standoffTop - 0.5);
-    expect(nearTop).toBeLessThan(0.1);
+    expect(s.topZ).toBeGreaterThan(plan.inner.minZ);
+    expect(probeSolidRatio(solid, s.x + 2.5, s.y, s.topZ - 0.5)).toBeGreaterThan(0.9);
+    expect(probeSolidRatio(solid, s.x, s.y, s.topZ - 0.5)).toBeLessThan(0.1);
+    expect(probeSolidRatio(solid, s.x + boardDef.mountingHoles[0].diameter / 2 - 0.1, s.y, s.topZ - 0.2, 0.1)).toBeLessThan(0.1);
+    expect(probeSolidRatio(solid, s.x, s.y, s.topZ + 0.5)).toBeLessThan(0.1);
   });
 
   it('支柱根部無倒角環（柱外緊鄰根部應為空）', () => {

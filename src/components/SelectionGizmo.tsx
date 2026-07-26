@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { TransformControls } from '@react-three/drei';
 import { createPortal, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import type { TransformControls as TransformControlsImpl } from 'three-stdlib';
 import { collectHoleWorldPositions, snapToHoles } from '../geometry/holeSnap';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import { useViewStore } from '../store/viewStore';
@@ -10,6 +11,12 @@ import type { Vec3 } from '../types/document';
 const snap = (v: number) => Math.round(v);
 const degToRad = (v: number) => (v * Math.PI) / 180;
 const radToDeg = (v: number) => (v * 180) / Math.PI;
+const axisColors = {
+  x: '#c84d43',
+  y: '#2f8f5b',
+  z: '#2f6fd3',
+  active: '#111827',
+};
 
 export function SelectionGizmo() {
   const selection = useDocumentStore((s) => s.selection);
@@ -23,6 +30,7 @@ export function SelectionGizmo() {
 
   const selected = selection.length === 1 ? findNode(doc.nodes, selection[0]) : undefined;
   const rotateZOnly = gizmoMode === 'rotate' && selected?.type === 'car-anchor';
+  const controlsRef = useRef<TransformControlsImpl>(null);
 
   useEffect(() => {
     if (selected && proxyRef.current) {
@@ -31,6 +39,12 @@ export function SelectionGizmo() {
       proxyRef.current.rotation.set(degToRad(rx), degToRad(ry), degToRad(rz));
     }
   }, [selected]);
+
+  useEffect(() => {
+    (controlsRef.current as TransformControlsImpl & {
+      setColors: (x: string, y: string, z: string, active: string) => void;
+    } | null)?.setColors(axisColors.x, axisColors.y, axisColors.z, axisColors.active);
+  }, []);
 
   if (!selected || selected.locked) return null;
 
@@ -67,6 +81,7 @@ export function SelectionGizmo() {
       <object3D ref={proxyRef} />
       {createPortal(
         <TransformControls
+          ref={controlsRef}
           object={proxyRef}
           mode={gizmoMode}
           space="local"
@@ -75,7 +90,7 @@ export function SelectionGizmo() {
           showX={!rotateZOnly}
           showY={!rotateZOnly}
           showZ
-          size={0.8}
+          size={0.68}
           onMouseDown={() => {
             holesRef.current = collectHoleWorldPositions(
               useDocumentStore.getState().doc.nodes,

@@ -1,5 +1,6 @@
 import type { GeometryKernel, Solid } from '../geometry/kernel';
 import type { Bounds3, PartInstance } from './plan';
+import { rotatePoint } from './plan';
 
 const DEG = Math.PI / 180;
 const TOLERANCE_MM = 0.4;
@@ -24,8 +25,7 @@ function worldNormalToWall(nx: number, ny: number): 'north' | 'south' | 'east' |
   return ny > 0 ? 'north' : 'south';
 }
 
-/**
- * 把零件側面（非 top）接口投影到對應的外殼牆面。只支援 Z 軸 90° 倍數旋轉，
+/** 把零件側面（非 top）接口投影到對應的外殼牆面。只支援 Z 軸 90° 倍數旋轉，
  * 其餘角度的零件其接口會被略過（見計畫全域限制）。
  */
 export function planPortCutouts(parts: PartInstance[]): PortCutoutPlan[] {
@@ -95,29 +95,46 @@ export interface TopWindowCutout {
 }
 
 /**
- * 把零件 top face 接口（螢幕視窗）投影為上蓋開窗計畫。只支援 Z 軸 90° 倍數旋轉，
- * 其餘角度的零件其視窗會被略過（見計畫全域限制，同 planPortCutouts）。
+ * 把零件 top face 接口（螢幕視窗）投影為上蓋開窗計畫。
+ * 支援完整 3D 旋轉：取視窗四角的世界 XY 包圍盒作為軸對齊上蓋開孔。
+ * 若視窗法向量沒有朝上分量（normal.z <= 0），則不產生上蓋開窗。
  */
 export function planTopWindowCutouts(parts: PartInstance[]): TopWindowCutout[] {
   const out: TopWindowCutout[] = [];
   for (const part of parts) {
-    const angle = normalizeAngle(part.transform.rotation[2]);
-    if (angle % 90 !== 0) continue;
     const [px, py] = part.transform.position;
-    const rad = angle * DEG;
-    const cos = Math.round(Math.cos(rad));
-    const sin = Math.round(Math.sin(rad));
     for (const port of part.def.ports) {
       if (port.face !== 'top') continue;
-      const worldX = px + port.x * cos - port.z * sin;
-      const worldY = py + port.x * sin + port.z * cos;
-      const worldW = Math.abs(port.w * cos) + Math.abs(port.h * sin);
-      const worldH = Math.abs(port.w * sin) + Math.abs(port.h * cos);
+
+      // top face 法向量在旋轉後的世界 Z 分量；必須朝上才需要上蓋開孔
+      const normal = rotatePoint([0, 0, 1], part.transform.rotation);
+      if (normal[2] <= 1e-9) continue;
+
+      // 視窗中心在 top face 上的本地位標 (x=port.x, y=port.z, z=0)
+      const [cx, cy] = [port.x, port.z];
+      const corners: [number, number, number][] = [
+        [cx - port.w / 2, cy - port.h / 2, 0],
+        [cx + port.w / 2, cy - port.h / 2, 0],
+        [cx - port.w / 2, cy + port.h / 2, 0],
+        [cx + port.w / 2, cy + port.h / 2, 0],
+      ];
+
+      const worldCorners = corners.map((c) => rotatePoint(c, part.transform.rotation));
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const [wx, wy] of worldCorners) {
+        const x = px + wx;
+        const y = py + wy;
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      }
+
       out.push({
-        x: worldX,
-        y: worldY,
-        w: worldW + TOLERANCE_MM * 2,
-        h: worldH + TOLERANCE_MM * 2,
+        x: (minX + maxX) / 2,
+        y: (minY + maxY) / 2,
+        w: maxX - minX + TOLERANCE_MM * 2,
+        h: maxY - minY + TOLERANCE_MM * 2,
       });
     }
   }

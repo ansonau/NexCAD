@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronUp, Eye, EyeOff, ListTree, Trash2 } from 'lucide-react';
+import { ChevronUp, Eye, EyeOff, Group, ListTree, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDocumentStore } from '../store/documentStore';
 import type { SceneNode } from '../types/document';
@@ -109,6 +109,8 @@ export function SceneTreePanel({ docked = false, onAddPart }: { docked?: boolean
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const nodes = useDocumentStore((s) => s.doc.nodes);
+  const selection = useDocumentStore((s) => s.selection);
+  const canGroup = selection.length >= 2;
 
   if (!docked && !open) {
     return (
@@ -124,15 +126,28 @@ export function SceneTreePanel({ docked = false, onAddPart }: { docked?: boolean
 
   return (
     <div className={docked ? 'flex h-full min-h-0 w-full flex-col' : `flex max-h-[60vh] w-60 animate-pop-in flex-col ${panelClass}`}>
-      <div className="flex items-center justify-between border-b border-line py-1.5 pl-3 pr-1.5">
+      <div className="flex items-center justify-between gap-2 border-b border-line py-1.5 pl-3 pr-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
           {t('view.sceneTree')}
         </span>
-        {!docked && (
-          <IconButton title={t('view.sceneTree')} onClick={() => setOpen(false)} className="h-7 w-7">
-            <ChevronUp size={15} />
-          </IconButton>
-        )}
+        <div className="ml-auto flex items-center gap-1">
+          <button
+            type="button"
+            title={t('view.group')}
+            aria-label={t('view.group')}
+            disabled={!canGroup}
+            onClick={() => useDocumentStore.getState().groupSelected(t('view.group'))}
+            className="flex h-7 cursor-pointer items-center gap-1 rounded-lg px-2 text-[11px] font-semibold text-ink-2 transition-colors hover:bg-slate-900/[0.05] hover:text-ink disabled:pointer-events-none disabled:opacity-35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+          >
+            <Group size={13} strokeWidth={1.8} />
+            {t('view.group')}
+          </button>
+          {!docked && (
+            <IconButton title={t('view.sceneTree')} onClick={() => setOpen(false)} className="h-7 w-7">
+              <ChevronUp size={15} />
+            </IconButton>
+          )}
+        </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
         {nodes.length === 0 ? (

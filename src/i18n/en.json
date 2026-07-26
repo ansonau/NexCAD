@@ -29,6 +29,9 @@
     "placeElectronics": "Place Electronics",
     "generateChassis": "Generate Chassis",
     "regenerateChassis": "Regenerate Chassis",
+    "lengthShort": "Length",
+    "widthShort": "Width",
+    "thicknessShort": "Thick",
     "holeOutOfBounds": "Some electronics exceed the chassis bounds. Adjust the anchor size or part positions and try again."
   },
   "property": {
@@ -84,8 +87,11 @@
   "enclosure": {
     "title": "Generate enclosure",
     "wallThickness": "Wall thickness (mm)",
+    "wallThicknessShort": "Wall",
     "clearanceMargin": "Clearance margin (mm)",
+    "clearanceMarginShort": "Clearance",
     "cornerRadius": "Corner radius (mm)",
+    "cornerRadiusShort": "Radius",
     "lidType": "Lid type",
     "lidScrew": "Screw-on lid",
     "lidSlide": "Slide lid",
@@ -94,6 +100,8 @@
     "generate": "Generate enclosure",
     "regenerate": "Regenerate",
     "noParts": "No parts in the scene to enclose",
+    "noPartsHint": "Add a part before generating an enclosure",
+    "noPartsDetail": "The enclosure is sized from visible parts in the scene.",
     "collisionWarning": "Screw posts conflict with a part, adjust part position or wall thickness",
     "staleWarning": "Part position has changed; the enclosure may be out of date, regenerate to update",
     "scopeSelected": "Will include {{count}} selected part(s)",
@@ -129,6 +137,21 @@
     "projectNeedsSelection": "Select exactly one part and one plate first",
     "projected": "Projected {{count}} screw holes"
   },
+  "align": {
+    "title": "Align Tools",
+    "center": "Align centers",
+    "inlineHint": "Inline controls keep the model visible.",
+    "hint": "A is the first selected object. B is the second selected object.",
+    "ready": "{{count}} objects selected. Choose an axis to align.",
+    "disabled": "{{count}} selected. Select at least two objects to align.",
+    "undo": "Undo align",
+    "toA": "Align to A",
+    "toAHint": "Move selected objects to A's center line.",
+    "toB": "Align to B",
+    "toBHint": "Move selected objects to B's center line.",
+    "average": "Average",
+    "averageHint": "Move selected objects to the shared midpoint."
+  },
   "errors": {
     "geometry": "Geometry operation failed; the last valid state was kept",
     "exportEmpty": "Nothing to export",
@@ -137,6 +160,10 @@
   "view": {
     "xray": "Shell X-ray",
     "wireframe": "Wireframe",
+    "dimensions": "Dimensions",
+    "dimensionsEnclosure": "Show enclosure",
+    "dimensionsParts": "Show part sizes",
+    "dimensionsHoles": "Hole-to-hole distance",
     "highRes": "High res",
     "translate": "Move",
     "rotate": "Rotate",
@@ -166,9 +193,12 @@
     "workflowExportHint": "Run a final check and download the print file",
     "nextStep": "Next: {{step}}",
     "objects": "Objects",
+    "group": "Group",
+    "sidebarParts": "Parts",
     "addPart": "Add Part",
     "partsLibrary": "Parts Library",
     "sidebarTools": "Tools",
+    "sidebarScene": "Scene",
     "sidebarObjectsHint": "Add a part or primitive first; objects will appear here."
   },
   "common": {

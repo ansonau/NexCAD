@@ -23,3 +23,30 @@
 - Status: DONE
 - Fix: Bounded the toolbar to the viewport width and enabled horizontal scrolling for narrow screens.
 - Test: `npx tsc --noEmit`
+
+## Locale Scope Review Fix
+
+- Status: DONE
+- Fix: Restored zh `view.xray` and `view.wireframe` labels to their prior localized values. Kept other added i18n keys because current committed UI references them.
+- Tests: `npx tsc --noEmit` passed; `npx vitest run src/i18n/resources.test.ts src/parts/presets.test.ts` passed (18 tests).
+
+## Unused Locale Key Review Fix
+
+- Status: DONE
+- Fix: Removed unused `property.selectHint`, `property.rotation`, `view.highRes`, `view.sceneTreeEmpty`, `view.welcomeTitle`, `view.welcomeHint`, `enclosure.noPartsHint`, and `enclosure.noPartsDetail` from both locale files.
+- Tests: `npx tsc --noEmit` passed; `npx vitest run src/i18n/resources.test.ts src/parts/presets.test.ts` passed (18 tests).
+
+## Final Locale Scope Fix
+
+- Status: DONE
+- Fix: Restored en `view.xray` to `Shell X-ray`; Task 4 locale diff now only adds the `car` section.
+- Tests: `npx vitest run src/i18n/resources.test.ts` passed (2 tests).
+
+## Guided Workbench Verification
+
+- `npx vitest run src/i18n/resources.test.ts`: PASS, 1 file, 2 tests.
+- `npx vitest run`: PASS, 35 files, 266 tests.
+- `npx tsc --noEmit`: PASS, exit code 0.
+- `npx playwright test`: PASS, 1 Chromium smoke test.
+
+Playwright initially failed because `WorkspaceShell` mounted two `PropertyCard` instances, causing the `名稱` label locator to match two inputs. The responsive rail was adjusted to retain one property card; the desktop view-toggle overlay was moved below the toolbar to prevent pointer interception. Playwright passed after these small fixes.

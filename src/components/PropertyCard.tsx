@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { MousePointer2, Move3D, RefreshCw, Rotate3D, SlidersHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { regenerateEnclosure } from '../enclosure/actions';
 import { buildCarChassisAndGround } from '../parts/presets';
@@ -14,7 +14,7 @@ import type {
   PrimitiveNode,
   SceneNode,
 } from '../types/document';
-import { FieldLabel, OutlineButton, SectionLabel, StepperField, fieldClass, panelClass } from './ui';
+import { FieldLabel, OutlineButton, StepperField, fieldClass, panelClass } from './ui';
 
 const PARAM_LABELS: Record<string, string> = {
   width: 'property.width',
@@ -35,23 +35,33 @@ export function PropertyCard() {
 
   const node = selection.length === 1 ? findNode(doc.nodes, selection[0]) : undefined;
   return (
-    <div className={`pointer-events-auto max-h-full w-full animate-pop-in overflow-y-auto p-3.5 ${panelClass}`}>
+    <div className={`pointer-events-auto max-h-full w-full animate-pop-in overflow-y-auto p-3 ${panelClass}`}>
       {!node ? (
-        <p className="px-1 py-2 text-center text-[12px] leading-relaxed text-ink-3">
-          {t('property.selectHint')}
-        </p>
+        <div className="flex min-h-40 flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-slate-900/[0.018] px-4 py-8 text-center">
+          <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+            <MousePointer2 size={18} strokeWidth={1.8} />
+          </span>
+          <p className="text-[13px] font-semibold text-ink-2">{t('property.selectHint')}</p>
+        </div>
       ) : (
         <>
-          <input
-            className={`${fieldClass} mb-3 font-medium`}
-            value={node.name}
-            onChange={(e) => updateNode(node.id, (n) => void (n.name = e.target.value))}
-            aria-label={t('property.name')}
-          />
-          <RoleToggle node={node} onChange={(role) => updateNode(node.id, (n) => void (n.role = role))} />
-          {node.type === 'primitive' && <ParamFields node={node} updateNode={updateNode} />}
+          <PropertySection title={t('property.name')}>
+            <input
+              className={`${fieldClass} font-semibold`}
+              value={node.name}
+              onChange={(e) => updateNode(node.id, (n) => void (n.name = e.target.value))}
+              aria-label={t('property.name')}
+            />
+            <RoleToggle node={node} onChange={(role) => updateNode(node.id, (n) => void (n.role = role))} />
+          </PropertySection>
+
+          {node.type === 'primitive' && (
+            <PropertySection title={t('property.size')} icon={<SlidersHorizontal size={14} />}>
+              <ParamFields node={node} updateNode={updateNode} />
+            </PropertySection>
+          )}
           {node.type === 'enclosure' && (
-            <>
+            <PropertySection title={t('enclosure.params')} icon={<SlidersHorizontal size={14} />}>
               {isEnclosureStale(node, doc) && (
                 <p className="mb-2 flex items-start gap-1.5 rounded-lg border border-amber-200/70 bg-amber-50 px-2 py-1.5 text-[11px] leading-snug text-amber-800">
                   <RefreshCw size={13} className="mt-px shrink-0" />
@@ -63,11 +73,15 @@ export function PropertyCard() {
                 {t('enclosure.regenerate')}
               </OutlineButton>
               <EnclosureParamFields node={node} />
-            </>
+            </PropertySection>
           )}
-          {node.type === 'car-anchor' && <CarAnchorFields node={node} />}
-          <div className="mt-3">
-            <SectionLabel>{t('property.position')}</SectionLabel>
+          {node.type === 'car-anchor' && (
+            <PropertySection title={t('toolbar.smartCar')} icon={<SlidersHorizontal size={14} />}>
+              <CarAnchorFields node={node} />
+            </PropertySection>
+          )}
+
+          <PropertySection title={t('property.position')} icon={<Move3D size={14} />}>
             <div className="grid grid-cols-3 gap-1.5">
               {AXIS_LABELS.map((axis, i) => (
                 <StepperField
@@ -81,9 +95,9 @@ export function PropertyCard() {
                 />
               ))}
             </div>
-          </div>
-          <div className="mt-3">
-            <SectionLabel>{t('property.rotation')}</SectionLabel>
+          </PropertySection>
+
+          <PropertySection title={t('property.rotation')} icon={<Rotate3D size={14} />}>
             <div className="grid grid-cols-3 gap-1.5">
               {AXIS_LABELS.map((axis, i) => (
                 node.type === 'car-anchor' && axis !== 'Z' ? null : (
@@ -99,10 +113,30 @@ export function PropertyCard() {
                 )
               ))}
             </div>
-          </div>
+          </PropertySection>
         </>
       )}
     </div>
+  );
+}
+
+function PropertySection({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mb-3 rounded-2xl border border-line bg-white/82 p-3 last:mb-0">
+      <h3 className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-ink">
+        {icon && <span className="text-ink-3">{icon}</span>}
+        {title}
+      </h3>
+      {children}
+    </section>
   );
 }
 
@@ -140,7 +174,7 @@ function RoleToggle({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="mb-3 grid grid-cols-2 gap-0.5 rounded-[10px] bg-slate-900/[0.05] p-0.5">
+    <div className="mt-2 grid grid-cols-2 gap-0.5 rounded-xl bg-slate-900/[0.05] p-0.5">
       {(['solid', 'hole'] as const).map((role) => (
         <button
           key={role}
@@ -168,8 +202,7 @@ function ParamFields({
 }) {
   const { t } = useTranslation();
   return (
-    <>
-      <SectionLabel>{t('property.size')}</SectionLabel>
+    <div>
       <div className="grid grid-cols-2 gap-1.5">
         {Object.entries(node.params).map(([key, value]) => (
           <StepperField
@@ -186,7 +219,7 @@ function ParamFields({
           />
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -226,7 +259,7 @@ function CarAnchorFields({ node }: { node: CarAnchorNode }) {
   return (
     <>
       <div className="mb-3">
-        <SectionLabel>{t('car.chassisShape')}</SectionLabel>
+        <FieldLabel>{t('car.chassisShape')}</FieldLabel>
         <select
           className={fieldClass}
           value={node.config.shape}
@@ -238,11 +271,11 @@ function CarAnchorFields({ node }: { node: CarAnchorNode }) {
         </select>
       </div>
       <div className="mb-3">
-        <SectionLabel>{t('car.chassisDimensions')}</SectionLabel>
+        <FieldLabel>{t('car.chassisDimensions')}</FieldLabel>
         <div className="grid grid-cols-3 gap-1.5">
-          <StepperField label={t('car.length')} value={node.config.length} min={150} max={400} step={1} onChange={(v) => setConfig('length', v)} />
-          <StepperField label={t('car.width')} value={node.config.width} min={120} max={300} step={1} onChange={(v) => setConfig('width', v)} />
-          <StepperField label={t('car.thickness')} value={node.config.thickness} min={2} max={6} step={1} onChange={(v) => setConfig('thickness', v)} />
+          <StepperField label={t('car.lengthShort')} value={node.config.length} min={150} max={400} step={1} onChange={(v) => setConfig('length', v)} />
+          <StepperField label={t('car.widthShort')} value={node.config.width} min={120} max={300} step={1} onChange={(v) => setConfig('width', v)} />
+          <StepperField label={t('car.thicknessShort')} value={node.config.thickness} min={2} max={6} step={1} onChange={(v) => setConfig('thickness', v)} />
         </div>
       </div>
       <div className="mb-3 text-[11px] text-ink-3">
@@ -269,24 +302,23 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
   const p = node.params;
   return (
     <>
-      <SectionLabel>{t('enclosure.params')}</SectionLabel>
       <div className="grid grid-cols-2 gap-1.5">
         <StepperField
-          label={t('enclosure.wallThickness')}
+          label={t('enclosure.wallThicknessShort')}
           value={p.wallThickness}
           min={0.5}
           step={0.5}
           onChange={(v) => setParam('wallThickness', v)}
         />
         <StepperField
-          label={t('enclosure.clearanceMargin')}
+          label={t('enclosure.clearanceMarginShort')}
           value={p.clearanceMargin}
           min={0}
           step={0.5}
           onChange={(v) => setParam('clearanceMargin', v)}
         />
         <StepperField
-          label={t('enclosure.cornerRadius')}
+          label={t('enclosure.cornerRadiusShort')}
           value={p.cornerRadius}
           min={0}
           step={0.5}

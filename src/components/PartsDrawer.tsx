@@ -1,5 +1,18 @@
 import { useState } from 'react';
-import { Box, ChevronDown, ChevronUp, Circle, Cone, Cylinder, Search } from 'lucide-react';
+import {
+  BatteryCharging,
+  Box,
+  ChevronDown,
+  ChevronUp,
+  Circle,
+  CircuitBoard,
+  Cone,
+  Cylinder,
+  Package,
+  Radar,
+  Search,
+  Shapes,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PART_CATEGORIES, PART_LIBRARY } from '../parts/library';
@@ -17,6 +30,14 @@ const PRIMITIVES: { kind: PrimitiveKind; label: string; icon: LucideIcon }[] = [
   { kind: 'sphere', label: 'toolbar.sphere', icon: Circle },
   { kind: 'cone', label: 'toolbar.cone', icon: Cone },
 ];
+
+const CATEGORY_ICONS: Record<DrawerCategory, LucideIcon> = {
+  board: CircuitBoard,
+  sensor: Radar,
+  power: BatteryCharging,
+  component: Package,
+  basicShapes: Shapes,
+};
 
 export function PartsDrawer({
   docked = false,
@@ -137,13 +158,112 @@ export function PartsDrawer({
 
   if (docked) {
     return (
-      <section className={`${compact ? 'max-h-72' : 'max-h-[42vh]'} flex min-h-0 flex-col rounded-xl border border-line bg-white/72 shadow-sm`}>
+      <section className={`${compact ? 'max-h-72' : 'flex-1'} flex min-h-0 flex-col rounded-2xl border border-line bg-white/86 shadow-sm`}>
         {showTitle && (
           <div className="border-b border-line px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
             {t('drawer.title')}
           </div>
         )}
-        {content}
+        <div className="flex h-10 shrink-0 items-center gap-1.5 border-b border-line px-3">
+          <Search size={13} className="shrink-0 text-ink-3" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('drawer.search')}
+            aria-label={t('drawer.search')}
+            className="min-w-0 flex-1 bg-transparent text-[12px] text-ink outline-none placeholder:text-ink-3"
+          />
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-2">
+          {q ? (
+            parts.length === 0 ? (
+              <p className="p-6 text-center text-[13px] text-ink-3">{t('drawer.noResults')}</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-2">
+                {parts.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => addPart(p)}
+                    className="group cursor-pointer rounded-xl border border-line bg-white/70 p-3 text-left transition-colors duration-150 hover:border-accent-line hover:bg-accent-soft/50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                  >
+                    <p className="text-[13px] font-medium text-ink group-hover:text-accent-strong">
+                      {i18n.language === 'zh' ? p.nameZh : p.name}
+                    </p>
+                    <p className="mt-1 font-mono text-[11px] tabular-nums text-ink-3">
+                      {p.body.size[0]} × {p.body.size[1]} mm
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )
+          ) : (
+            <div className="divide-y divide-line">
+              {[...PART_CATEGORIES, 'basicShapes' as const].map((c) => {
+                const active = category === c;
+                const CategoryIcon = CATEGORY_ICONS[c];
+                const categoryParts = PART_LIBRARY.filter((p) => p.category === c);
+                const count = c === 'basicShapes' ? PRIMITIVES.length : categoryParts.length;
+                return (
+                  <div key={c} className="py-1 first:pt-0 last:pb-0">
+                    <button
+                      type="button"
+                      onClick={() => setCategory(c)}
+                      aria-expanded={active}
+                      className={`flex h-9 w-full cursor-pointer items-center justify-between rounded-xl px-3 text-left text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                        active ? 'bg-accent-soft text-accent' : 'text-ink-2 hover:bg-slate-900/[0.035] hover:text-ink'
+                      }`}
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <CategoryIcon size={14} strokeWidth={1.8} className={active ? 'text-accent' : 'text-ink-3'} />
+                        <span className="min-w-0 truncate">{t(`drawer.${c}`)}</span>
+                      </span>
+                      <span className="ml-2 flex shrink-0 items-center gap-1.5">
+                        <span className="font-mono text-[10px] font-medium tabular-nums text-ink-3">{count}</span>
+                        <ChevronDown size={14} className={`transition-transform ${active ? 'rotate-180' : ''}`} />
+                      </span>
+                    </button>
+                    {active && (
+                      c === 'basicShapes' ? (
+                        <div className="grid grid-cols-1 gap-1 py-1.5 pl-2">
+                          {PRIMITIVES.map(({ kind, label, icon: Icon }) => (
+                            <button
+                              key={kind}
+                              type="button"
+                              onClick={() => addPrimitive(kind)}
+                              className="group flex cursor-pointer items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors duration-150 hover:bg-white active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                            >
+                              <Icon size={15} strokeWidth={1.8} className="text-ink-3 group-hover:text-accent" />
+                              <span className="text-[12px] font-medium text-ink group-hover:text-accent-strong">
+                                {t(label)}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-1 py-1.5 pl-2">
+                          {categoryParts.map((p) => (
+                            <button
+                              key={p.id}
+                              onClick={() => addPart(p)}
+                              className="group cursor-pointer rounded-xl px-2 py-1.5 text-left transition-colors duration-150 hover:bg-white active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                            >
+                              <p className="text-[12px] font-medium text-ink group-hover:text-accent-strong">
+                                {i18n.language === 'zh' ? p.nameZh : p.name}
+                              </p>
+                              <p className="mt-0.5 font-mono text-[10px] tabular-nums text-ink-3">
+                                {p.body.size[0]} × {p.body.size[1]} mm
+                              </p>
+                            </button>
+                          ))}
+                        </div>
+                      )
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </section>
     );
   }
@@ -161,7 +281,7 @@ export function PartsDrawer({
   }
 
   return (
-    <div className="absolute inset-x-0 bottom-0 z-50 animate-toast-in rounded-t-2xl border-t border-line bg-white/92 shadow-pop backdrop-blur-xl">
+    <div className="absolute inset-x-0 bottom-0 z-50 animate-toast-in rounded-t-2xl border-t border-line bg-white/95 shadow-pop">
       <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-slate-900/10" />
       {content}
     </div>

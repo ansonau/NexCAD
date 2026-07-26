@@ -1,6 +1,8 @@
 import type { SceneNode } from '../types/document';
 import type { MeshData } from './kernel';
 import type { GeometryRequest, GeometryResponse, NodeMeshPayload } from './protocol';
+import { getPartDefinition } from '../parts/library';
+import type { PartDefinition } from '../parts/schema';
 
 export interface WorkerLike {
   postMessage(message: GeometryRequest): void;
@@ -33,14 +35,14 @@ export class GeometryClient {
     }
     this.evaluating = true;
     this.lastSentNodes = nodes;
-    this.worker.postMessage({ id: this.nextId++, type: 'evaluate', nodes });
+    this.worker.postMessage({ id: this.nextId++, type: 'evaluate', nodes, definitions: collectRuntimeDefs(nodes) });
   }
 
   requestExport(nodes: SceneNode[]): Promise<MeshData> {
     const id = this.nextId++;
     return new Promise((resolve, reject) => {
       this.exports.set(id, { resolve, reject });
-      this.worker.postMessage({ id, type: 'export', nodes });
+      this.worker.postMessage({ id, type: 'export', nodes, definitions: collectRuntimeDefs(nodes) });
     });
   }
 
@@ -91,4 +93,26 @@ export class GeometryClient {
       this.requestEvaluate(nodes);
     }
   }
+}
+
+function collectPartIds(nodes: SceneNode[]): string[] {
+  const ids = new Set<string>();
+  const walk = (list: SceneNode[]) => {
+    for (const n of list) {
+      if (n.type === 'part') ids.add(n.partId);
+      else if (n.type === 'group') walk(n.children);
+    }
+  };
+  walk(nodes);
+  return [...ids];
+}
+
+function collectRuntimeDefs(nodes: SceneNode[]): PartDefinition[] | undefined {
+  const ids = collectPartIds(nodes);
+  const defs: PartDefinition[] = [];
+  for (const id of ids) {
+    const def = getPartDefinition(id);
+    if (def) defs.push(def);
+  }
+  return defs.length > 0 ? defs : undefined;
 }

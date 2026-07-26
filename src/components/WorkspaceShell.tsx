@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, ChevronRight, PackagePlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ActionRail } from './ActionRail';
 import { GlobalActions } from './GlobalActions';
@@ -34,14 +33,18 @@ export function WorkspaceShell() {
   const { t } = useTranslation();
   const hasSelection = useDocumentStore((s) => s.selection.length > 0);
   const isLargeScreen = useIsLargeScreen();
-  const [partsOpen, setPartsOpen] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState<'parts' | 'tools' | 'objects'>('parts');
+  const sidebarTabs = [
+    { id: 'parts' as const, label: t('view.sidebarParts') },
+    { id: 'tools' as const, label: t('view.sidebarTools') },
+    { id: 'objects' as const, label: t('view.sidebarScene') },
+  ];
 
   return (
-    <div className="grid h-full w-full grid-cols-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden bg-canvas text-ink lg:grid-cols-[260px_minmax(0,1fr)_320px]">
-      <header className="col-span-full flex min-w-0 items-center gap-3 border-b border-line bg-white/88 px-3 py-2 backdrop-blur-xl">
+    <div className="grid h-full w-full grid-cols-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden bg-canvas text-ink lg:grid-cols-[272px_minmax(0,1fr)_328px]">
+      <header className="col-span-full flex min-w-0 items-center gap-3 border-b border-line bg-white/94 px-3.5 py-2">
         <div className="flex shrink-0 items-center gap-3">
-          <div className="text-[15px] font-black tracking-tight text-ink">NexCAD</div>
+          <div className="text-[16px] font-bold tracking-[-0.03em] text-ink">NexCAD</div>
           <ProjectsPanel />
         </div>
         {isLargeScreen && (
@@ -55,61 +58,46 @@ export function WorkspaceShell() {
       </header>
 
       {isLargeScreen && (
-        <aside className="min-w-0 border-r border-line bg-white/78 backdrop-blur-xl lg:flex lg:flex-col">
+        <aside className="min-w-0 border-r border-line bg-[#f8fafd]/92 lg:flex lg:flex-col">
           <div className="flex h-full min-h-0 flex-col gap-2 p-3">
-            <div className="flex items-center justify-between gap-2 border-b border-line pb-2">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
-                  {t('view.objects')}
-                </p>
-                <p className="text-[12px] font-medium text-ink-2">{t('view.sceneTree')}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPartsOpen((value) => !value)}
-                aria-expanded={partsOpen}
-                className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl bg-accent px-3 text-[12px] font-semibold text-white shadow-sm transition-colors hover:bg-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
-              >
-                <PackagePlus size={15} strokeWidth={1.9} />
-                {t('view.addPart')}
-              </button>
+            <div role="tablist" aria-label={t('view.objects')} className="grid grid-cols-3 gap-1 rounded-2xl bg-slate-900/[0.045] p-1">
+              {sidebarTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  onClick={() => setSidebarTab(tab.id)}
+                  id={`sidebar-tab-${tab.id}`}
+                  aria-selected={sidebarTab === tab.id}
+                  aria-controls={`sidebar-panel-${tab.id}`}
+                  className={`h-8 cursor-pointer rounded-xl text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                    sidebarTab === tab.id
+                      ? 'bg-white text-accent shadow-panel'
+                      : 'text-ink-2 hover:bg-white/70 hover:text-ink'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
-            {partsOpen && (
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setPartsOpen(false)}
-                  aria-expanded={partsOpen}
-                  className="mb-2 flex h-8 w-full cursor-pointer items-center justify-between rounded-lg px-2 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3 transition-colors hover:bg-slate-900/[0.04] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
-                >
-                  {t('view.partsLibrary')}
-                  <ChevronDown size={14} />
-                </button>
-                <PartsDrawer docked showTitle={false} compact />
+            {sidebarTab === 'parts' && (
+              <div id="sidebar-panel-parts" role="tabpanel" aria-labelledby="sidebar-tab-parts" className="flex min-h-0 flex-1">
+                <PartsDrawer docked showTitle={false} />
               </div>
             )}
-
-            <section className="flex min-h-0 flex-1 flex-col rounded-xl border border-line bg-white/72 p-2 shadow-sm">
-              <SceneTreePanel docked onAddPart={() => setPartsOpen(true)} />
-            </section>
-
-            <div>
-              <button
-                type="button"
-                onClick={() => setToolsOpen((value) => !value)}
-                aria-expanded={toolsOpen}
-                className="flex h-9 w-full cursor-pointer items-center justify-between rounded-xl border border-line bg-white/72 px-3 text-left text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-3 shadow-sm transition-colors hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
-              >
-                {t('view.sidebarTools')}
-                {toolsOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
-              </button>
-              {toolsOpen && (
-                <div className="mt-2">
-                  <WorkflowTools showTitle={false} compact />
-                </div>
-              )}
-            </div>
+            {sidebarTab === 'tools' && (
+              <div id="sidebar-panel-tools" role="tabpanel" aria-labelledby="sidebar-tab-tools">
+                <WorkflowTools showTitle={false} compact />
+              </div>
+            )}
+            {sidebarTab === 'objects' && (
+              <div id="sidebar-panel-objects" role="tabpanel" aria-labelledby="sidebar-tab-objects" className="flex min-h-0 flex-1">
+                <section className="flex min-h-0 flex-1 flex-col rounded-2xl border border-line bg-white/84 p-2 shadow-sm">
+                  <SceneTreePanel docked onAddPart={() => setSidebarTab('parts')} />
+                </section>
+              </div>
+            )}
           </div>
         </aside>
       )}
@@ -144,7 +132,7 @@ export function WorkspaceShell() {
       </main>
 
       {isLargeScreen && (
-        <aside className="min-w-0 border-l border-line bg-white/82 backdrop-blur-xl lg:flex lg:flex-col">
+        <aside className="min-w-0 border-l border-line bg-[#f8fafd]/94 lg:flex lg:flex-col">
           <div className="min-h-0 flex-1 p-3">
             <PropertyCard />
           </div>

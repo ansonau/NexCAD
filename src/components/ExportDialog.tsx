@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { analyzeMesh, collectThinFeatures, MAX_PRINT_MM, type MeshStats } from '../export/analyze';
 import { writeBinaryStl } from '../export/stl';
@@ -7,6 +8,7 @@ import { getGeometryClient } from '../geometry/client';
 import type { MeshData } from '../geometry/kernel';
 import { useDocumentStore } from '../store/documentStore';
 import { useToastStore } from '../store/toastStore';
+import { Dialog, FieldLabel, GhostButton, PrimaryButton, fieldClass } from './ui';
 
 export function ExportDialog({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
@@ -59,63 +61,53 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
   const fmt = (v: number) => (Math.round(v * 10) / 10).toString();
 
   return (
-    <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/30"
-      onClick={onClose}
-    >
-      <div
-        className="w-80 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <p className="mb-3 text-sm font-medium text-slate-800">{t('export.title')}</p>
-        <label className="mb-3 block">
-          <span className="text-xs text-slate-400">{t('export.format')}</span>
-          <select
-            className="h-11 w-full rounded-lg border border-slate-200 px-2 text-sm text-slate-800"
-            value={format}
-            onChange={(e) => setFormat(e.target.value as 'stl' | '3mf')}
-          >
-            <option value="stl">STL</option>
-            <option value="3mf">3MF</option>
-          </select>
-        </label>
-        {stats && (
-          <div className="mb-3 space-y-1 text-sm text-slate-600">
-            <p>
-              {t('export.dimensions')}：{fmt(stats.bbox[0])} × {fmt(stats.bbox[1])} ×{' '}
-              {fmt(stats.bbox[2])} mm
-            </p>
-            <p>
-              {t('export.triangles')}：{stats.triangles.toLocaleString()}
-            </p>
-          </div>
-        )}
-        {warnings.length > 0 && (
-          <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
-            <p className="mb-1 text-xs font-medium text-amber-800">{t('export.warnings')}</p>
-            {warnings.map((w) => (
-              <p key={w} className="text-xs text-amber-700">
-                {w}
-              </p>
-            ))}
-          </div>
-        )}
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="h-11 rounded-xl px-4 text-sm text-slate-600 hover:bg-slate-100"
-          >
-            {t('export.cancel')}
-          </button>
-          <button
-            onClick={download}
-            disabled={!mesh}
-            className="h-11 rounded-xl bg-slate-800 px-4 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-40"
-          >
-            {t('export.download', { format: format.toUpperCase() })}
-          </button>
+    <Dialog title={t('export.title')} onClose={onClose}>
+      <label className="mb-3 block">
+        <FieldLabel>{t('export.format')}</FieldLabel>
+        <select
+          className={fieldClass}
+          value={format}
+          onChange={(e) => setFormat(e.target.value as 'stl' | '3mf')}
+        >
+          <option value="stl">STL</option>
+          <option value="3mf">3MF</option>
+        </select>
+      </label>
+      {stats && (
+        <div className="mb-3 space-y-1 rounded-xl border border-line bg-slate-900/[0.03] px-3 py-2.5">
+          <p className="flex items-baseline justify-between text-[12px] text-ink-2">
+            <span>{t('export.dimensions')}</span>
+            <span className="font-mono tabular-nums text-ink">
+              {fmt(stats.bbox[0])} × {fmt(stats.bbox[1])} × {fmt(stats.bbox[2])} mm
+            </span>
+          </p>
+          <p className="flex items-baseline justify-between text-[12px] text-ink-2">
+            <span>{t('export.triangles')}</span>
+            <span className="font-mono tabular-nums text-ink">
+              {stats.triangles.toLocaleString()}
+            </span>
+          </p>
         </div>
+      )}
+      {warnings.length > 0 && (
+        <div className="mb-3 rounded-xl border border-amber-200/70 bg-amber-50 p-3">
+          <p className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold text-amber-800">
+            <TriangleAlert size={13} />
+            {t('export.warnings')}
+          </p>
+          {warnings.map((w) => (
+            <p key={w} className="text-[11px] leading-relaxed text-amber-700">
+              {w}
+            </p>
+          ))}
+        </div>
+      )}
+      <div className="flex justify-end gap-1.5">
+        <GhostButton onClick={onClose}>{t('export.cancel')}</GhostButton>
+        <PrimaryButton onClick={download} disabled={!mesh}>
+          {t('export.download', { format: format.toUpperCase() })}
+        </PrimaryButton>
       </div>
-    </div>
+    </Dialog>
   );
 }

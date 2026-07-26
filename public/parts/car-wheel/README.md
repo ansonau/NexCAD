@@ -1,0 +1,28 @@
+# Wheel 65mm
+
+Visual/reference asset folder for NexCAD's `car-wheel` part.
+
+## Files
+
+- `car-wheel.scad` — editable OpenSCAD source for human/AI collaboration.
+
+## Coordinate Contract
+
+- Units: millimeters.
+- Origin: part bottom-center, matching `src/parts/library.ts`.
+- This asset is visual only. Enclosure planning, collision envelopes, mounting holes, and export logic continue to use `src/parts/library.ts` as the source of truth.
+
+## Baseline Dimensions
+
+- Category: `component`.
+- Body envelope: 10 × 27 × 1 mm.
+
+## Regeneration
+
+If OpenSCAD is installed:
+
+```bash
+openscad -o car-wheel.stl car-wheel.scad
+```
+
+Only commit regenerated STL after checking visual alignment in NexCAD high-res mode.

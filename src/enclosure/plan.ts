@@ -7,10 +7,45 @@ export type { EnclosureParams, MountingStyle } from '../types/document';
 import type { EnclosureParams, MountingStyle } from '../types/document';
 
 const DEG = Math.PI / 180;
+const PILOT_DEPTH = 6;
+
+/** 將本座標點依 Manifold 慣例（全局 x-y-z Euler 角）旋轉為世界座標。
+ * 順序：先繞 X、再繞 Y、最後繞 Z；與 Manifold.rotate([rx,ry,rz]) 一致。 */
+export function rotatePoint(
+  p: [number, number, number],
+  rotation: [number, number, number],
+): [number, number, number] {
+  const [rx, ry, rz] = rotation.map((v) => v * DEG);
+  const cx = Math.cos(rx);
+  const sx = Math.sin(rx);
+  const cy = Math.cos(ry);
+  const sy = Math.sin(ry);
+  const cz = Math.cos(rz);
+  const sz = Math.sin(rz);
+
+  // Rx
+  let x = p[0];
+  let y = p[1] * cx - p[2] * sx;
+  let z = p[1] * sx + p[2] * cx;
+
+  // Ry
+  const x2 = x * cy + z * sy;
+  const z2 = -x * sy + z * cy;
+  x = x2;
+  z = z2;
+
+  // Rz
+  const x3 = x * cz - y * sz;
+  const y3 = x * sz + y * cz;
+  const z3 = z;
+
+  return [x3, y3, z3];
+}
 
 export interface PartInstance {
   def: PartDefinition;
-  /** 只使用 position 與 rotation.z（與 holeSnap.ts 慣例一致） */
+  /** 使用完整 Transform；內部會以 3D 旋轉矩陣計算世界包覆盒與安裝孔位置。
+   * 上蓋螢幕視窗開孔已支援完整 3D 旋轉；側面接口仍只支援 Z 軸 90° 倍數旋轉。 */
   transform: Transform;
 }
 
@@ -37,23 +72,55 @@ export const DEFAULT_ENCLOSURE_PARAMS: EnclosureParams = {
   lidDisplayCutout: true,
 };
 
-/** 零件在世界座標下的包覆範圍（只考慮 Z 軸旋轉） */
+/** 零件在世界座標下的 AABB 包覆範圍（支援完整 3D 旋轉）。
+ * 當只有 Z 軸旋轉時保留原有快速路徑。 */
 export function partWorldBounds(part: PartInstance): Bounds3 {
   const [w, d, t] = part.def.body.size;
-  const angle = part.transform.rotation[2] * DEG;
-  const cos = Math.abs(Math.cos(angle));
-  const sin = Math.abs(Math.sin(angle));
-  const halfW = (w * cos + d * sin) / 2;
-  const halfD = (w * sin + d * cos) / 2;
   const [px, py, pz] = part.transform.position;
-  return {
-    minX: px - halfW,
-    maxX: px + halfW,
-    minY: py - halfD,
-    maxY: py + halfD,
-    minZ: pz,
-    maxZ: pz + Math.max(t, part.def.clearanceHeight),
-  };
+  const [rx, ry, rz] = part.transform.rotation;
+  const h = Math.max(t, part.def.clearanceHeight);
+
+  // 常見情況：只繞 Z 軸旋轉，使用既有快速公式
+  if (rx === 0 && ry === 0) {
+    const angle = rz * DEG;
+    const cos = Math.abs(Math.cos(angle));
+    const sin = Math.abs(Math.sin(angle));
+    const halfW = (w * cos + d * sin) / 2;
+    const halfD = (w * sin + d * cos) / 2;
+    return {
+      minX: px - halfW,
+      maxX: px + halfW,
+      minY: py - halfD,
+      maxY: py + halfD,
+      minZ: pz,
+      maxZ: pz + h,
+    };
+  }
+
+  // 任意 3D 旋轉：枚舉本體 8 個角點並轉換後取 AABB
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  const hw = w / 2;
+  const hd = d / 2;
+  for (const sx of [-1, 1]) {
+    for (const sy of [-1, 1]) {
+      for (const sz of [0, 1]) {
+        const local: [number, number, number] = [hw * sx, hd * sy, h * sz];
+        const [wx, wy, wz] = rotatePoint(local, part.transform.rotation);
+        minX = Math.min(minX, px + wx);
+        maxX = Math.max(maxX, px + wx);
+        minY = Math.min(minY, py + wy);
+        maxY = Math.max(maxY, py + wy);
+        minZ = Math.min(minZ, pz + wz);
+        maxZ = Math.max(maxZ, pz + wz);
+      }
+    }
+  }
+  return { minX, maxX, minY, maxY, minZ, maxZ };
 }
 
 export function combinedBounds(parts: PartInstance[]): Bounds3 {
@@ -128,12 +195,16 @@ function findExpansion(outer: Bounds3, params: EnclosureParams, boxes: Bounds3[]
 export function planShell(parts: PartInstance[], params: EnclosureParams): ShellPlan {
   const p = combinedBounds(parts);
   const m = params.clearanceMargin;
+  const mountingStyle = params.mountingStyle ?? 'screw';
+  const standoffClearance = mountingStyle === 'hole' || !parts.some((part) => part.def.mountingHoles.some((hole) => hole.standoff !== false))
+    ? 0
+    : params.pilotDepthOverride ?? PILOT_DEPTH;
   const inner: Bounds3 = {
     minX: p.minX - m,
     maxX: p.maxX + m,
     minY: p.minY - m,
     maxY: p.maxY + m,
-    minZ: p.minZ,
+    minZ: p.minZ - standoffClearance,
     maxZ: p.maxZ + m,
   };
   const t = params.wallThickness;
@@ -194,8 +265,6 @@ export interface StandoffPlan {
   isCornerPost?: boolean;
 }
 
-const PILOT_DEPTH = 6;
-
 /** 每個零件的每個安裝孔 → 世界座標支柱規劃 */
 export function planStandoffs(
   parts: PartInstance[],
@@ -205,16 +274,14 @@ export function planStandoffs(
 ): StandoffPlan[] {
   const out: StandoffPlan[] = [];
   for (const part of parts) {
-    const angle = part.transform.rotation[2] * DEG;
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
     const [px, py, pz] = part.transform.position;
     for (const hole of part.def.mountingHoles) {
       if (hole.standoff === false) continue;
+      const [wx, wy, wz] = rotatePoint([hole.x, hole.y, hole.z ?? 0], part.transform.rotation);
       out.push({
-        x: px + hole.x * cos - hole.y * sin,
-        y: py + hole.x * sin + hole.y * cos,
-        topZ: pz + (hole.z ?? 0),
+        x: px + wx,
+        y: py + wy,
+        topZ: pz + wz,
         pilotDiameter: pilotDiameter(screwSize, 'selfTap'),
         pilotDepth,
         mountingStyle,

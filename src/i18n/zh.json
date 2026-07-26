@@ -29,6 +29,9 @@
     "placeElectronics": "放置電子零件",
     "generateChassis": "生成底盤",
     "regenerateChassis": "重新生成底盤",
+    "lengthShort": "長度",
+    "widthShort": "寬度",
+    "thicknessShort": "厚度",
     "holeOutOfBounds": "部分電子零件超出底盤範圍，請調整錨點大小或零件位置後再試。"
   },
   "property": {
@@ -84,8 +87,11 @@
   "enclosure": {
     "title": "產生外殼",
     "wallThickness": "壁厚 (mm)",
+    "wallThicknessShort": "壁厚",
     "clearanceMargin": "淨空邊距 (mm)",
+    "clearanceMarginShort": "邊距",
     "cornerRadius": "圓角半徑 (mm)",
+    "cornerRadiusShort": "圓角",
     "lidType": "上蓋類型",
     "lidScrew": "螺絲上蓋",
     "lidSlide": "滑蓋",
@@ -94,6 +100,8 @@
     "generate": "產生外殼",
     "regenerate": "重新產生",
     "noParts": "場景中沒有零件，無法產生外殼",
+    "noPartsHint": "請先加入零件，再產生外殼",
+    "noPartsDetail": "外殼尺寸會根據場景中的可見零件自動計算。",
     "collisionWarning": "螺絲柱位置與零件衝突，請調整零件位置或壁厚",
     "staleWarning": "零件位置已變更，外殼可能過期，請重新產生",
     "scopeSelected": "將包含選取的 {{count}} 個零件",
@@ -129,6 +137,21 @@
     "projectNeedsSelection": "請先選取一個零件與一個板件（恰好兩個節點）",
     "projected": "已投影 {{count}} 個螺絲孔"
   },
+  "align": {
+    "title": "對齊工具",
+    "center": "中心對齊",
+    "inlineHint": "內嵌操作，不遮住模型。",
+    "hint": "A 是第一個選取物件，B 是第二個選取物件。",
+    "ready": "已選取 {{count}} 個物件，可選擇軸向對齊。",
+    "disabled": "已選取 {{count}} 個。請至少選取兩個物件進行對齊。",
+    "undo": "復原對齊",
+    "toA": "對齊 A 物件",
+    "toAHint": "將選取物件移到 A 的中心線。",
+    "toB": "對齊 B 物件",
+    "toBHint": "將選取物件移到 B 的中心線。",
+    "average": "平均",
+    "averageHint": "將選取物件移到共同中間位置。"
+  },
   "errors": {
     "geometry": "幾何運算失敗，已保留上一個有效狀態",
     "exportEmpty": "沒有可匯出的實體",
@@ -137,6 +160,10 @@
   "view": {
     "xray": "外殼透視",
     "wireframe": "稜線顯示",
+    "dimensions": "尺寸顯示",
+    "dimensionsEnclosure": "顯示外殼",
+    "dimensionsParts": "顯示零件尺寸",
+    "dimensionsHoles": "顯示孔與孔的距離",
     "highRes": "高精度模型",
     "translate": "移動",
     "rotate": "旋轉",
@@ -166,9 +193,12 @@
     "workflowExportHint": "最後檢查後下載列印檔",
     "nextStep": "下一步：{{step}}",
     "objects": "物件",
+    "group": "群組",
+    "sidebarParts": "零件",
     "addPart": "加入零件",
     "partsLibrary": "零件庫",
     "sidebarTools": "工具",
+    "sidebarScene": "場景",
     "sidebarObjectsHint": "先加入零件或基本形狀，物件會顯示在這裡。"
   },
   "common": {

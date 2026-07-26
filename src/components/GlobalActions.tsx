@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const controlClass =
-  'flex h-9 min-w-9 items-center justify-center rounded-full border border-line bg-white px-2.5 text-[12px] font-semibold text-ink-2 shadow-panel transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 sm:h-11 sm:min-w-11';
+  'flex h-9 min-w-9 items-center justify-center rounded-full border border-line bg-white/92 px-2.5 text-[12px] font-semibold text-ink-2 shadow-panel transition-colors hover:border-line-strong hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 sm:h-10 sm:min-w-10';
 
 export function GlobalActions() {
   const { t, i18n } = useTranslation();
@@ -39,11 +39,11 @@ export function GlobalActions() {
       >
         <Settings size={16} strokeWidth={1.9} />
       </button>
-      <button type="button" className={`${controlClass} hidden bg-slate-800 text-white hover:text-white sm:flex`} aria-label={t('view.user')}>
+      <button type="button" className={`${controlClass} hidden !bg-ink !text-white hover:!bg-ink hover:!text-white sm:flex`} aria-label={t('view.user')}>
         <UserRound size={16} strokeWidth={1.9} />
       </button>
       {popover && (
-        <div className="absolute right-0 top-11 z-50 w-64 rounded-2xl border border-line bg-white/95 p-3 text-left shadow-pop backdrop-blur-xl">
+        <div className="absolute right-0 top-11 z-50 w-64 rounded-2xl border border-line bg-white/98 p-3 text-left shadow-pop">
           <p className="text-[13px] font-semibold text-ink">
             {popover === 'help' ? t('view.helpTitle') : t('view.settingsTitle')}
           </p>

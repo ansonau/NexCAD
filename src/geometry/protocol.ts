@@ -1,8 +1,9 @@
 import type { NodeRole, SceneNode } from '../types/document';
+import type { PartDefinition } from '../parts/schema';
 
 export type GeometryRequest =
-  | { id: number; type: 'evaluate'; nodes: SceneNode[] }
-  | { id: number; type: 'export'; nodes: SceneNode[] };
+  | { id: number; type: 'evaluate'; nodes: SceneNode[]; definitions?: PartDefinition[] }
+  | { id: number; type: 'export'; nodes: SceneNode[]; definitions?: PartDefinition[] };
 
 export interface NodeMeshPayload {
   nodeId: string;

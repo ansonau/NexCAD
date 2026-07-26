@@ -289,18 +289,25 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     name: 'TT Motor',
     nameZh: 'TT 減速馬達',
     category: 'power',
-    // 尺寸依 3d_models/tt-motor.stl 量測：本體 47×21×22，罐 Ø22×22 突出本體後端 3.5mm，
-    // 雙出軸 Ø5×15 各伸出 15mm，軸心距底面 11mm。v1 不支援自動支柱，僅供排位。
+    // 公版黃色 TT motor envelope：本體約 70×22×18mm；在本座標中 X=長度、
+    // Y=軸向外伸寬度、Z=高度。軸徑約 5mm，含雙出軸總寬約 40mm。
     body: {
-      size: [47, 21, 22],
+      size: [37, 18, 22],
       blocks: [
-        // 馬達罐：Ø22×22，軸沿 X，罐底貼地、罐頂＝本體頂，後端突出 3.5mm
-        { shape: 'cylinder', position: [-16, 0, -11], size: [22, 22, 22], rotation: [0, 90, 0], label: '馬達罐' },
-        // 雙出軸：Ø5×15，軸心 x=+20、z=11，自 ±Y 面各伸出 15mm
-        { shape: 'cylinder', position: [20, 25.5, -11], size: [5, 5, 15], rotation: [90, 0, 0], label: '輸出軸' },
-        { shape: 'cylinder', position: [20, -25.5, -11], size: [5, 5, 15], rotation: [-90, 0, 0], label: '輸出軸' },
+        // 馬達罐：Ø22×33，後端延伸到 X≈-51.5；齒輪箱前端 X≈+19。
+        { shape: 'cylinder', position: [-18.5, 0, -11], size: [22, 22, 33], rotation: [0, -90, 0], label: '馬達罐' },
+        // 雙出軸：Ø5×9，自 ±Y 面伸出到總寬約 40mm。
+        { shape: 'cylinder', position: [9.5, 20, -11], size: [5, 5, 9], rotation: [90, 0, 0], label: '輸出軸' },
+        { shape: 'cylinder', position: [9.5, -20, -11], size: [5, 5, 9], rotation: [-90, 0, 0], label: '輸出軸' },
       ],
     },
+    mountingHoles: [
+      // 齒輪箱底面 M3 安裝孔
+      { x: -9.25, y: 0, diameter: 3, z: 0 },
+      { x: 9.25, y: 0, diameter: 3, z: 0 },
+      // 中央定位孔
+      { x: 0, y: 0, diameter: 1.95, z: 0 },
+    ],
     clearanceHeight: 22,
   },
   {
@@ -488,6 +495,12 @@ export const PART_LIBRARY: PartDefinition[] = RAW_LIBRARY.map((p) =>
 
 const registry = new Map(PART_LIBRARY.map((p) => [p.id, p]));
 
+const runtimeRegistry = new Map<string, PartDefinition>();
+
+export function registerPartDefinition(def: PartDefinition): void {
+  runtimeRegistry.set(def.id, def);
+}
+
 export function getPartDefinition(id: string): PartDefinition | undefined {
-  return registry.get(id);
+  return registry.get(id) ?? runtimeRegistry.get(id);
 }

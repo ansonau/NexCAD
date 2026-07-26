@@ -1,49 +1,53 @@
 # Task 1 Report
 
-## Status
+## What Changed
 
-DONE
+- Added the required `view` labels to `src/i18n/zh.json`:
+  - `addPart`: `加入零件`
+  - `partsLibrary`: `零件庫`
+  - `sidebarTools`: `工具`
+  - `sidebarObjectsHint`: `先加入零件或基本形狀，物件會顯示在這裡。`
+- Added the required English `view` labels to `src/i18n/en.json`:
+  - `addPart`: `Add Part`
+  - `partsLibrary`: `Parts Library`
+  - `sidebarTools`: `Tools`
+  - `sidebarObjectsHint`: `Add a part or primitive first; objects will appear here.`
+- Updated `e2e/smoke.spec.ts` to use `view.addPart` for desktop parts-library expansion and `view.sidebarTools` for workflow tools.
 
-## Implementation
+## Tests
 
-- Added `CarAnchorNode` with `CarConfigParams`, preset ID, electronics IDs, and optional generated node IDs.
-- Added `CarAnchorNode` to the `SceneNode` union.
-- Added `createCarAnchorNode()` using the existing node ID and identity transform helpers.
-- Added the focused factory test covering type, config, preset, electronics IDs, and role.
+- `npx vitest run src/i18n/resources.test.ts`
+  - Passed: 1 test file, 2 tests.
+- `npx playwright test e2e/smoke.spec.ts`
+  - Passed: 1 test.
+  - This did not produce the expected pre-Task-2 failure because the dirty worktree already contains sidebar UI that satisfies the new selectors.
 
-## Verification
+## Files
 
-Command: `npx vitest run src/types/document.test.ts`
+Changed for Task 1:
+- `src/i18n/zh.json`
+- `src/i18n/en.json`
+- `e2e/smoke.spec.ts`
+- `.superpowers/sdd/task-1-report.md`
 
-Result: 1 test file passed, 8 tests passed.
+No unrelated files were modified, staged, or reverted by this task.
 
-## Commit
+## Self-Review
 
-`5703e70 feat: add CarAnchorNode type and factory`
+- Values match the brief verbatim.
+- Keys are under the existing `view` namespace.
+- Smoke changes match the requested selectors and fallback behavior.
+- Existing unrelated edits in the three permitted files were preserved.
 
 ## Concerns
 
-None. The repository had unrelated pre-existing dirty changes; only `src/types/document.ts` and `src/types/document.test.ts` were staged and committed.
+The commit gate in the brief requires the i18n test to pass and the smoke test to fail for the missing Add Part UI. The i18n test passed, but the smoke test passed because the current dirty worktree already includes the relevant UI. No commit was created.
 
-## Review Fix Report
+## Review Fix Verification
 
-### Fixes
-
-- Added explicit `car-anchor` handling in `buildSolid()` so anchor nodes are skipped during geometry evaluation.
-- Added the minimal `car-anchor` persistence schema, including `CarConfigParams` fields and optional `generatedNodeIds`.
-- Added car-anchor serialize/parse round-trip coverage.
-- Extended the factory test to verify identity transform, visible, and unlocked defaults.
-
-### Verification
-
-Command: `npx vitest run src/types/document.test.ts src/persistence/nexcadFile.test.ts src/geometry/evaluate.test.ts`
-
-Result: 3 test files passed, 33 tests passed.
-
-Command: `npx tsc --noEmit`
-
-Result: passed with no diagnostics.
-
-### Commit
-
-Pending: `fix: handle car-anchor consumers`
+- Changed `e2e/smoke.spec.ts` so it always clicks the first `view.addPart` button before asserting/filling the parts-library search field.
+- `npx vitest run src/i18n/resources.test.ts`
+  - Passed: 1 test file, 2 tests.
+- `npx playwright test e2e/smoke.spec.ts`
+  - Failed as expected before Task 2: timed out waiting 60 seconds for `getByRole('button', { name: '加入零件' }).first()`.
+  - No commit was created.
