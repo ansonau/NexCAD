@@ -20,11 +20,11 @@ describe('智能小車貼地組的外殼整合', () => {
     expect(plan.outer.minZ).toBeCloseTo(-standoffClearance - DEFAULT_ENCLOSURE_PARAMS.wallThickness, 6);
   });
 
-  it('支柱恰好 4 根（底盤角孔），頂面對齊底盤底 17.5', () => {
+  it('支柱恰好 4 根（底盤角孔），頂面對齊底盤底 18.3', () => {
     const parts = groundGroupInstances();
     const standoffs = planStandoffs(parts, DEFAULT_ENCLOSURE_PARAMS.screwSize);
     expect(standoffs).toHaveLength(4);
-    for (const s of standoffs) expect(s.topZ).toBeCloseTo(17.5, 6);
+    for (const s of standoffs) expect(s.topZ).toBeCloseTo(18.3, 6);
   });
 
   it('內腔頂高過輪頂（65＋clearanceMargin）且角柱無碰撞旗標', () => {
