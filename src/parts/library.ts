@@ -289,26 +289,19 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     name: 'TT Motor',
     nameZh: 'TT 減速馬達',
     category: 'power',
-    // 公版黃色 TT motor envelope：本體約 70×22×18mm；在本座標中 X=長度、
-    // Y=軸向外伸寬度、Z=高度。軸徑約 5mm，含雙出軸總寬約 40mm。
+    // 尺寸圖座標：齒輪箱中心為 X/Y 原點，底面 Z=0；長軸 X、輸出軸 Y。
     body: {
-      size: [37, 18, 22],
+      size: [37, 18.8, 22.3],
       blocks: [
-        // 馬達罐：Ø22×33，後端延伸到 X≈-51.5；齒輪箱前端 X≈+19。
-        { shape: 'cylinder', position: [-18.5, 0, -11], size: [22, 22, 33], rotation: [0, -90, 0], label: '馬達罐' },
-        // 雙出軸：Ø5×9，自 ±Y 面伸出到總寬約 40mm。
-        { shape: 'cylinder', position: [9.5, 20, -11], size: [5, 5, 9], rotation: [90, 0, 0], label: '輸出軸' },
-        { shape: 'cylinder', position: [9.5, -20, -11], size: [5, 5, 9], rotation: [-90, 0, 0], label: '輸出軸' },
+        { shape: 'cylinder', position: [-13, 0, -11.1], size: [22.4, 22.4, 33], rotation: [0, -90, 0], label: '馬達罐' },
+        { shape: 'box', position: [21.2, 0, -14.1], size: [5.4, 18.8, 6], label: '前端安裝耳' },
+        { shape: 'cylinder', position: [7.22, 18.5, -11.1], size: [5.4, 5.4, 9.1], rotation: [90, 0, 0], label: '輸出軸' },
+        { shape: 'cylinder', position: [7.22, -18.5, -11.1], size: [5.4, 5.4, 9.1], rotation: [-90, 0, 0], label: '輸出軸' },
       ],
     },
-    mountingHoles: [
-      // 齒輪箱底面 M3 安裝孔
-      { x: -9.25, y: 0, diameter: 3, z: 0 },
-      { x: 9.25, y: 0, diameter: 3, z: 0 },
-      // 中央定位孔
-      { x: 0, y: 0, diameter: 1.95, z: 0 },
-    ],
-    clearanceHeight: 22,
+    // 圖紙孔沿 Y 軸穿過側面，不是 enclosure standoff 使用的 Z 軸底孔。
+    mountingHoles: [],
+    clearanceHeight: 22.4,
   },
   {
     id: 'l298n',
