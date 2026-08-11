@@ -224,7 +224,7 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
       { x: 10.35, y: -11.65, diameter: 2 },
       { x: 10.35, y: 11.65, diameter: 2 },
     ],
-    ports: [{ face: 'top', shape: 'rect', x: 0, z: -1.5, w: 26, h: 15, label: '螢幕視窗' }],
+    ports: [{ face: 'top', shape: 'rect', x: 0, z: -1.5, w: 23.3, h: 19, label: '螢幕視窗' }],
     clearanceHeight: 11,
   },
   {
