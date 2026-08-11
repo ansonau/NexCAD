@@ -14,4 +14,5 @@ export const HIGH_RES_MODELS: Record<string, HighResModel> = {
   'arduino-nano': { url: '/parts/arduino-nano/arduino-nano.stl', originOffset: [0, 0, 0] },
   'arduino-mega-2560': { url: '/parts/arduino-mega-2560/arduino-mega-2560.stl', originOffset: [0, 0, 0] },
   'oled-096': { url: '/parts/oled-096/oled-096.stl', originOffset: [0, 0, 0] },
+  'oled-13': { url: '/parts/oled-13/oled-13.stl', originOffset: [0, 0, 0] },
 };

@@ -6,6 +6,7 @@ const assets = [
   ['arduino-nano', [43.18, 17.77, 10.1]],
   ['arduino-mega-2560', [101.6, 53.35, 12.6]],
   ['oled-096', [27.3, 27.3, 11]],
+  ['oled-13', [35.4, 33.5, 11.3]],
 ];
 
 function readBinaryStlBounds(partId) {

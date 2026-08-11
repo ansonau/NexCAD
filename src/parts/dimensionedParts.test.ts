@@ -44,4 +44,17 @@ describe('dimension-drawing parts', () => {
     ]);
     expect(part.clearanceHeight).toBeGreaterThanOrEqual(11);
   });
+
+  it('OLED 1.3 follows the module drawing', () => {
+    const part = getPartDefinition('oled-13')!;
+    expect(part.category).toBe('sensor');
+    expect(part.body.size).toEqual([35.4, 33.5, 1.2]);
+    expect(part.mountingHoles).toHaveLength(4);
+    expect(part.mountingHoles.every((hole) => hole.diameter === 3)).toBe(true);
+    const xs = part.mountingHoles.map((hole) => hole.x);
+    const ys = part.mountingHoles.map((hole) => hole.y);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(29.42, 2);
+    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(28.5, 2);
+    expect(part.clearanceHeight).toBeGreaterThanOrEqual(11.3);
+  });
 });
