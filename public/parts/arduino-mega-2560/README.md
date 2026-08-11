@@ -8,6 +8,7 @@ Visual/reference asset folder for NexCAD's `arduino-mega-2560` part.
 - PCB outline: 101.6 x 53.35 x 1.6 mm.
 - Mounting holes: six Ø3.2 mm R3 points.
 - Common R3 hole locations are inferred because the drawing does not fully dimension them.
+- USB-B: simplified 16 x 12 x 11 mm envelope, inferred from the connector shown because the drawing does not dimension it.
 - Simplified components set the visual envelope to 12.6 mm.
 
 ## Coordinate Contract

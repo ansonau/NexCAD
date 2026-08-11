@@ -2,12 +2,12 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const assets = [
-  ['tt-motor', [69.9, 37, 22.4]],
-  ['arduino-nano', [43.18, 17.77, 10.1]],
-  ['arduino-mega-2560', [101.6, 53.35, 12.6]],
-  ['hc-sr04', [45, 20, 13.5]],
-  ['oled-096', [27.3, 27.3, 11]],
-  ['oled-13', [35.4, 33.5, 11.3]],
+  ['tt-motor', [-46, -18.5, 0], [23.9, 18.5, 22.4]],
+  ['arduino-nano', [-21.59, -8.885, 0], [21.59, 8.885, 10.1]],
+  ['arduino-mega-2560', [-51.3, -26.675, 0], [50.8, 26.675, 12.6]],
+  ['hc-sr04', [-22.5, -10, 0], [22.5, 10, 13.5]],
+  ['oled-096', [-13.65, -13.65, 0], [13.65, 13.65, 11]],
+  ['oled-13', [-17.7, -16.75, 0], [17.7, 16.75, 11.3]],
 ];
 
 function readBinaryStlBounds(partId) {
@@ -30,7 +30,7 @@ function readBinaryStlBounds(partId) {
     }
   }
 
-  return max.map((value, axis) => value - min[axis]);
+  return { min, max };
 }
 
 function hasVertex(partId, target) {
@@ -48,10 +48,11 @@ function hasVertex(partId, target) {
 }
 
 describe('high-res STL assets', () => {
-  it.each(assets)('%s is a dimensionally correct binary STL', (partId, expected) => {
+  it.each(assets)('%s is a dimensionally correct binary STL', (partId, expectedMin, expectedMax) => {
     const bounds = readBinaryStlBounds(partId);
     for (let axis = 0; axis < 3; axis += 1) {
-      expect(bounds[axis]).toBeCloseTo(expected[axis], 1);
+      expect(bounds.min[axis]).toBeCloseTo(expectedMin[axis], 1);
+      expect(bounds.max[axis]).toBeCloseTo(expectedMax[axis], 1);
     }
   });
 

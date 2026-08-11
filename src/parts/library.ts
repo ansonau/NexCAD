@@ -233,17 +233,17 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     body: {
       size: [35.4, 33.5, 1.2],
       blocks: [
-        { shape: 'box', position: [0, -3, 0], size: [29.42, 14.7, 1.6], label: '螢幕' },
+        { shape: 'box', position: [0, 2.05, 0], size: [29.42, 14.7, 1.6], label: '螢幕' },
         { shape: 'box', position: [0, 14.25, 0], size: [10, 2.5, 10.1], label: '排針' },
       ],
     },
     mountingHoles: [
-      { x: -14.71, y: -14.25, diameter: 3 },
-      { x: -14.71, y: 14.25, diameter: 3 },
-      { x: 14.71, y: -14.25, diameter: 3 },
-      { x: 14.71, y: 14.25, diameter: 3 },
+      { x: -15.2, y: -14.25, diameter: 3 },
+      { x: -15.2, y: 14.25, diameter: 3 },
+      { x: 15.2, y: -14.25, diameter: 3 },
+      { x: 15.2, y: 14.25, diameter: 3 },
     ],
-    ports: [{ face: 'top', shape: 'rect', x: 0, z: -3, w: 29.42, h: 14.7, label: '螢幕視窗' }],
+    ports: [{ face: 'top', shape: 'rect', x: 0, z: 2.05, w: 29.42, h: 14.7, label: '螢幕視窗' }],
     clearanceHeight: 11.3,
   },
   {

@@ -15,6 +15,9 @@ describe('dimension-drawing parts', () => {
       { x: 45.7, y: -24.18, diameter: 3.2 },
       { x: 39.4, y: 24.13, diameter: 3.2 },
     ]);
+    expect(part.body.blocks.find((block) => block.label === 'USB-B')).toEqual({
+      shape: 'box', position: [-43.3, 15.5, 0], size: [16, 12, 11], label: 'USB-B',
+    });
     expect(part.clearanceHeight).toBeGreaterThanOrEqual(12.6);
   });
 
@@ -62,12 +65,18 @@ describe('dimension-drawing parts', () => {
     const part = getPartDefinition('oled-13')!;
     expect(part.category).toBe('sensor');
     expect(part.body.size).toEqual([35.4, 33.5, 1.2]);
-    expect(part.mountingHoles).toHaveLength(4);
-    expect(part.mountingHoles.every((hole) => hole.diameter === 3)).toBe(true);
-    const xs = part.mountingHoles.map((hole) => hole.x);
-    const ys = part.mountingHoles.map((hole) => hole.y);
-    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(29.42, 2);
-    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(28.5, 2);
+    expect(part.mountingHoles).toEqual([
+      { x: -15.2, y: -14.25, diameter: 3 },
+      { x: -15.2, y: 14.25, diameter: 3 },
+      { x: 15.2, y: -14.25, diameter: 3 },
+      { x: 15.2, y: 14.25, diameter: 3 },
+    ]);
+    expect(part.body.blocks.find((block) => block.label === '螢幕')).toEqual({
+      shape: 'box', position: [0, 2.05, 0], size: [29.42, 14.7, 1.6], label: '螢幕',
+    });
+    expect(part.ports).toEqual([
+      { face: 'top', shape: 'rect', x: 0, z: 2.05, w: 29.42, h: 14.7, label: '螢幕視窗' },
+    ]);
     expect(part.clearanceHeight).toBeGreaterThanOrEqual(11.3);
   });
 });

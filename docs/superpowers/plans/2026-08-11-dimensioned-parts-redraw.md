@@ -335,12 +335,15 @@ it('OLED 1.3 follows the module drawing', () => {
   const part = getPartDefinition('oled-13')!;
   expect(part.category).toBe('sensor');
   expect(part.body.size).toEqual([35.4, 33.5, 1.2]);
-  expect(part.mountingHoles).toHaveLength(4);
-  expect(part.mountingHoles.every((hole) => hole.diameter === 3)).toBe(true);
-  const xs = part.mountingHoles.map((hole) => hole.x);
-  const ys = part.mountingHoles.map((hole) => hole.y);
-  expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(29.42, 2);
-  expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(28.5, 2);
+  expect(part.mountingHoles).toEqual([
+    { x: -15.2, y: -14.25, diameter: 3 },
+    { x: -15.2, y: 14.25, diameter: 3 },
+    { x: 15.2, y: -14.25, diameter: 3 },
+    { x: 15.2, y: 14.25, diameter: 3 },
+  ]);
+  expect(part.ports).toEqual([
+    { face: 'top', shape: 'rect', x: 0, z: 2.05, w: 29.42, h: 14.7, label: '螢幕視窗' },
+  ]);
   expect(part.clearanceHeight).toBeGreaterThanOrEqual(11.3);
 });
 ```
@@ -355,7 +358,7 @@ Expected: FAIL because `oled-13` is absent and totals remain 27/5.
 
 - [ ] **Step 3: Add procedural definition**
 
-Use body `[35.4, 33.5, 1.2]`, holes at `x = ±14.71`, `y = ±14.25`, `Ø3`, display block `29.42 × 14.7`, header block reaching `11.3`, and `clearanceHeight = 11.3`.
+Use body `[35.4, 33.5, 1.2]`, holes at `x = ±15.20`, `y = ±14.25`, `Ø3`, display block `29.42 × 14.7` centered at `y = +2.05`, header block reaching `11.3`, and `clearanceHeight = 11.3`.
 
 - [ ] **Step 4: Create OpenSCAD and binary STL**
 

@@ -24,7 +24,7 @@ module board() {
 }
 
 color("#2e7d5b") board();
-color("#b7b7b7") translate([-43.3, 15.5, 7.1]) cube([14, 12, 11], center = true);
+color("#b7b7b7") translate([-43.3, 15.5, 7.1]) cube([16, 12, 11], center = true);
 color("#1a1a1a") translate([-43.3, -19, 7.1]) cube([14, 9, 11], center = true);
 color("#181818") translate([0, 24.45, 5.85]) cube([80, 2.5, 8.5], center = true);
 color("#181818") translate([6, -24.45, 5.85]) cube([70, 2.5, 8.5], center = true);

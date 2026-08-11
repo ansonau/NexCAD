@@ -6,8 +6,8 @@ Visual/reference asset folder for NexCAD's `oled-13` part.
 
 - Reference: `3d_models/monochrome-1.3-oled-graphic-display-with-i2c-dimension.jpeg`.
 - PCB outline: 35.4 x 33.5 x 1.2 mm.
-- Mounting holes: four 3.0 mm circles centered at x = +/-14.71 and y = +/-14.25 mm.
-- Display: 29.42 x 14.7 x 1.6 mm; header reaches Z = 11.3 mm.
+- Mounting holes: four 3.0 mm circles centered at x = +/-15.20 and y = +/-14.25 mm (30.40 x 28.50 mm pitch).
+- Active display: 29.42 x 14.70 x 1.6 mm, centered at y = +2.05 mm; header reaches Z = 11.3 mm.
 
 ## Files
 

@@ -46,6 +46,6 @@ openscad --export-format binstl \
   public/parts/tt-motor/tt-motor.scad
 ```
 
-Always export binary STL. The automated `ttMotorAsset.test.js` check validates
+Always export binary STL. The automated `highResAssets.test.js` check validates
 the binary structure and model envelope; `ttMotor.test.ts` validates the
 procedural envelope and shaft datum.
