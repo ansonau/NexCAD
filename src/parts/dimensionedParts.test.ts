@@ -33,12 +33,12 @@ describe('dimension-drawing parts', () => {
   it('OLED 0.96 follows the module drawing', () => {
     const part = getPartDefinition('oled-096')!;
     expect(part.body.size).toEqual([27.3, 27.3, 1.2]);
-    expect(part.mountingHoles).toHaveLength(4);
-    const xs = part.mountingHoles.map((hole) => hole.x);
-    const ys = part.mountingHoles.map((hole) => hole.y);
-    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(20.7, 2);
-    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(23.3, 2);
-    expect(part.mountingHoles.every((hole) => hole.diameter === 2)).toBe(true);
+    expect(part.mountingHoles).toEqual([
+      { x: -10.35, y: -11.65, diameter: 2 },
+      { x: -10.35, y: 11.65, diameter: 2 },
+      { x: 10.35, y: -11.65, diameter: 2 },
+      { x: 10.35, y: 11.65, diameter: 2 },
+    ]);
     expect(part.ports).toEqual([
       { face: 'top', shape: 'rect', x: 0, z: -1.5, w: 23.3, h: 19, label: '螢幕視窗' },
     ]);
