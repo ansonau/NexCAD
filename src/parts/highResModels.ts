@@ -12,4 +12,5 @@ export const HIGH_RES_MODELS: Record<string, HighResModel> = {
   // The STL gearbox is already centered on the part origin; keep visual and procedural models aligned.
   'tt-motor': { url: '/parts/tt-motor/tt-motor.stl', originOffset: [0, 0, 0] },
   'arduino-nano': { url: '/parts/arduino-nano/arduino-nano.stl', originOffset: [0, 0, 0] },
+  'arduino-mega-2560': { url: '/parts/arduino-mega-2560/arduino-mega-2560.stl', originOffset: [0, 0, 0] },
 };

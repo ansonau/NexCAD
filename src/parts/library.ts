@@ -59,6 +59,34 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     clearanceHeight: 10.1,
   },
   {
+    id: 'arduino-mega-2560',
+    name: 'Arduino Mega 2560 R3',
+    nameZh: 'Arduino Mega 2560 R3',
+    category: 'board',
+    body: {
+      size: [101.6, 53.35, 1.6],
+      blocks: [
+        { shape: 'box', position: [-43.3, 15.5, 0], size: [16, 12, 11], label: 'USB-B' },
+        { shape: 'box', position: [-43.3, -19, 0], size: [14, 9, 11], label: 'DC 電源' },
+        { shape: 'box', position: [0, 24.45, 0], size: [80, 2.5, 8.5], label: '排針' },
+        { shape: 'box', position: [6, -24.45, 0], size: [70, 2.5, 8.5], label: '排針' },
+      ],
+    },
+    mountingHoles: [
+      { x: -36.8, y: -24.18, diameter: 3.2 },
+      { x: -36.8, y: 24.13, diameter: 3.2 },
+      { x: 15.2, y: -19.08, diameter: 3.2 },
+      { x: 15.2, y: 8.93, diameter: 3.2 },
+      { x: 45.7, y: -24.18, diameter: 3.2 },
+      { x: 39.4, y: 24.13, diameter: 3.2 },
+    ],
+    ports: [
+      { face: 'west', shape: 'rect', x: 15.5, z: 0, w: 13, h: 12, label: 'USB' },
+      { face: 'west', shape: 'rect', x: -19, z: 0, w: 10, h: 12, label: 'DC' },
+    ],
+    clearanceHeight: 12.6,
+  },
+  {
     id: 'esp32-devkit',
     name: 'ESP32 DevKit V1',
     nameZh: 'ESP32 DevKit V1',

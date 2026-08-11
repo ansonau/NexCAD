@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 const assets = [
   ['tt-motor', [69.9, 37, 22.4]],
   ['arduino-nano', [43.18, 17.77, 10.1]],
+  ['arduino-mega-2560', [101.6, 53.35, 12.6]],
 ];
 
 function readBinaryStlBounds(partId) {
