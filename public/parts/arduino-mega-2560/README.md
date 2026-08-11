@@ -7,6 +7,7 @@ Visual/reference asset folder for NexCAD's `arduino-mega-2560` part.
 - Reference: `3d_models/arduino-mega-2560-r3-dimension.jpeg`.
 - PCB outline: 101.6 x 53.35 x 1.6 mm.
 - Mounting holes: six Ø3.2 mm R3 points.
+- Common R3 hole locations are inferred because the drawing does not fully dimension them.
 - Simplified components set the visual envelope to 12.6 mm.
 
 ## Coordinate Contract

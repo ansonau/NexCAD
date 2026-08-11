@@ -2,6 +2,7 @@
 $fn = 32;
 
 pcb = [101.6, 53.35, 1.6];
+corner_cut = 2.54;
 holes = [
   [-36.8, -24.18], [-36.8, 24.13], [15.2, -19.08],
   [15.2, 8.93], [45.7, -24.18], [39.4, 24.13]
@@ -9,7 +10,14 @@ holes = [
 
 module board() {
   difference() {
-    linear_extrude(pcb[2]) square([pcb[0], pcb[1]], center = true);
+    linear_extrude(pcb[2]) polygon(points = [
+      [-pcb[0] / 2, -pcb[1] / 2],
+      [-pcb[0] / 2, pcb[1] / 2],
+      [pcb[0] / 2 - corner_cut, pcb[1] / 2],
+      [pcb[0] / 2, pcb[1] / 2 - corner_cut],
+      [pcb[0] / 2, -pcb[1] / 2 + corner_cut],
+      [pcb[0] / 2 - corner_cut, -pcb[1] / 2]
+    ]);
     for (hole = holes)
       translate([hole[0], hole[1], -0.1]) cylinder(d = 3.2, h = pcb[2] + 0.2);
   }

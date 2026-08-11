@@ -7,7 +7,14 @@ describe('dimension-drawing parts', () => {
     expect(part.category).toBe('board');
     expect(part.body.size).toEqual([101.6, 53.35, 1.6]);
     expect(part.mountingHoles).toHaveLength(6);
-    expect(part.mountingHoles.every((hole) => hole.diameter === 3.2)).toBe(true);
+    expect(part.mountingHoles).toEqual([
+      { x: -36.8, y: -24.18, diameter: 3.2 },
+      { x: -36.8, y: 24.13, diameter: 3.2 },
+      { x: 15.2, y: -19.08, diameter: 3.2 },
+      { x: 15.2, y: 8.93, diameter: 3.2 },
+      { x: 45.7, y: -24.18, diameter: 3.2 },
+      { x: 39.4, y: 24.13, diameter: 3.2 },
+    ]);
     expect(part.clearanceHeight).toBeGreaterThanOrEqual(12.6);
   });
 
