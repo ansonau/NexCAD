@@ -30,6 +30,19 @@ describe('dimension-drawing parts', () => {
     expect(part.clearanceHeight).toBeGreaterThanOrEqual(10.1);
   });
 
+  it('HC-SR04 follows the sensor drawing', () => {
+    const part = getPartDefinition('hc-sr04')!;
+    expect(part.body.size).toEqual([45, 20, 1.5]);
+    expect(part.mountingHoles).toEqual([
+      { x: -21, y: -8.25, diameter: 2 },
+      { x: 21, y: 8.25, diameter: 2 },
+    ]);
+    const cans = part.body.blocks.filter((block) => block.label?.includes('換能器'));
+    expect(cans.map((block) => block.position[0])).toEqual([-13, 13]);
+    expect(cans.every((block) => block.size[0] === 16 && block.size[2] === 12)).toBe(true);
+    expect(part.clearanceHeight).toBeGreaterThanOrEqual(13.5);
+  });
+
   it('OLED 0.96 follows the module drawing', () => {
     const part = getPartDefinition('oled-096')!;
     expect(part.body.size).toEqual([27.3, 27.3, 1.2]);
