@@ -6,7 +6,7 @@ Parametric visual asset for NexCAD's yellow TT geared motor.
 
 - `tt-motor.scad` — editable OpenSCAD source.
 - `tt-motor.stl` — binary high-resolution viewport asset.
-- `../../../3d_models/high_res/tt-motor-dimension.jpeg` — dimensional source of truth.
+- `../../../3d_models/tt-motor-dimension.jpeg` — dimensional source of truth.
 - `../../../3d_models/high_res/tt-motor.glb` — appearance reference only; not shipped at runtime.
 
 ## Coordinate Contract

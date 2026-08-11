@@ -1,5 +1,5 @@
 // TT Motor / yellow DC geared motor for NexCAD.
-// Dimensions: 3d_models/high_res/tt-motor-dimension.jpeg
+// Dimensions: 3d_models/tt-motor-dimension.jpeg
 // Appearance: 3d_models/high_res/tt-motor.glb
 // Units: mm. Origin: gearbox body centre in X/Y, bottom face at Z=0.
 // Axes: motor length X, double output shaft Y, height Z.
