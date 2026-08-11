@@ -29,4 +29,14 @@ describe('dimension-drawing parts', () => {
     expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(15.24, 2);
     expect(part.clearanceHeight).toBeGreaterThanOrEqual(10.1);
   });
+
+  it('OLED 0.96 follows the module drawing', () => {
+    const part = getPartDefinition('oled-096')!;
+    expect(part.body.size).toEqual([27.3, 27.3, 1.2]);
+    expect(part.mountingHoles).toHaveLength(4);
+    const xs = part.mountingHoles.map((hole) => hole.x);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(20.7, 2);
+    expect(part.mountingHoles.every((hole) => hole.diameter === 2)).toBe(true);
+    expect(part.clearanceHeight).toBeGreaterThanOrEqual(11);
+  });
 });

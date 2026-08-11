@@ -212,20 +212,20 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     nameZh: 'OLED 0.96 吋顯示器',
     category: 'sensor',
     body: {
-      size: [27, 27.5, 1.2],
+      size: [27.3, 27.3, 1.2],
       blocks: [
-        { shape: 'box', position: [0, -1.5, 0], size: [26, 15, 1.6], label: '螢幕' },
-        { shape: 'box', position: [0, 12, 0], size: [10, 2.5, 3], label: '排針' },
+        { shape: 'box', position: [0, -1.5, 0], size: [23.3, 19, 1.6], label: '螢幕' },
+        { shape: 'box', position: [0, 11.5, 0], size: [10, 2.5, 9.8], label: '排針' },
       ],
     },
     mountingHoles: [
-      { x: -11.5, y: -11.75, diameter: 2 },
-      { x: -11.5, y: 11.75, diameter: 2 },
-      { x: 11.5, y: -11.75, diameter: 2 },
-      { x: 11.5, y: 11.75, diameter: 2 },
+      { x: -10.35, y: -11.65, diameter: 2 },
+      { x: -10.35, y: 11.65, diameter: 2 },
+      { x: 10.35, y: -11.65, diameter: 2 },
+      { x: 10.35, y: 11.65, diameter: 2 },
     ],
     ports: [{ face: 'top', shape: 'rect', x: 0, z: -1.5, w: 26, h: 15, label: '螢幕視窗' }],
-    clearanceHeight: 4.2,
+    clearanceHeight: 11,
   },
   {
     id: 'lcd1602',
