@@ -1,3 +1,5 @@
+name: nexcad
+
 # BEGIN ANSON DEPLOY MANAGED BLOCK
 services:
   "nexcad":
