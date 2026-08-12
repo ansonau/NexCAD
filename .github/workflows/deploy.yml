@@ -1,0 +1,37 @@
+name: Anson Deploy
+
+on:
+  push:
+    branches:
+# BEGIN ANSON DEPLOY MANAGED BLOCK
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ["self-hosted","macOS","ARM64"]
+    env:
+      IMAGE_NAME: "nexcad"
+      COMPOSE_FILE: "deploy/docker-compose.yml"
+      SERVICE: "nexcad"
+      CONTAINER: "nexcad"
+      HEALTH_URL: "http://127.0.0.1:5174/"
+      HEALTHCHECK_TIMEOUT_SECONDS: 60
+      KEEP_IMAGES: 3
+      DOCKERFILE: "Dockerfile"
+      BUILD_CONTEXT: "."
+      BUILD_VARIABLES: ""
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify 1
+        run: "npm test"
+      - name: Verify 2
+        run: "npm run build"
+      - name: Preflight
+        run: node "${ANSON_DEPLOY_SKILL_ROOT:-/Users/ansonau/.codex/skills/anson-deploy-skill}/scripts/anson-deploy.mjs" preflight . --repo "$GITHUB_REPOSITORY"
+      - name: Deploy revision
+        run: "${ANSON_DEPLOY_SKILL_ROOT:-/Users/ansonau/.codex/skills/anson-deploy-skill}/scripts/deploy-revision.sh"
+      - name: Deployment summary
+        if: always()
+        run: printf 'revision=%s service=%s image=%s\n' "$GITHUB_SHA" "$SERVICE" "$IMAGE_NAME"
+# END ANSON DEPLOY MANAGED BLOCK

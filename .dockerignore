@@ -1,0 +1,5 @@
+# BEGIN ANSON DEPLOY MANAGED BLOCK
+.git
+node_modules
+npm-debug.log*
+# END ANSON DEPLOY MANAGED BLOCK

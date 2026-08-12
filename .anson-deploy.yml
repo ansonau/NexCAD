@@ -1,0 +1,32 @@
+version: 1
+
+app:
+  name: nexcad
+  type: static
+  healthcheck_path: /
+
+build:
+  context: .
+  dockerfile: Dockerfile
+  test_commands:
+    - npm test
+    - npm run build
+  variables: []
+  secrets: []
+
+deploy:
+  image: nexcad
+  container: nexcad
+  compose_file: deploy/docker-compose.yml
+  host_port: 5174
+  container_port: 80
+  runner_labels:
+    - self-hosted
+    - macOS
+    - ARM64
+  keep_images: 3
+  healthcheck_timeout_seconds: 60
+
+github:
+  branch: main
+  workflow: deploy.yml
