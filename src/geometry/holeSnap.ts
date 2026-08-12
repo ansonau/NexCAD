@@ -33,7 +33,17 @@ function rotatePoint(p: Vec3, rotation: Vec3): Vec3 {
  * 支援完整的 3D 旋轉。
  */
 export function collectHoleWorldPositions(nodes: SceneNode[], excludeId?: string): Vec3[] {
-  const out: Vec3[] = [];
+  return collectHoleWorldAnnotations(nodes, excludeId).map((hole) => hole.center);
+}
+
+export interface HoleWorldAnnotation {
+  center: Vec3;
+  diameter: number;
+  kind: 'through' | 'socketHead' | 'countersink';
+}
+
+export function collectHoleWorldAnnotations(nodes: SceneNode[], excludeId?: string): HoleWorldAnnotation[] {
+  const annotations: HoleWorldAnnotation[] = [];
   for (const node of nodes) {
     if (node.id === excludeId || !node.visible || node.type !== 'part') continue;
     const def = getPartDefinition(node.partId);
@@ -41,10 +51,10 @@ export function collectHoleWorldPositions(nodes: SceneNode[], excludeId?: string
     const [px, py, pz] = node.transform.position;
     for (const hole of def.mountingHoles) {
       const [wx, wy, wz] = rotatePoint([hole.x, hole.y, hole.z ?? 0], node.transform.rotation);
-      out.push([px + wx, py + wy, pz + wz]);
+      annotations.push({ center: [px + wx, py + wy, pz + wz], diameter: hole.diameter, kind: 'through' });
     }
   }
-  return out;
+  return annotations;
 }
 
 /** 拖曳位置與某孔位的 XY 距離小於 threshold 時吸附（z 保留） */

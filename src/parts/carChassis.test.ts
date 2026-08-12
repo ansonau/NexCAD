@@ -39,10 +39,10 @@ describe('car-chassis-2wd 幾何', () => {
     expect(cornerVerts).toBe(0);
   });
 
-  it('18 個安裝孔：4 角孔 standoff 缺省、14 電子件孔 standoff:false，且全部鑽穿', () => {
-    expect(def.mountingHoles).toHaveLength(18);
+  it('16 個安裝孔：4 角孔 standoff 缺省、12 電子件孔 standoff:false，且全部鑽穿', () => {
+    expect(def.mountingHoles).toHaveLength(16);
     expect(def.mountingHoles.filter((h) => h.standoff === undefined)).toHaveLength(4);
-    expect(def.mountingHoles.filter((h) => h.standoff === false)).toHaveLength(14);
+    expect(def.mountingHoles.filter((h) => h.standoff === false)).toHaveLength(12);
     const v = kernel.volume(buildPartSolid(def, kernel));
     const vNoHoles = kernel.volume(buildPartSolid({ ...def, mountingHoles: [] }, kernel));
     expect(vNoHoles - v).toBeGreaterThan(200);

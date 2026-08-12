@@ -11,6 +11,7 @@ import {
   buildCarChassisAndGround,
   buildCarNodes,
   buildChassisDef,
+  chassisPartIdForAnchor,
 } from './presets';
 import type { CarConfigParams, CarPresetSpec } from './presets';
 import type { PartNode } from '../types/document';
@@ -42,13 +43,27 @@ describe('CarPresetSpec 資料合法性', () => {
 });
 
 describe('buildCarNodes：legacy presets', () => {
+  it.each([SMART_CAR_2WD, SMART_CAR_4WD])('$id 的馬達軸心與車輪中心對齊', (spec) => {
+    const { parts } = partsOf(spec);
+    const key = (x: number, y: number, z: number) => `${x.toFixed(2)}:${Math.sign(y)}:${z.toFixed(2)}`;
+    const motorAxes = parts
+      .filter((part) => part.partId === 'tt-motor')
+      .map((part) => key(part.transform.position[0] + 7.22, part.transform.position[1], part.transform.position[2] + 11.2))
+      .sort();
+    const wheelAxes = parts
+      .filter((part) => part.partId === 'car-wheel')
+      .map((part) => key(part.transform.position[0], part.transform.position[1], 32.5))
+      .sort();
+    expect(motorAxes).toEqual(wheelAxes);
+  });
+
   it('2WD 的 10 個節點位置符合資料表', () => {
     const { parts } = partsOf(SMART_CAR_2WD, 'zh');
     expect(parts).toHaveLength(10);
     const at = (partId: string, y?: number) => parts.find((node) => node.partId === partId && (y === undefined || node.transform.position[1] === y))!;
-    expect(at('hc-sr04').transform.position).toEqual([105, 0, 20.5]);
-    expect(at('tt-motor', 81.25).transform.position).toEqual([-35, 81.25, 20.5]);
-    expect(at('car-chassis-2wd').transform.position).toEqual([-3, 0, 17.5]);
+    expect(at('hc-sr04').transform.position).toEqual([105, 0, 21.3]);
+    expect(at('tt-motor', 81.25).transform.position).toEqual([-22.22, 81.25, 21.3]);
+    expect(at('car-chassis-2wd').transform.position).toEqual([-3, 0, 18.3]);
     expect(at('ball-caster-16').transform.position).toEqual([95, 0, 0]);
     for (const part of parts) expect(part.transform.rotation).toEqual([0, 0, 0]);
   });
@@ -71,7 +86,7 @@ describe('buildCarNodes：legacy presets', () => {
 
   it('also supports current config callers', () => {
     const { nodes } = buildCarNodes(DEFAULT_CAR_CONFIG, 'en');
-    expect(nodes.filter((node): node is PartNode => node.type === 'part' && node.partId === 'car-chassis-dynamic')).toHaveLength(1);
+    expect(nodes.filter((node): node is PartNode => node.type === 'part' && node.partId.startsWith('car-chassis-'))).toHaveLength(1);
   });
 });
 
@@ -115,7 +130,7 @@ describe('Phase 1/2 builders', () => {
     const result = buildCarChassisAndGround(anchor, electronics, 'en');
     expect(result.warnings).toEqual([]);
     expect(result.nodes).toHaveLength(4);
-    expect(result.nodes.find((node) => node.type === 'part' && node.partId === 'car-chassis-dynamic')!.transform).toEqual(anchor.transform);
+    expect(result.nodes.find((node) => node.type === 'part' && node.partId === chassisPartIdForAnchor(anchor.id))!.transform).toEqual(anchor.transform);
   });
 
   it('builds a 4WD chassis and four wheels', () => {
@@ -145,7 +160,7 @@ describe('Phase 1/2 builders', () => {
     const result = buildCarChassisAndGround(anchor, electronics, 'en');
     expect(result.warnings).toEqual([]);
     const expected = initial.electronics.flatMap((node) => getPartDefinition(node.partId)!.mountingHoles.map((hole) => ({ x: node.transform.position[0] + hole.x - initial.anchor.transform.position[0], y: node.transform.position[1] + hole.y - initial.anchor.transform.position[1], diameter: hole.diameter })));
-    const actual = getPartDefinition('car-chassis-dynamic')!.mountingHoles;
+    const actual = getPartDefinition(chassisPartIdForAnchor(anchor.id))!.mountingHoles;
     for (const hole of expected) expect(actual.some((candidate) => Math.abs(candidate.x - hole.x) < 0.01 && Math.abs(candidate.y - hole.y) < 0.01 && Math.abs(candidate.diameter - hole.diameter) < 0.01), `dynamic chassis missing transformed hole (${hole.x}, ${hole.y})`).toBe(true);
   });
 });

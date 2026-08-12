@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createPartNode } from '../types/document';
-import { collectHoleWorldPositions, snapToHoles } from './holeSnap';
+import { collectHoleWorldAnnotations, collectHoleWorldPositions, snapToHoles } from './holeSnap';
 
 describe('collectHoleWorldPositions', () => {
   it('回傳零件安裝孔的世界座標（含節點位移）', () => {
@@ -39,6 +39,21 @@ describe('collectHoleWorldPositions', () => {
   it('未知 partId 與非零件節點被略過', () => {
     const ghost = createPartNode('nope', 'ghost');
     expect(collectHoleWorldPositions([ghost])).toHaveLength(0);
+  });
+});
+
+describe('collectHoleWorldAnnotations', () => {
+  it('回傳零件安裝孔的標註資料', () => {
+    const nano = createPartNode('arduino-nano', 'nano');
+    nano.transform.position = [10, 20, 0];
+
+    const annotations = collectHoleWorldAnnotations([nano]);
+
+    expect(annotations[0]).toMatchObject({
+      center: [10 - 20.32, 20 - 7.62, 0],
+      diameter: 1.65,
+      kind: 'through',
+    });
   });
 });
 

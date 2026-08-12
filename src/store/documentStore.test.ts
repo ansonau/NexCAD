@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createPrimitive, emptyDocument } from '../types/document';
+import { DEFAULT_CAR_CONFIG } from '../parts/presets';
+import { createCarAnchorNode, createPartNode, createPrimitive, emptyDocument } from '../types/document';
 import type { PrimitiveNode } from '../types/document';
 import { findNode, useDocumentStore } from './documentStore';
 
@@ -211,5 +212,67 @@ describe('documentStore', () => {
     store().alignSelected(0);
     expect(findNode(store().doc.nodes, b.id)?.transform.position).toEqual([30, 2, 2]);
     expect(findNode(store().doc.nodes, b.id)?.locked).toBe(true);
+  });
+
+  describe('updateCarAnchorRigid：移動/旋轉錨點要連動電子零件', () => {
+    function addAnchorWithElectronics() {
+      const e1 = createPartNode('hc-sr04', 'HC-SR04', {
+        transform: { position: [105, 0, 21.5], rotation: [0, 0, 0], scale: [1, 1, 1] },
+      });
+      const e2 = createPartNode('arduino-uno', 'Arduino', {
+        transform: { position: [40, 0, 21.5], rotation: [0, 0, 0], scale: [1, 1, 1] },
+      });
+      const anchor = createCarAnchorNode(DEFAULT_CAR_CONFIG, 'smart-car-2wd', [e1.id, e2.id], {
+        transform: { position: [-3, 0, 18.5], rotation: [0, 0, 0], scale: [1, 1, 1] },
+      });
+      store().addNodes([anchor, e1, e2]);
+      return { anchor, e1, e2 };
+    }
+
+    it('平移錨點時電子零件跟著平移同樣距離', () => {
+      const { anchor, e1, e2 } = addAnchorWithElectronics();
+      store().updateCarAnchorRigid(anchor.id, (n) => {
+        n.transform.position = [-3 + 100, 400, 18.5];
+      });
+      expect(findNode(store().doc.nodes, e1.id)?.transform.position).toEqual([205, 400, 21.5]);
+      expect(findNode(store().doc.nodes, e2.id)?.transform.position).toEqual([140, 400, 21.5]);
+    });
+
+    it('逐軸原地改單一分量（PropertyCard 每軸 StepperField 的寫法）也要連動——回歸：oldPosition 曾經只存陣列參照，逐軸 in-place 改法會讓 delta 算成 0', () => {
+      const { anchor, e1 } = addAnchorWithElectronics();
+      store().updateCarAnchorRigid(anchor.id, (n) => {
+        n.transform.position[1] = 400; // 只改 Y 這一分量，不整支 position 陣列重新賦值
+      });
+      expect(findNode(store().doc.nodes, e1.id)?.transform.position).toEqual([105, 400, 21.5]);
+    });
+
+    it('旋轉錨點 Z 軸時電子零件繞錨點原位置旋轉，且自身 rotation.z 也累加', () => {
+      const { anchor, e1 } = addAnchorWithElectronics();
+      store().updateCarAnchorRigid(anchor.id, (n) => {
+        n.transform.rotation = [0, 0, 90];
+      });
+      // e1 原本相對錨點 (105-(-3), 0-0) = (108, 0)；繞原點轉 90° 後應變成 (0, 108)，
+      // 加回新錨點位置（未變，仍是 (-3,0)）＝ (-3, 108)
+      const moved = findNode(store().doc.nodes, e1.id)!;
+      expect(moved.transform.position[0]).toBeCloseTo(-3, 6);
+      expect(moved.transform.position[1]).toBeCloseTo(108, 6);
+      expect(moved.transform.rotation[2]).toBe(90);
+    });
+
+    it('只改非 car-anchor 節點時不受影響（一般 updateNode 行為不變）', () => {
+      const node = createPrimitive('box');
+      store().addNode(node);
+      store().updateNode(node.id, (n) => void (n.transform.position[0] = 50));
+      expect(findNode(store().doc.nodes, node.id)?.transform.position[0]).toBe(50);
+    });
+
+    it('可 undo：連動的電子零件位置也一起回復', () => {
+      const { anchor, e1 } = addAnchorWithElectronics();
+      store().updateCarAnchorRigid(anchor.id, (n) => {
+        n.transform.position = [97, 0, 18.5];
+      });
+      store().undo();
+      expect(findNode(store().doc.nodes, e1.id)?.transform.position).toEqual([105, 0, 21.5]);
+    });
   });
 });

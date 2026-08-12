@@ -1,17 +1,24 @@
-// HC-SR04 (HC-SR04 超音波感測器) visual source for NexCAD.
-// Units: millimeters. Origin: part bottom-center, matching src/parts/library.ts.
-// This generated baseline is intentionally simple; refine it with measured details before exporting STL.
+// HC-SR04 visual source. Units: millimeters; origin: PCB bottom-center.
 
 $fn = 32;
 
-module rounded_box(size, r = 0.8) {
-  hull() {
-    for (x = [-size[0] / 2 + r, size[0] / 2 - r])
-      for (y = [-size[1] / 2 + r, size[1] / 2 - r]) {
-        translate([x, y, r]) sphere(r = r);
-        translate([x, y, size[2] - r]) sphere(r = r);
-      }
+pcb = [45, 20, 1.5];
+holes = [[-21, -8.25], [21, 8.25]];
+
+module board() {
+  difference() {
+    translate([-pcb[0] / 2, -pcb[1] / 2, 0]) cube(pcb);
+    for (hole = holes)
+      translate([hole[0], hole[1], -0.1]) cylinder(d = 2, h = pcb[2] + 0.2);
   }
 }
 
-color("#2e7d5b") rounded_box([45, 20, 1.2], min(1.2, min(45, 20) / 8));
+color("#2e7d5b") board();
+
+for (x = [-13, 13])
+  color("#b7b7b7") translate([x, 0, pcb[2]]) cylinder(d = 16, h = 12);
+
+for (x = [-3.81 : 2.54 : 3.81])
+  color("#d6a53a") translate([x, -6.5, pcb[2]]) cube([0.64, 0.64, 8], center = false);
+
+color("#b7b7b7") translate([0, 6, pcb[2]]) cube([8, 3, 3], center = false);

@@ -42,21 +42,49 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     nameZh: 'Arduino Nano',
     category: 'board',
     body: {
-      size: [43.2, 18, 1.6],
+      size: [43.18, 17.77, 1.6],
       blocks: [
-        { shape: 'box', position: [-17.6, 0, 0], size: [8, 8, 4], label: 'Mini-USB' },
+        { shape: 'box', position: [-17.59, 0, 0], size: [8, 8, 4], label: 'Mini-USB' },
         { shape: 'box', position: [0, 7.6, 0], size: [38, 2.5, 8.5], label: '排針' },
         { shape: 'box', position: [0, -7.6, 0], size: [38, 2.5, 8.5], label: '排針' },
       ],
     },
     mountingHoles: [
-      { x: -20.3, y: -7.6, diameter: 1.8 },
-      { x: -20.3, y: 7.6, diameter: 1.8 },
-      { x: 20.3, y: -7.6, diameter: 1.8 },
-      { x: 20.3, y: 7.6, diameter: 1.8 },
+      { x: -20.32, y: -7.62, diameter: 1.65 },
+      { x: -20.32, y: 7.62, diameter: 1.65 },
+      { x: 20.32, y: -7.62, diameter: 1.65 },
+      { x: 20.32, y: 7.62, diameter: 1.65 },
     ],
     ports: [{ face: 'west', shape: 'rect', x: 0, z: 0, w: 9, h: 5, label: 'USB' }],
     clearanceHeight: 10.1,
+  },
+  {
+    id: 'arduino-mega-2560',
+    name: 'Arduino Mega 2560 R3',
+    nameZh: 'Arduino Mega 2560 R3',
+    category: 'board',
+    body: {
+      size: [101.6, 53.35, 1.6],
+      blocks: [
+        { shape: 'box', position: [-43.3, 15.5, 0], size: [16, 12, 11], label: 'USB-B' },
+        { shape: 'box', position: [-43.3, -19, 0], size: [14, 9, 11], label: 'DC 電源' },
+        { shape: 'box', position: [0, 24.45, 0], size: [80, 2.5, 8.5], label: '排針' },
+        { shape: 'box', position: [6, -24.45, 0], size: [70, 2.5, 8.5], label: '排針' },
+      ],
+    },
+    mountingHoles: [
+      { x: -36.8, y: -24.18, diameter: 3.2 },
+      { x: -36.8, y: 24.13, diameter: 3.2 },
+      { x: 15.2, y: -19.08, diameter: 3.2 },
+      { x: 15.2, y: 8.93, diameter: 3.2 },
+      { x: 45.7, y: -24.18, diameter: 3.2 },
+      { x: 39.4, y: 24.13, diameter: 3.2 },
+    ],
+    ports: [
+      { face: 'west', shape: 'rect', x: 15.5, z: 0, w: 13, h: 12, label: 'USB' },
+      { face: 'west', shape: 'rect', x: -19, z: 0, w: 10, h: 12, label: 'DC' },
+    ],
+    clearanceHeight: 12.6,
   },
   {
     id: 'esp32-devkit',
@@ -160,23 +188,21 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     nameZh: 'HC-SR04 超音波感測器',
     category: 'sensor',
     body: {
-      size: [45, 20, 1.2],
+      size: [45, 20, 1.5],
       blocks: [
-        { shape: 'cylinder', position: [-13, 0, 0], size: [16, 16, 12], label: '發射' },
-        { shape: 'cylinder', position: [13, 0, 0], size: [16, 16, 12], label: '接收' },
+        { shape: 'cylinder', position: [-13, 0, 0], size: [16, 16, 12], label: '發射換能器' },
+        { shape: 'cylinder', position: [13, 0, 0], size: [16, 16, 12], label: '接收換能器' },
       ],
     },
     mountingHoles: [
-      { x: -20.5, y: -7.5, diameter: 1.8 },
-      { x: -20.5, y: 7.5, diameter: 1.8 },
-      { x: 20.5, y: -7.5, diameter: 1.8 },
-      { x: 20.5, y: 7.5, diameter: 1.8 },
+      { x: -21, y: -8.25, diameter: 2 },
+      { x: 21, y: 8.25, diameter: 2 },
     ],
     ports: [
       { face: 'top', shape: 'circle', x: -13, z: 0, w: 16.5, h: 16.5, label: '發射開孔' },
       { face: 'top', shape: 'circle', x: 13, z: 0, w: 16.5, h: 16.5, label: '接收開孔' },
     ],
-    clearanceHeight: 13.2,
+    clearanceHeight: 13.5,
   },
   {
     id: 'oled-096',
@@ -184,20 +210,41 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     nameZh: 'OLED 0.96 吋顯示器',
     category: 'sensor',
     body: {
-      size: [27, 27.5, 1.2],
+      size: [27.3, 27.3, 1.2],
       blocks: [
-        { shape: 'box', position: [0, -1.5, 0], size: [26, 15, 1.6], label: '螢幕' },
-        { shape: 'box', position: [0, 12, 0], size: [10, 2.5, 3], label: '排針' },
+        { shape: 'box', position: [0, -1.5, 0], size: [23.3, 19, 1.6], label: '螢幕' },
+        { shape: 'box', position: [0, 11.5, 0], size: [10, 2.5, 9.8], label: '排針' },
       ],
     },
     mountingHoles: [
-      { x: -11.5, y: -11.75, diameter: 2 },
-      { x: -11.5, y: 11.75, diameter: 2 },
-      { x: 11.5, y: -11.75, diameter: 2 },
-      { x: 11.5, y: 11.75, diameter: 2 },
+      { x: -10.35, y: -11.65, diameter: 2 },
+      { x: -10.35, y: 11.65, diameter: 2 },
+      { x: 10.35, y: -11.65, diameter: 2 },
+      { x: 10.35, y: 11.65, diameter: 2 },
     ],
-    ports: [{ face: 'top', shape: 'rect', x: 0, z: -1.5, w: 26, h: 15, label: '螢幕視窗' }],
-    clearanceHeight: 4.2,
+    ports: [{ face: 'top', shape: 'rect', x: 0, z: -1.5, w: 23.3, h: 19, label: '螢幕視窗' }],
+    clearanceHeight: 11,
+  },
+  {
+    id: 'oled-13',
+    name: 'OLED 1.3" (I2C)',
+    nameZh: 'OLED 1.3 吋顯示器',
+    category: 'sensor',
+    body: {
+      size: [35.4, 33.5, 1.2],
+      blocks: [
+        { shape: 'box', position: [0, 2.05, 0], size: [29.42, 14.7, 1.6], label: '螢幕' },
+        { shape: 'box', position: [0, 14.25, 0], size: [10, 2.5, 10.1], label: '排針' },
+      ],
+    },
+    mountingHoles: [
+      { x: -15.2, y: -14.25, diameter: 3 },
+      { x: -15.2, y: 14.25, diameter: 3 },
+      { x: 15.2, y: -14.25, diameter: 3 },
+      { x: 15.2, y: 14.25, diameter: 3 },
+    ],
+    ports: [{ face: 'top', shape: 'rect', x: 0, z: 2.05, w: 29.42, h: 14.7, label: '螢幕視窗' }],
+    clearanceHeight: 11.3,
   },
   {
     id: 'lcd1602',
@@ -289,26 +336,19 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
     name: 'TT Motor',
     nameZh: 'TT 減速馬達',
     category: 'power',
-    // 公版黃色 TT motor envelope：本體約 70×22×18mm；在本座標中 X=長度、
-    // Y=軸向外伸寬度、Z=高度。軸徑約 5mm，含雙出軸總寬約 40mm。
+    // 尺寸圖座標：齒輪箱中心為 X/Y 原點，底面 Z=0；長軸 X、輸出軸 Y。
     body: {
-      size: [37, 18, 22],
+      size: [37, 18.8, 22.3],
       blocks: [
-        // 馬達罐：Ø22×33，後端延伸到 X≈-51.5；齒輪箱前端 X≈+19。
-        { shape: 'cylinder', position: [-18.5, 0, -11], size: [22, 22, 33], rotation: [0, -90, 0], label: '馬達罐' },
-        // 雙出軸：Ø5×9，自 ±Y 面伸出到總寬約 40mm。
-        { shape: 'cylinder', position: [9.5, 20, -11], size: [5, 5, 9], rotation: [90, 0, 0], label: '輸出軸' },
-        { shape: 'cylinder', position: [9.5, -20, -11], size: [5, 5, 9], rotation: [-90, 0, 0], label: '輸出軸' },
+        { shape: 'cylinder', position: [-13, 0, -11.1], size: [22.4, 22.4, 33], rotation: [0, -90, 0], label: '馬達罐' },
+        { shape: 'box', position: [21.2, 0, -14.1], size: [5.4, 18.8, 6], label: '前端安裝耳' },
+        { shape: 'cylinder', position: [7.22, 18.5, -11.1], size: [5.4, 5.4, 9.1], rotation: [90, 0, 0], label: '輸出軸' },
+        { shape: 'cylinder', position: [7.22, -18.5, -11.1], size: [5.4, 5.4, 9.1], rotation: [-90, 0, 0], label: '輸出軸' },
       ],
     },
-    mountingHoles: [
-      // 齒輪箱底面 M3 安裝孔
-      { x: -9.25, y: 0, diameter: 3, z: 0 },
-      { x: 9.25, y: 0, diameter: 3, z: 0 },
-      // 中央定位孔
-      { x: 0, y: 0, diameter: 1.95, z: 0 },
-    ],
-    clearanceHeight: 22,
+    // 圖紙孔沿 Y 軸穿過側面，不是 enclosure standoff 使用的 Z 軸底孔。
+    mountingHoles: [],
+    clearanceHeight: 22.4,
   },
   {
     id: 'l298n',
@@ -469,10 +509,8 @@ const RAW_LIBRARY: z.input<typeof partDefinitionSchema>[] = [
       { x: -125, y: 82.5, diameter: 3 },
       { x: 125, y: -82.5, diameter: 3 },
       { x: 125, y: 82.5, diameter: 3 },
-      { x: 87.5, y: -7.5, diameter: 1.8, standoff: false },
-      { x: 87.5, y: 7.5, diameter: 1.8, standoff: false },
-      { x: 128.5, y: -7.5, diameter: 1.8, standoff: false },
-      { x: 128.5, y: 7.5, diameter: 1.8, standoff: false },
+      { x: 87, y: -8.25, diameter: 2, standoff: false },
+      { x: 129, y: 8.25, diameter: 2, standoff: false },
       { x: 22.7, y: -24.2, diameter: 3.2, standoff: false },
       { x: 24, y: 24, diameter: 3.2, standoff: false },
       { x: 74.8, y: 8.8, diameter: 3.2, standoff: false },

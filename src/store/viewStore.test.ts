@@ -41,6 +41,8 @@ describe('viewStore', () => {
     expect(useViewStore.getState().dimensionMode).toBe('parts');
     useViewStore.getState().setDimensionMode('holes');
     expect(useViewStore.getState().dimensionMode).toBe('holes');
+    useViewStore.getState().setDimensionMode('holeLabels');
+    expect(useViewStore.getState().dimensionMode).toBe('holeLabels');
     useViewStore.getState().setDimensionMode('off');
     expect(useViewStore.getState().dimensionMode).toBe('off');
   });

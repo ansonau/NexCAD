@@ -56,8 +56,27 @@ export interface CarPresetSpec {
   caster?: CarPresetGroundPart;
 }
 
-/** 底盤頂面＝馬達底面＝電子件底面；軸心 20.5+12=32.5＝輪心（design.md D1） */
-const CHASSIS_TOP_Z = 20.5;
+// tt-motor 出力軸在零件本地座標的位置（src/parts/library.ts 'tt-motor' body.blocks
+// 的「輸出軸」block：軸心距圓頭端 11.28mm，故 X=18.5-11.28=7.22；
+// 馬達罐 Ø22.4，故軸心距底面 Z=11.2。
+const TT_MOTOR_SHAFT_LOCAL_X = 7.22;
+const TT_MOTOR_SHAFT_LOCAL_Z = 11.2;
+
+// car-wheel 轉軸世界高度（src/parts/library.ts 'car-wheel' body.blocks 的輪胎
+// block：position=[0,13.5,31.5]，rotation=[90,0,0]，bodyT=1；繞 X 轉 90° 後
+// z 範圍變成 [-32.5,32.5]，平移 bodyT+31.5=32.5 後變 [0,65]，故轉軸＝32.5，
+// 且此值與零件節點 z=0（貼地）無關，即為輪心離地高度）。
+const WHEEL_AXIS_Z = 32.5;
+
+/**
+ * 底盤頂面＝馬達底面＝電子件底面。馬達軸心世界高度需與輪心 32.5 對齊。
+ */
+const CHASSIS_TOP_Z = WHEEL_AXIS_Z - TT_MOTOR_SHAFT_LOCAL_Z;
+
+/** 馬達節點 X ＝ 目標軸心世界 X − 軸心本地 X 偏移，讓馬達軸與輪心同一條線（否則轉起來歪的） */
+function motorXForWheel(wheelX: number): number {
+  return wheelX - TT_MOTOR_SHAFT_LOCAL_X;
+}
 
 export const SMART_CAR_2WD: CarPresetSpec = {
   id: 'smart-car-2wd',
@@ -67,11 +86,11 @@ export const SMART_CAR_2WD: CarPresetSpec = {
     { partId: 'arduino-uno', x: 40, y: 0, z: CHASSIS_TOP_Z, rotZ: 0 },
     { partId: 'l298n', x: -25, y: 0, z: CHASSIS_TOP_Z, rotZ: 0 },
     { partId: 'battery-18650x2', x: -95, y: 0, z: CHASSIS_TOP_Z, rotZ: 0 },
-    { partId: 'tt-motor', x: -35, y: 81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
-    { partId: 'tt-motor', x: -35, y: -81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
+    { partId: 'tt-motor', x: motorXForWheel(-15), y: 81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
+    { partId: 'tt-motor', x: motorXForWheel(-15), y: -81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
   ],
   chassisPartId: 'car-chassis-2wd',
-  chassisPosition: [-3, 0, 17.5],
+  chassisPosition: [-3, 0, CHASSIS_TOP_Z - 3],
   wheels: [
     { partId: 'car-wheel', x: -15, y: 107.5 },
     { partId: 'car-wheel', x: -15, y: -107.5 },
@@ -87,13 +106,13 @@ export const SMART_CAR_4WD: CarPresetSpec = {
     { partId: 'arduino-uno', x: 40, y: 0, z: CHASSIS_TOP_Z, rotZ: 0 },
     { partId: 'l298n', x: -25, y: 0, z: CHASSIS_TOP_Z, rotZ: 0 },
     { partId: 'battery-18650x2', x: -95, y: 0, z: CHASSIS_TOP_Z, rotZ: 0 },
-    { partId: 'tt-motor', x: 45, y: 81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
-    { partId: 'tt-motor', x: 45, y: -81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
-    { partId: 'tt-motor', x: -100, y: 81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
-    { partId: 'tt-motor', x: -100, y: -81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
+    { partId: 'tt-motor', x: motorXForWheel(65), y: 81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
+    { partId: 'tt-motor', x: motorXForWheel(65), y: -81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
+    { partId: 'tt-motor', x: motorXForWheel(-80), y: 81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
+    { partId: 'tt-motor', x: motorXForWheel(-80), y: -81.25, z: CHASSIS_TOP_Z, rotZ: 0 },
   ],
   chassisPartId: 'car-chassis-2wd',
-  chassisPosition: [-3, 0, 17.5],
+  chassisPosition: [-3, 0, CHASSIS_TOP_Z - 3],
   wheels: [
     { partId: 'car-wheel', x: 65, y: 107.5 },
     { partId: 'car-wheel', x: 65, y: -107.5 },
@@ -252,14 +271,22 @@ export function buildCarAnchorAndElectronics(
 const CANONICAL_CHASSIS_LENGTH = 270;
 const CANONICAL_CHASSIS_CENTER_X = chassisCenterX(CANONICAL_CHASSIS_LENGTH);
 
-export function buildCarChassisAndGround(
+/** 每個錨點各自一個底盤 partId，避免同文件多台車互相覆蓋彼此的底盤定義（見 rehydrateCarChassisDefs） */
+export function chassisPartIdForAnchor(anchorId: string): string {
+  return `car-chassis-${anchorId}`;
+}
+
+/**
+ * 純函式：由錨點設定 + 目前場景（電子件即時位置）算出底盤零件定義。
+ * `buildCarChassisAndGround`（互動生成，孔位超界要擋）與 `rehydrateCarChassisDefs`
+ * （文件載入後補註冊，best-effort 不擋）共用同一份計算，避免兩邊算法 drift。
+ */
+function computeChassisDefinition(
   anchor: CarAnchorNode,
   sceneNodes: SceneNode[],
-  lang: string,
-): { nodes: SceneNode[]; defaultSelection: string[]; warnings: string[] } {
+): { definition: PartDefinition; warnings: string[] } {
   const warnings: string[] = [];
-  const spec = anchor.presetId === 'smart-car-2wd' ? SMART_CAR_2WD : SMART_CAR_4WD;
-  const { length, width, thickness, shape, includeCaster } = anchor.config;
+  const { length, width, thickness, shape } = anchor.config;
   const electronicsHoles: MountingHole[] = [];
   const idSet = new Set(anchor.electronicsIds);
   const halfL = length / 2;
@@ -281,7 +308,6 @@ export function buildCarChassisAndGround(
       electronicsHoles.push({ x: local[0], y: local[1], diameter: hole.diameter, standoff: false });
     }
   }
-  if (warnings.length > 0) return { nodes: [], defaultSelection: [], warnings };
 
   const cornerHoles: MountingHole[] = [
     { x: -(halfL - 10), y: -(halfW - 10), diameter: 3 },
@@ -289,8 +315,9 @@ export function buildCarChassisAndGround(
     { x: halfL - 10, y: -(halfW - 10), diameter: 3 },
     { x: halfL - 10, y: halfW - 10, diameter: 3 },
   ];
-  registerPartDefinition({
-    id: CHASSIS_DYNAMIC_PART_ID,
+
+  const definition: PartDefinition = {
+    id: chassisPartIdForAnchor(anchor.id),
     name: 'Car Chassis',
     nameZh: '小車底盤',
     category: 'component',
@@ -298,9 +325,39 @@ export function buildCarChassisAndGround(
     mountingHoles: [...cornerHoles, ...electronicsHoles],
     ports: [],
     clearanceHeight: thickness,
-  });
+  };
+  return { definition, warnings };
+}
 
-  const chassis = createPartNode(CHASSIS_DYNAMIC_PART_ID, partNameDynamicChassis(anchor.config, lang), {
+/**
+ * 底盤零件定義只存在記憶體 registry（不隨 .nexcad / IndexedDB 存檔，因為孔位是由
+ * 「當下」電子件位置算出的衍生資料，不是需要持久化的來源）。文件重新載入後
+ * registry 是空的，若不補註冊，底盤節點會找不到定義而消失（mesh 為 null）。
+ * 呼叫端：任何把 doc 設回 store 的地方（開專案、匯入、初次啟動還原）之後、
+ * 送出幾何求值之前，先呼叫這個函式。best-effort：孔位超界也照樣註冊，不擋——
+ * 擋超界是互動生成流程（buildCarChassisAndGround）的責任，這裡只求「至少畫得出來」。
+ */
+export function rehydrateCarChassisDefs(nodes: SceneNode[]): void {
+  for (const node of nodes) {
+    if (node.type !== 'car-anchor') continue;
+    const { definition } = computeChassisDefinition(node, nodes);
+    registerPartDefinition(definition);
+  }
+}
+
+export function buildCarChassisAndGround(
+  anchor: CarAnchorNode,
+  sceneNodes: SceneNode[],
+  lang: string,
+): { nodes: SceneNode[]; defaultSelection: string[]; warnings: string[] } {
+  const spec = anchor.presetId === 'smart-car-2wd' ? SMART_CAR_2WD : SMART_CAR_4WD;
+  const { length, includeCaster } = anchor.config;
+  const { definition, warnings } = computeChassisDefinition(anchor, sceneNodes);
+  if (warnings.length > 0) return { nodes: [], defaultSelection: [], warnings };
+
+  registerPartDefinition(definition);
+
+  const chassis = createPartNode(definition.id, partNameDynamicChassis(anchor.config, lang), {
     transform: { ...anchor.transform },
   });
   const scale = length / CANONICAL_CHASSIS_LENGTH;

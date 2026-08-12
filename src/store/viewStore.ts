@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type GizmoMode = 'translate' | 'rotate';
-export type DimensionMode = 'off' | 'enclosure' | 'parts' | 'holes';
+export type DimensionMode = 'off' | 'enclosure' | 'parts' | 'holes' | 'holeLabels';
 
 interface ViewState {
   shellXray: boolean;

@@ -1,31 +1,51 @@
 # TT Motor
 
-Visual/reference asset folder for NexCAD's `tt-motor` part.
+Parametric visual asset for NexCAD's yellow TT geared motor.
 
 ## Files
 
-- `tt-motor.scad` — editable OpenSCAD source for human/AI collaboration.
-- `tt-motor.stl` — high-resolution viewport asset loaded by NexCAD.
+- `tt-motor.scad` — editable OpenSCAD source.
+- `tt-motor.stl` — binary high-resolution viewport asset.
+- `../../../3d_models/tt-motor-dimension.jpeg` — dimensional source of truth.
+- `../../../3d_models/high_res/tt-motor.glb` — appearance reference only; not shipped at runtime.
 
 ## Coordinate Contract
 
-- Units: millimeters.
-- Origin: part bottom-center, matching `src/parts/library.ts`.
-- This asset is visual only. Enclosure planning, collision envelopes, mounting holes, and export logic continue to use `src/parts/library.ts` as the source of truth.
+- Units: millimetres.
+- Origin: gearbox body centre in X/Y, bottom face at Z = 0.
+- Long axis: X, with the motor can toward negative X.
+- Double output shaft: Y.
+- Height: positive Z.
 
-## Current Reference Dimensions
+The OpenSCAD asset and `src/parts/library.ts` use the same gearbox origin and
+shaft datum. The detailed STL is visual; enclosure planning and collision use
+the simpler procedural definition.
 
-- Gearbox body: 37 × 18 × 22 mm.
-- Motor can: Ø22 × 33 mm.
-- Double output shaft: Ø5 mm, total width about 40 mm.
-- Mounting holes: two Ø3 mm holes at X ±9.25 mm, plus one Ø1.95 mm center locating hole.
+## Key Dimensions
+
+| Feature | Value |
+| --- | --- |
+| Overall bounding box | 69.9 × 37.0 × 22.4 mm |
+| Gearbox body | 37.0 × 18.8 × 22.3 mm |
+| Motor can | Ø22.4 × 33.0 mm |
+| Shaft centre | X 7.22, Z 11.2 mm |
+| Double output shaft | Ø5.4, 37.0 mm total span, 3.7 mm D-flat width |
+| Side holes | 2 × Ø3.0, 17.3 mm centre spacing |
+| Front side hole | Ø2.8 mm |
+
+The three drawing holes run along Y through the gearbox sides. NexCAD's
+`mountingHoles` currently describes only Z-axis bottom holes, so these side
+holes are present in the detailed model but deliberately excluded from
+`mountingHoles`. This prevents false enclosure standoffs.
 
 ## Regeneration
 
-If OpenSCAD is installed:
-
 ```bash
-openscad -o tt-motor.stl tt-motor.scad
+openscad --export-format binstl \
+  -o public/parts/tt-motor/tt-motor.stl \
+  public/parts/tt-motor/tt-motor.scad
 ```
 
-After regenerating, verify the model still visually aligns with the procedural part in NexCAD high-res mode.
+Always export binary STL. The automated `highResAssets.test.js` check validates
+the binary structure and model envelope; `ttMotor.test.ts` validates the
+procedural envelope and shaft datum.

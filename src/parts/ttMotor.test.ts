@@ -29,23 +29,31 @@ describe('tt-motor 幾何（馬達罐 + 齒輪箱 + 雙出軸）', () => {
     return { minX, maxX, minY, maxY, minZ, maxZ };
   }
 
-  it('整體 envelope 約 70×40×22mm 且 clearanceHeight 一致', () => {
+  it('整體 envelope 符合尺寸圖且 clearanceHeight 一致', () => {
     const b = bounds();
-    expect(b.maxX - b.minX).toBeCloseTo(70, 0);
-    expect(b.maxY - b.minY).toBeCloseTo(40, 0);
-    expect(b.maxZ - b.minZ).toBeCloseTo(22, 0);
-    expect(def.clearanceHeight).toBeGreaterThanOrEqual(22);
+    expect(b.maxX - b.minX).toBeCloseTo(69.9, 0);
+    expect(b.maxY - b.minY).toBeCloseTo(37, 0);
+    expect(b.maxZ - b.minZ).toBeCloseTo(22.4, 0);
+    expect(def.clearanceHeight).toBeGreaterThanOrEqual(22.4);
   });
 
-  it('軸徑約 5mm，軸心距本體底面約 11mm', () => {
+  it('輸出軸符合圖紙的直徑與 X/Z 軸心', () => {
     const mesh = kernel.toMesh(buildPartSolid(def, kernel));
+    const xs: number[] = [];
     const zs: number[] = [];
     for (let i = 0; i < mesh.positions.length; i += 3) {
-      if (Math.abs(mesh.positions[i + 1]) > 11) zs.push(mesh.positions[i + 2]);
+      if (Math.abs(mesh.positions[i + 1]) > 11.3) {
+        xs.push(mesh.positions[i]);
+        zs.push(mesh.positions[i + 2]);
+      }
     }
     expect(zs.length).toBeGreaterThan(0);
-    const avg = zs.reduce((a, b) => a + b, 0) / zs.length;
-    expect(Math.max(...zs) - Math.min(...zs)).toBeCloseTo(5, 0);
-    expect(avg).toBeCloseTo(11, 0);
+    expect((Math.min(...xs) + Math.max(...xs)) / 2).toBeCloseTo(7.22, 1);
+    expect((Math.min(...zs) + Math.max(...zs)) / 2).toBeCloseTo(11.2, 1);
+    expect(Math.max(...zs) - Math.min(...zs)).toBeCloseTo(5.4, 1);
+  });
+
+  it('側孔不會冒充底部 mounting holes', () => {
+    expect(def.mountingHoles).toEqual([]);
   });
 });

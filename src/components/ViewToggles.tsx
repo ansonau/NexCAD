@@ -28,6 +28,7 @@ export function ViewToggles() {
           enclosure: t('view.dimensionsEnclosure'),
           parts: t('view.dimensionsParts'),
           holes: t('view.dimensionsHoles'),
+          holeLabels: t('view.dimensionsHoleLabels'),
         }}
       />
       <ToggleButton
@@ -47,7 +48,7 @@ function DimensionDropdown({
 }: {
   mode: DimensionMode;
   onChange: (mode: DimensionMode) => void;
-  labels: { title: string; enclosure: string; parts: string; holes: string };
+  labels: { title: string; enclosure: string; parts: string; holes: string; holeLabels: string };
 }) {
   const [open, setOpen] = useState(false);
   const active = mode !== 'off';
@@ -78,6 +79,7 @@ function DimensionDropdown({
           <DimensionMenuItem active={mode === 'enclosure'} label={labels.enclosure} onClick={() => setMode('enclosure')} />
           <DimensionMenuItem active={mode === 'parts'} label={labels.parts} onClick={() => setMode('parts')} />
           <DimensionMenuItem active={mode === 'holes'} label={labels.holes} onClick={() => setMode('holes')} />
+          <DimensionMenuItem active={mode === 'holeLabels'} label={labels.holeLabels} onClick={() => setMode('holeLabels')} />
         </div>
       )}
     </div>

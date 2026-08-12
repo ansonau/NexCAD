@@ -13,3 +13,4 @@ playwright/.cache
 .opencode/
 .impeccable/
 .superpowers/brainstorm/
+.worktrees/
