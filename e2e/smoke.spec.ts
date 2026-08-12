@@ -19,6 +19,12 @@ test('建立零件、產生外殼、匯出 STL', async ({ page }) => {
   await page.getByTitle(zh.view.dimensions).click();
   await page.getByRole('menuitem', { name: zh.view.dimensionsHoles }).click();
   await expect(page.getByText(/\d+(\.\d+)?mm/).first()).toBeVisible({ timeout: 10_000 });
+  await page.getByTitle(zh.view.dimensions).click();
+  await page.getByRole('menuitem', { name: zh.view.dimensionsHoleLabels }).click();
+  await expect(page.getByText(/Ø1\.8/).first()).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText(/X-?\d+(\.\d+)?/).first()).toBeVisible();
+  await expect(page.getByText(/Y-?\d+(\.\d+)?/).first()).toBeVisible();
+  await expect(page.getByText(/Z-?\d+(\.\d+)?/).first()).toBeVisible();
 
   // 產生外殼：先切到「工具」Tab，再按面板內的產生按鈕
   await page.getByRole('tab', { name: zh.view.sidebarTools }).click();
@@ -79,6 +85,7 @@ test('mobile object sidebar controls remain reachable at narrow widths', async (
   await dimensions.click();
   await expect(page.getByRole('menuitem', { name: zh.view.dimensionsParts })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: zh.view.dimensionsHoles })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: zh.view.dimensionsHoleLabels })).toBeVisible();
   await page.getByRole('menuitem', { name: zh.view.dimensionsEnclosure }).click();
   await expect(dimensions).toHaveAttribute('aria-pressed', 'true');
 

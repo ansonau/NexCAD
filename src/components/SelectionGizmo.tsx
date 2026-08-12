@@ -23,6 +23,7 @@ export function SelectionGizmo() {
   const doc = useDocumentStore((s) => s.doc);
   const beginDrag = useDocumentStore((s) => s.beginDrag);
   const updateTransient = useDocumentStore((s) => s.updateTransient);
+  const updateCarAnchorRigidTransient = useDocumentStore((s) => s.updateCarAnchorRigidTransient);
   const gizmoMode = useViewStore((s) => s.gizmoMode);
   const proxyRef = useRef<THREE.Object3D>(null!);
   const holesRef = useRef<Vec3[]>([]);
@@ -51,6 +52,12 @@ export function SelectionGizmo() {
   const commitPosition = () => {
     const p = proxyRef.current.position;
     const snapped = snapToHoles([snap(p.x), snap(p.y), snap(p.z)], holesRef.current);
+    if (selected.type === 'car-anchor') {
+      updateCarAnchorRigidTransient(selected.id, (n) => {
+        n.transform.position = snapped;
+      });
+      return;
+    }
     updateTransient(selected.id, (n) => {
       n.transform.position = snapped;
     });
@@ -63,11 +70,14 @@ export function SelectionGizmo() {
       snap(radToDeg(rotation.y)),
       snap(radToDeg(rotation.z)),
     ];
+    if (selected.type === 'car-anchor') {
+      updateCarAnchorRigidTransient(selected.id, (n) => {
+        n.transform.rotation = [n.transform.rotation[0], n.transform.rotation[1], nextRotation[2]];
+      });
+      return;
+    }
     updateTransient(selected.id, (n) => {
-      n.transform.rotation =
-        n.type === 'car-anchor'
-          ? [n.transform.rotation[0], n.transform.rotation[1], nextRotation[2]]
-          : nextRotation;
+      n.transform.rotation = nextRotation;
     });
   };
 

@@ -32,8 +32,16 @@ export function PropertyCard() {
   const selection = useDocumentStore((s) => s.selection);
   const doc = useDocumentStore((s) => s.doc);
   const updateNode = useDocumentStore((s) => s.updateNode);
+  const updateCarAnchorRigid = useDocumentStore((s) => s.updateCarAnchorRigid);
 
   const node = selection.length === 1 ? findNode(doc.nodes, selection[0]) : undefined;
+  // 移動/旋轉錨點要連動拖著它的電子零件一起走（它們是獨立 PartNode，只靠
+  // electronicsIds 名義關聯，不是子節點），不然改完錨點位置電子零件留在原地，
+  // 底盤孔位對照全部跑掉（見 documentStore.ts 的 applyCarAnchorRigidMove）。
+  const updateTransform =
+    node?.type === 'car-anchor'
+      ? (fn: (n: SceneNode) => void) => updateCarAnchorRigid(node.id, fn as (a: CarAnchorNode) => void)
+      : (fn: (n: SceneNode) => void) => updateNode(node!.id, fn);
   return (
     <div className={`pointer-events-auto max-h-full w-full animate-pop-in overflow-y-auto p-3 ${panelClass}`}>
       {!node ? (
@@ -90,7 +98,7 @@ export function PropertyCard() {
                   value={node.transform.position[i]}
                   step={0.5}
                   onChange={(v) =>
-                    updateNode(node.id, (n) => void (n.transform.position[i] = v))
+                    updateTransform((n) => void (n.transform.position[i] = v))
                   }
                 />
               ))}
@@ -107,7 +115,7 @@ export function PropertyCard() {
                     value={node.transform.rotation[i]}
                     step={5}
                     onChange={(v) =>
-                      updateNode(node.id, (n) => void (n.transform.rotation[i] = v))
+                      updateTransform((n) => void (n.transform.rotation[i] = v))
                     }
                   />
                 )

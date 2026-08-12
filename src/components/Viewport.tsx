@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Canvas, useLoader } from '@react-three/fiber';
 import { Edges, Grid, GizmoHelper, GizmoViewcube, Html, OrbitControls } from '@react-three/drei';
+import { useTranslation } from 'react-i18next';
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { getGeometryClient } from '../geometry/client';
 import type { NodeMeshPayload } from '../geometry/protocol';
-import { collectHoleWorldPositions } from '../geometry/holeSnap';
+import { collectHoleWorldAnnotations, collectHoleWorldPositions } from '../geometry/holeSnap';
+import type { HoleWorldAnnotation } from '../geometry/holeSnap';
 import i18n from '../i18n';
 import { HIGH_RES_MODELS } from '../parts/highResModels';
+import { rehydrateCarChassisDefs } from '../parts/presets';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import type { CarAnchorNode, PartNode } from '../types/document';
 import { useToastStore } from '../store/toastStore';
@@ -16,6 +19,7 @@ import type { DimensionMode } from '../store/viewStore';
 import { SelectionGizmo } from './SelectionGizmo';
 
 export function Viewport() {
+  const { i18n: viewI18n } = useTranslation();
   const doc = useDocumentStore((s) => s.doc);
   const selection = useDocumentStore((s) => s.selection);
   const setSelection = useDocumentStore((s) => s.setSelection);
@@ -45,11 +49,11 @@ export function Viewport() {
   }, [meshes, doc, highResModels]);
 
   const dimensionOverlays = useMemo(() => (
-    buildDimensionOverlays(meshes, dimensionMode, dimensionMode === 'holes' ? collectHoleWorldPositions(doc.nodes) : [], (id) => {
+    buildDimensionOverlays(meshes, dimensionMode, dimensionMode === 'holes' ? collectHoleWorldPositions(doc.nodes) : [], dimensionMode === 'holeLabels' ? collectHoleWorldAnnotations(doc.nodes) : [], (id) => {
       const node = findNode(doc.nodes, id);
-      return { visible: node?.visible !== false, type: node?.type };
+      return { visible: node?.visible !== false, type: node?.type, name: node?.name };
     })
-  ), [meshes, doc.nodes, dimensionMode]);
+  ), [meshes, doc.nodes, dimensionMode, viewI18n.language]);
 
   useEffect(() => {
     const client = getGeometryClient();
@@ -61,6 +65,10 @@ export function Viewport() {
   }, []);
 
   useEffect(() => {
+    // 動態底盤定義只存記憶體 registry，不隨文件存檔；任何 doc 變動（含開專案/
+    // 匯入/初次啟動還原）求值前都先補註冊一次，否則 registry 剛載入是空的，
+    // 底盤節點會因為查無定義而消失（見 rehydrateCarChassisDefs 註解）。
+    rehydrateCarChassisDefs(doc.nodes);
     getGeometryClient().requestEvaluate(doc.nodes);
   }, [doc]);
 
@@ -185,6 +193,7 @@ type Vec3 = [number, number, number];
 interface DimensionOverlayData {
   nodeId: string;
   lines: DimensionLineData[];
+  labels?: DimensionLabelData[];
 }
 
 interface DimensionLineData {
@@ -195,20 +204,31 @@ interface DimensionLineData {
   text: string;
 }
 
+interface DimensionLabelData {
+  center: Vec3;
+  position: Vec3;
+  diameter: string;
+  kind: string;
+  coords: Vec3;
+}
+
 function buildDimensionOverlays(
   meshes: NodeMeshPayload[],
   mode: DimensionMode,
   partHolePositions: Vec3[],
-  getNodeInfo: (nodeId: string) => { visible: boolean; type?: string },
+  partHoleAnnotations: HoleWorldAnnotation[],
+  getNodeInfo: (nodeId: string) => { visible: boolean; type?: string; name?: string },
 ): DimensionOverlayData[] {
   if (mode === 'off') return [];
   const bounds = new Map<string, { min: Vec3; max: Vec3 }>();
+  const holeNodeNames = new Map<string, string>();
   for (const mesh of meshes) {
     const nodeInfo = getNodeInfo(mesh.nodeId);
     if (!nodeInfo.visible || mesh.positions.length < 3) continue;
     if (mode === 'enclosure' && nodeInfo.type !== 'enclosure') continue;
     if (mode === 'parts' && (nodeInfo.type === 'enclosure' || mesh.role === 'hole')) continue;
     if (mode === 'holes' && mesh.role !== 'hole') continue;
+    if (mode === 'holeLabels' && mesh.role !== 'hole') continue;
     const box = bounds.get(mesh.nodeId) ?? {
       min: [Infinity, Infinity, Infinity],
       max: [-Infinity, -Infinity, -Infinity],
@@ -221,8 +241,10 @@ function buildDimensionOverlays(
       }
     }
     bounds.set(mesh.nodeId, box);
+    if (mesh.role === 'hole' && nodeInfo.name) holeNodeNames.set(mesh.nodeId, nodeInfo.name);
   }
   if (mode === 'holes') return buildHoleDistanceOverlay(bounds, partHolePositions);
+  if (mode === 'holeLabels') return buildHoleLabelOverlay(bounds, holeNodeNames, partHoleAnnotations);
   return [...bounds.entries()].map(([nodeId, box]) => ({ nodeId, lines: buildDimensionLines(box) }));
 }
 
@@ -253,6 +275,48 @@ function buildHoleDistanceOverlay(bounds: Map<string, { min: Vec3; max: Vec3 }>,
     }
   }
   return [{ nodeId: 'hole-distances', lines }];
+}
+
+function buildHoleLabelOverlay(
+  bounds: Map<string, { min: Vec3; max: Vec3 }>,
+  holeNodeNames: Map<string, string>,
+  partHoleAnnotations: HoleWorldAnnotation[],
+): DimensionOverlayData[] {
+  const explicit = [...bounds.entries()].map(([nodeId, box]) => {
+    const center = vec3((box.min[0] + box.max[0]) / 2, (box.min[1] + box.max[1]) / 2, (box.min[2] + box.max[2]) / 2);
+    const size = [box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]];
+    return { center, diameter: Math.min(...size.filter((value) => value > 0.5)), kind: inferHoleKind(holeNodeNames.get(nodeId) ?? '') };
+  });
+  const labels = dedupeHoleLabels([...partHoleAnnotations, ...explicit]).map((hole) => ({
+    center: hole.center,
+    position: vec3(hole.center[0], hole.center[1], hole.center[2] + 6),
+    diameter: `Ø${formatMm(hole.diameter)}`,
+    kind: formatHoleKind(hole.kind),
+    coords: hole.center,
+  }));
+  return labels.length ? [{ nodeId: 'hole-labels', lines: [], labels }] : [];
+}
+
+function inferHoleKind(name: string): HoleWorldAnnotation['kind'] {
+  if (name.includes('杯頭')) return 'socketHead';
+  if (name.includes('沉頭')) return 'countersink';
+  return 'through';
+}
+
+function formatHoleKind(kind: HoleWorldAnnotation['kind']): string {
+  if (kind === 'socketHead') return i18n.t('view.holeKindSocketHead');
+  if (kind === 'countersink') return i18n.t('view.holeKindCountersink');
+  return i18n.t('view.holeKindThrough');
+}
+
+function dedupeHoleLabels(holes: HoleWorldAnnotation[]): HoleWorldAnnotation[] {
+  const seen = new Set<string>();
+  return holes.filter((hole) => {
+    const key = hole.center.map((value) => value.toFixed(3)).join(':');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function dedupePoints(points: Vec3[]): Vec3[] {
@@ -315,6 +379,9 @@ function DimensionOverlay({ overlay }: { overlay: DimensionOverlayData }) {
       {overlay.lines.map((line, index) => (
         <DimensionLine key={index} line={line} />
       ))}
+      {overlay.labels?.map((label, index) => (
+        <HoleCallout key={index} label={label} />
+      ))}
     </group>
   );
 }
@@ -340,6 +407,43 @@ function DimensionLine({ line }: { line: DimensionLineData }) {
       <Html position={line.labelPosition} center distanceFactor={8} zIndexRange={[20, 0]}>
         <div className="pointer-events-none whitespace-nowrap rounded-xl bg-white/94 px-8 py-6 font-mono text-[280px] font-bold leading-none text-slate-800 shadow-sm ring-1 ring-slate-300/80">
           {line.text}
+        </div>
+      </Html>
+    </group>
+  );
+}
+
+function HoleCallout({ label }: { label: DimensionLabelData }) {
+  const geometry = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute([...label.center, ...label.position], 3));
+    return g;
+  }, [label]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+
+  return (
+    <group>
+      <lineSegments geometry={geometry} renderOrder={22}>
+        <lineBasicMaterial color="#2563eb" depthTest={false} transparent opacity={0.72} />
+      </lineSegments>
+      <mesh position={label.center} renderOrder={23}>
+        <sphereGeometry args={[1.15, 16, 16]} />
+        <meshBasicMaterial color="#2563eb" depthTest={false} />
+      </mesh>
+      <Html position={label.position} center distanceFactor={8} zIndexRange={[24, 0]}>
+        <div className="pointer-events-none min-w-[900px] overflow-hidden rounded-3xl border-2 border-blue-200/80 bg-white/95 font-mono text-slate-800 shadow-[0_18px_46px_rgba(15,23,42,0.18)] backdrop-blur">
+          <div className="flex items-center justify-between gap-10 border-b border-slate-200/80 bg-gradient-to-r from-blue-50 to-slate-50 px-10 py-7">
+            <span className="text-[280px] font-black leading-none tracking-[-0.08em] text-blue-700">{label.diameter}</span>
+            <span className="rounded-full border-2 border-blue-200 bg-white px-7 py-4 text-[72px] font-bold leading-none text-blue-700">{label.kind}</span>
+          </div>
+          <div className="grid gap-4 px-8 py-7 text-[104px] font-bold leading-none text-slate-600">
+            {(['X', 'Y', 'Z'] as const).map((axis, index) => (
+              <span key={axis} className="flex items-baseline justify-between gap-10 rounded-2xl bg-slate-100 px-7 py-5">
+                <span className="text-slate-400">{axis}</span>
+                <span>{formatMm(label.coords[index])}</span>
+              </span>
+            ))}
+          </div>
         </div>
       </Html>
     </group>

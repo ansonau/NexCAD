@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { NexcadDocument, SceneNode } from '../types/document';
+import type { CarAnchorNode, NexcadDocument, SceneNode, Vec3 } from '../types/document';
 import { emptyDocument, identityTransform, newId } from '../types/document';
 
 const MAX_HISTORY = 100;
@@ -18,11 +18,50 @@ interface DocumentState {
   addNode: (node: SceneNode) => void;
   addNodes: (nodes: SceneNode[], selection?: string[]) => void;
   updateNode: (id: string, fn: (node: SceneNode) => void) => void;
+  updateCarAnchorRigid: (id: string, fn: (anchor: CarAnchorNode) => void) => void;
   removeSelected: () => void;
   groupSelected: (name: string) => void;
   alignSelected: (axis: 0 | 1 | 2, target?: AlignTarget) => void;
   beginDrag: () => void;
   updateTransient: (id: string, fn: (node: SceneNode) => void) => void;
+  updateCarAnchorRigidTransient: (id: string, fn: (anchor: CarAnchorNode) => void) => void;
+}
+
+function rotateZDeg(p: Vec3, degrees: number): Vec3 {
+  const rad = (degrees * Math.PI) / 180;
+  const c = Math.cos(rad);
+  const s = Math.sin(rad);
+  return [p[0] * c - p[1] * s, p[0] * s + p[1] * c, p[2]];
+}
+
+/**
+ * 錨點的電子零件是獨立 PartNode，只靠 electronicsIds 名義關聯（不是子節點）。
+ * 改錨點 transform 不會自動連動它們，所以每次改完錨點後，把同樣的位移／繞錨點
+ * 原位置的 Z 旋轉套用到每個電子零件，讓「移動/旋轉錨點」等於「移動整台車」。
+ */
+function applyCarAnchorRigidMove(
+  nodes: SceneNode[],
+  anchor: CarAnchorNode,
+  oldPosition: Vec3,
+  oldRotationZ: number,
+): void {
+  const dRotZ = anchor.transform.rotation[2] - oldRotationZ;
+  const idSet = new Set(anchor.electronicsIds);
+  for (const n of nodes) {
+    if (n.type !== 'part' || !idSet.has(n.id)) continue;
+    const relative: Vec3 = [
+      n.transform.position[0] - oldPosition[0],
+      n.transform.position[1] - oldPosition[1],
+      n.transform.position[2] - oldPosition[2],
+    ];
+    const rotated = dRotZ !== 0 ? rotateZDeg(relative, dRotZ) : relative;
+    n.transform.position = [
+      anchor.transform.position[0] + rotated[0],
+      anchor.transform.position[1] + rotated[1],
+      anchor.transform.position[2] + rotated[2],
+    ];
+    if (dRotZ !== 0) n.transform.rotation[2] += dRotZ;
+  }
 }
 
 export function findNode(nodes: SceneNode[], id: string): SceneNode | undefined {
@@ -139,6 +178,16 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
       if (n) fn(n);
     }),
 
+  updateCarAnchorRigid: (id, fn) =>
+    get().mutate('移動小車', (d) => {
+      const n = findNode(d.nodes, id);
+      if (!n || n.type !== 'car-anchor') return;
+      const oldPosition: Vec3 = [...n.transform.position];
+      const oldRotationZ = n.transform.rotation[2];
+      fn(n);
+      applyCarAnchorRigidMove(d.nodes, n, oldPosition, oldRotationZ);
+    }),
+
   removeSelected: () => {
     const selected = new Set(get().selection);
     if (selected.size === 0) return;
@@ -186,6 +235,26 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
       const n = findNode(next.nodes, id);
       if (!n) return {};
       fn(n);
+      if (s.dragBase) {
+        return {
+          doc: next,
+          past: [...s.past.slice(-MAX_HISTORY + 1), s.dragBase],
+          future: [],
+          dragBase: null,
+        };
+      }
+      return { doc: next };
+    }),
+
+  updateCarAnchorRigidTransient: (id, fn) =>
+    set((s) => {
+      const next = structuredClone(s.doc);
+      const n = findNode(next.nodes, id);
+      if (!n || n.type !== 'car-anchor') return {};
+      const oldPosition: Vec3 = [...n.transform.position];
+      const oldRotationZ = n.transform.rotation[2];
+      fn(n);
+      applyCarAnchorRigidMove(next.nodes, n, oldPosition, oldRotationZ);
       if (s.dragBase) {
         return {
           doc: next,
