@@ -11,4 +11,10 @@ services:
     labels:
       com.anson-deploy.app: "nexcad"
       com.anson-deploy.repository: "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY must be set}"
+    networks:
+      - ai_network
+
+networks:
+  ai_network:
+    external: true
 # END ANSON DEPLOY MANAGED BLOCK
