@@ -3,13 +3,12 @@ name: Anson Deploy
 on:
   push:
     branches:
-# BEGIN ANSON DEPLOY MANAGED BLOCK
       - "main"
   workflow_dispatch:
 
 jobs:
   deploy:
-    runs-on: ["self-hosted","macOS","ARM64"]
+    runs-on: ["self-hosted", "macOS", "ARM64"]
     env:
       IMAGE_NAME: "nexcad"
       COMPOSE_FILE: "deploy/docker-compose.yml"
@@ -20,18 +19,58 @@ jobs:
       KEEP_IMAGES: 3
       DOCKERFILE: "Dockerfile"
       BUILD_CONTEXT: "."
-      BUILD_VARIABLES: ""
     steps:
       - uses: actions/checkout@v4
-      - name: Verify 1
-        run: "npm test"
-      - name: Verify 2
-        run: "npm run build"
-      - name: Preflight
-        run: node "${ANSON_DEPLOY_SKILL_ROOT:-/Users/ansonau/.codex/skills/anson-deploy-skill}/scripts/anson-deploy.mjs" preflight . --repo "$GITHUB_REPOSITORY"
+
+      - name: Build & test (Docker)
+        env:
+          PATH: "/opt/homebrew/bin:/usr/local/bin:/Applications/Docker.app/Contents/Resources/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+        run: docker build --file "$DOCKERFILE" --tag "${IMAGE_NAME}:${GITHUB_SHA}" "$BUILD_CONTEXT"
+
       - name: Deploy revision
-        run: "${ANSON_DEPLOY_SKILL_ROOT:-/Users/ansonau/.codex/skills/anson-deploy-skill}/scripts/deploy-revision.sh"
+        env:
+          PATH: "/opt/homebrew/bin:/usr/local/bin:/Applications/Docker.app/Contents/Resources/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+        run: |
+          set -euo pipefail
+          IMAGE_REVISION="${IMAGE_NAME}:${GITHUB_SHA}"
+
+          previous_id=$(docker ps -aq --filter "name=^/${CONTAINER}$" | sed -n '1p')
+          previous_image=""
+          if [ -n "$previous_id" ]; then
+            previous_image=$(docker inspect "$previous_id" --format '{{.Config.Image}}' 2>/dev/null || true)
+          fi
+
+          GITHUB_REPOSITORY="$GITHUB_REPOSITORY" ANSON_DEPLOY_IMAGE="$IMAGE_REVISION" \
+            docker compose -p nexcad -f "$COMPOSE_FILE" up -d --no-deps --force-recreate "$SERVICE"
+
+          status=$(curl -sS --max-time "$HEALTHCHECK_TIMEOUT_SECONDS" --write-out '%{http_code}' --output /dev/null "$HEALTH_URL" || true)
+          if [[ "$status" == 2* ]]; then
+            echo "deployed ${IMAGE_REVISION} (HTTP ${status})"
+          else
+            echo "::warning::health check failed (HTTP ${status:-none}); rolling back"
+            GITHUB_REPOSITORY="$GITHUB_REPOSITORY" ANSON_DEPLOY_IMAGE="$IMAGE_REVISION" \
+              docker compose -p nexcad -f "$COMPOSE_FILE" logs --tail 200 "$SERVICE" || true
+            if [ -z "$previous_image" ]; then
+              echo "::error::no previous image to roll back to"
+              exit 1
+            fi
+            GITHUB_REPOSITORY="$GITHUB_REPOSITORY" ANSON_DEPLOY_IMAGE="$previous_image" \
+              docker compose -p nexcad -f "$COMPOSE_FILE" up -d --no-deps --force-recreate "$SERVICE"
+            exit 1
+          fi
+
+          docker image ls --format '{{.Repository}}:{{.Tag}}' "$IMAGE_NAME" | {
+            retained=0
+            while IFS= read -r image; do
+              tag="${image#"$IMAGE_NAME":}"
+              [[ "$image" == "$IMAGE_NAME":* && "$tag" =~ ^[[:xdigit:]]{7,40}$ ]] || continue
+              retained=$((retained + 1))
+              if [ "$retained" -gt "$KEEP_IMAGES" ]; then
+                docker image rm "$image" || true
+              fi
+            done
+          }
+
       - name: Deployment summary
         if: always()
         run: printf 'revision=%s service=%s image=%s\n' "$GITHUB_SHA" "$SERVICE" "$IMAGE_NAME"
-# END ANSON DEPLOY MANAGED BLOCK
