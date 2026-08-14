@@ -54,9 +54,9 @@ function buildBracketForPart(
   return kernel.transform(local, transform);
 }
 
-/** 在本地座標建構底座平板 + 固定柱 + 鎖附孔的 Solid（不含 transform） */
+/** 在本地座標建構底座平板 + 擋牆 + 固定柱 + 鎖附孔的 Solid（不含 transform） */
 function buildBracketSolid(plan: BracketPlan, params: BracketNode['params'], kernel: GeometryKernel): Solid {
-  const { base, floorZ, cornerRadius, standoffs, baseHoles } = plan;
+  const { base, floorZ, cornerRadius, standoffs, baseHoles, wall } = plan;
   const thickness = params.baseThickness;
 
   const width = base.maxX - base.minX;
@@ -65,6 +65,22 @@ function buildBracketSolid(plan: BracketPlan, params: BracketNode['params'], ker
     position: [(base.minX + base.maxX) / 2, (base.minY + base.maxY) / 2, floorZ],
     ...noRotScale,
   });
+
+  // 零件四周定位擋牆（wallHeight > 0 時）
+  if (wall.height > 0) {
+    const wallThickness = params.wallThickness ?? 1.5;
+    const rOuter = Math.max(0, Math.min(wall.cornerRadius + wallThickness, wall.outerW / 2 - 0.1, wall.outerD / 2 - 0.1));
+    const outer = kernel.transform(kernel.roundedBox(wall.outerW, wall.outerD, wall.height, rOuter), {
+      position: [0, 0, 0],
+      ...noRotScale,
+    });
+    const rInner = Math.max(0, Math.min(wall.cornerRadius, wall.innerW / 2 - 0.1, wall.innerD / 2 - 0.1));
+    const inner = kernel.transform(kernel.roundedBox(wall.innerW, wall.innerD, wall.height, rInner), {
+      position: [0, 0, 0],
+      ...noRotScale,
+    });
+    solid = kernel.union(solid, kernel.difference(outer, inner));
+  }
 
   for (const s of standoffs) {
     const style = s.mountingStyle ?? 'screw';

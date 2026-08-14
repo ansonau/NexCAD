@@ -19,10 +19,10 @@ const boardDef: PartDefinition = {
 describe('planBracket', () => {
   it('底座依零件本體向外擴張 baseMargin，底面在零件底面下方 baseThickness', () => {
     const plan = planBracket(boardDef, DEFAULT_BRACKET_PARAMS);
-    expect(plan.base.minX).toBeCloseTo(-20 - 3, 6);
-    expect(plan.base.maxX).toBeCloseTo(20 + 3, 6);
-    expect(plan.base.minY).toBeCloseTo(-10 - 3, 6);
-    expect(plan.base.maxY).toBeCloseTo(10 + 3, 6);
+    expect(plan.base.minX).toBeCloseTo(-20 - 6, 6);
+    expect(plan.base.maxX).toBeCloseTo(20 + 6, 6);
+    expect(plan.base.minY).toBeCloseTo(-10 - 6, 6);
+    expect(plan.base.maxY).toBeCloseTo(10 + 6, 6);
     expect(plan.base.maxZ).toBeCloseTo(0, 6);
     expect(plan.floorZ).toBeCloseTo(-DEFAULT_BRACKET_PARAMS.baseThickness, 6);
   });
@@ -36,11 +36,19 @@ describe('planBracket', () => {
     expect(plan.standoffs[1].y).toBeCloseTo(5, 6);
   });
 
-  it('預設生成四角鎖附孔，baseHoles=false 時不生成', () => {
+  it('底座四角鎖附孔落在零件外側的鎖附帶（不被零件遮住）', () => {
     const plan = planBracket(boardDef, DEFAULT_BRACKET_PARAMS);
     expect(plan.baseHoles).toHaveLength(4);
-    const noHoles = planBracket(boardDef, { ...DEFAULT_BRACKET_PARAMS, baseHoles: false });
-    expect(noHoles.baseHoles).toHaveLength(0);
+    // 孔心 = 零件半寬 + baseMargin/2 = 20+3、10+3，落在零件（±20、±10）外側
+    expect(plan.baseHoles[0].x).toBeCloseTo(-23, 6);
+    expect(plan.baseHoles[0].y).toBeCloseTo(-13, 6);
+    expect(Math.abs(plan.baseHoles[0].x)).toBeGreaterThan(20);
+    expect(Math.abs(plan.baseHoles[0].y)).toBeGreaterThan(10);
+  });
+
+  it('baseHoles=false 時不生成鎖附孔', () => {
+    const plan = planBracket(boardDef, { ...DEFAULT_BRACKET_PARAMS, baseHoles: false });
+    expect(plan.baseHoles).toHaveLength(0);
   });
 
   it('standoff=false 的安裝孔不長固定柱', () => {
@@ -63,5 +71,22 @@ describe('planBracket', () => {
     };
     const plan = planBracket(def, DEFAULT_BRACKET_PARAMS);
     expect(plan.standoffs[0].topZ).toBeCloseTo(12, 6);
+  });
+
+  it('擋牆尺寸依零件本體、間隙與壁厚計算', () => {
+    const plan = planBracket(boardDef, { ...DEFAULT_BRACKET_PARAMS, wallHeight: 5 });
+    expect(plan.wall.height).toBeCloseTo(5, 6);
+    // outer = body + 2*clearance + 2*thickness = 40 + 1 + 3 = 44
+    expect(plan.wall.outerW).toBeCloseTo(44, 6);
+    expect(plan.wall.outerD).toBeCloseTo(24, 6);
+    // inner = body + 2*clearance = 41 / 21
+    expect(plan.wall.innerW).toBeCloseTo(41, 6);
+    expect(plan.wall.innerD).toBeCloseTo(21, 6);
+  });
+
+  it('擋牆在底座範圍內（外緣不超出鎖附帶）', () => {
+    const plan = planBracket(boardDef, { ...DEFAULT_BRACKET_PARAMS, wallHeight: 5 });
+    expect(plan.wall.outerW / 2).toBeLessThan(plan.base.maxX);
+    expect(plan.wall.outerD / 2).toBeLessThan(plan.base.maxY);
   });
 });

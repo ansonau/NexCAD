@@ -22,9 +22,21 @@ const boardDef: PartDefinition = {
   clearanceHeight: 10,
 };
 
+const ledDef: PartDefinition = {
+  id: 'test-led',
+  name: 'Test LED',
+  nameZh: '測試 LED',
+  category: 'component',
+  body: { size: [5.8, 5.8, 1], blocks: [{ shape: 'cylinder', position: [0, 0, 0], size: [5, 5, 7.6] }] },
+  mountingHoles: [],
+  ports: [],
+  clearanceHeight: 8.6,
+};
+
 beforeAll(async () => {
   await kernel.init();
   registerPartDefinition(boardDef);
+  registerPartDefinition(ledDef);
 });
 
 function bracketFor(partId: string, params = DEFAULT_BRACKET_PARAMS, rotation: [number, number, number] = [0, 0, 0]) {
@@ -95,5 +107,18 @@ describe('buildBracketNodeSolid', () => {
     const solid = buildBracketNodeSolid(node, kernel);
     expect(solid).not.toBeNull();
     expect(kernel.volume(solid!)).toBeGreaterThan(volumeOf(bracketFor('test-board')));
+  });
+
+  it('擋牆增加支架體積', () => {
+    const noWall = volumeOf(bracketFor('test-board'));
+    const withWall = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, wallHeight: 5 }));
+    expect(withWall).toBeGreaterThan(noWall);
+  });
+
+  it('無安裝孔的零件 + 擋牆可產生固定實體（體積大於純底座）', () => {
+    const bareBase = volumeOf(bracketFor('test-led'));
+    const withWall = volumeOf(bracketFor('test-led', { ...DEFAULT_BRACKET_PARAMS, wallHeight: 5 }));
+    expect(bareBase).toBeGreaterThan(0);
+    expect(withWall).toBeGreaterThan(bareBase);
   });
 });

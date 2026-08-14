@@ -54,17 +54,36 @@
 
 ### Requirement: 底座四角鎖附孔
 
-當 `baseHoles` 為 true（預設）時，支架底座 SHALL 在四角生成貫穿底座的鎖附孔，孔徑依 `screwSize` 的通孔徑決定。當 `baseHoles` 為 false 時 SHALL 不生成鎖附孔。
+當 `baseHoles` 為 true（預設）時，支架底座 SHALL 在四角生成貫穿底座的鎖附孔，孔徑依 `screwSize` 的通孔徑決定。鎖附孔 SHALL 落在零件本體外側的鎖附帶（`baseMargin`）內，使螺絲孔不被零件本體遮住。當 `baseHoles` 為 false 時 SHALL 不生成鎖附孔。
 
-#### Scenario: 預設生成四角鎖附孔
+#### Scenario: 預設生成四角鎖附孔且位於零件外側
 
 - **WHEN** `baseHoles` 為 true 或未設定
-- **THEN** 底座四角各有一個貫穿鎖附孔
+- **THEN** 底座四角各有一個貫穿鎖附孔，且孔心位於零件本體俯視範圍之外
 
 #### Scenario: 關閉鎖附孔
 
 - **WHEN** `baseHoles` 為 false
 - **THEN** 底座不生成任何鎖附孔
+
+### Requirement: 零件四周定位擋牆
+
+支架 SHALL 支援在零件四周生成定位擋牆（`wallHeight` > 0 時）：擋牆為包住零件本體俯視輪廓的環形牆，高度 `wallHeight`、壁厚 `wallThickness`、與零件本體間隙 `wallClearance`，自底座頂面（零件底面）向上生成。擋牆外緣 SHALL 不超出底座範圍。此功能 SHALL 讓無安裝孔的零件也能被支架固定。
+
+#### Scenario: 開啟擋牆生成環形定位牆
+
+- **WHEN** `wallHeight` 大於 0
+- **THEN** 底座上生成包住零件本體輪廓的環形擋牆，其內緣與零件本體保持 `wallClearance` 間隙、壁厚 `wallThickness`、高度 `wallHeight`
+
+#### Scenario: 擋牆預設關閉
+
+- **WHEN** `wallHeight` 為 0 或未設定
+- **THEN** 不生成任何擋牆（僅底座與固定柱/鎖附孔）
+
+#### Scenario: 無安裝孔的零件以擋牆固定
+
+- **WHEN** 選取的零件沒有任何安裝孔，且使用者開啟擋牆
+- **THEN** 支架仍可固定零件（擋牆包住零件），且設定面板顯示「此零件沒有安裝孔」的提示
 
 ### Requirement: 支架節點可序列化與匯入
 

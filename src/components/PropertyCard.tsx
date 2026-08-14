@@ -500,6 +500,29 @@ function BracketParamFields({ node }: { node: BracketNode }) {
           onChange={(v) => setParam('cornerRadius', v)}
         />
       </div>
+      <div className="mt-2 grid grid-cols-3 gap-1.5">
+        <StepperField
+          label={t('bracket.wallHeightShort')}
+          value={p.wallHeight ?? 0}
+          min={0}
+          step={0.5}
+          onChange={(v) => setParam('wallHeight', v)}
+        />
+        <StepperField
+          label={t('bracket.wallThicknessShort')}
+          value={p.wallThickness ?? 1.5}
+          min={0.5}
+          step={0.5}
+          onChange={(v) => setParam('wallThickness', v)}
+        />
+        <StepperField
+          label={t('bracket.wallClearanceShort')}
+          value={p.wallClearance ?? 0.5}
+          min={0}
+          step={0.1}
+          onChange={(v) => setParam('wallClearance', v)}
+        />
+      </div>
       <label className="mt-2 block">
         <FieldLabel>{t('bracket.screwSize')}</FieldLabel>
         <select
