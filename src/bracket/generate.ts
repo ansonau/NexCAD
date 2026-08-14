@@ -1,9 +1,11 @@
 import type { GeometryKernel, Solid } from '../geometry/kernel';
 import { getPartDefinition } from '../parts/library';
-import type { BracketNode } from '../types/document';
+import type { Transform, BracketNode } from '../types/document';
+import type { PartDefinition } from '../parts/schema';
 import type { PartInstance } from '../enclosure/plan';
 import { pilotDiameter } from '../enclosure/screws';
 import { planBracket } from './plan';
+import type { BracketPlan } from './plan';
 
 const noRotScale = {
   rotation: [0, 0, 0] as [number, number, number],
@@ -25,12 +27,37 @@ function resolveParts(node: BracketNode): PartInstance[] {
   return out;
 }
 
-/** 由 BracketNode 組裝出 Solid；worker-safe（不依賴 store）。找不到來源零件時回傳 null。 */
+/**
+ * 由 BracketNode 組裝出 Solid；worker-safe（不依賴 store）。找不到來源零件時回傳 null。
+ * 每個來源零件各自在「本地座標」生成支架（底座＋固定柱），再套用其 transform 後 union，
+ * 因此零件任意旋轉（含繞 X/Y 軸立起）時支架仍正確貼合零件。
+ */
 export function buildBracketNodeSolid(node: BracketNode, kernel: GeometryKernel): Solid | null {
   const parts = resolveParts(node);
   if (parts.length === 0) return null;
-  const { base, floorZ, cornerRadius, standoffs, baseHoles } = planBracket(parts, node.params);
-  const thickness = node.params.baseThickness;
+  let result: Solid | null = null;
+  for (const part of parts) {
+    const solid = buildBracketForPart(part.def, part.transform, node.params, kernel);
+    result = result ? kernel.union(result, solid) : solid;
+  }
+  return result;
+}
+
+function buildBracketForPart(
+  def: PartDefinition,
+  transform: Transform,
+  params: BracketNode['params'],
+  kernel: GeometryKernel,
+): Solid {
+  const plan = planBracket(def, params);
+  const local = buildBracketSolid(plan, params, kernel);
+  return kernel.transform(local, transform);
+}
+
+/** 在本地座標建構底座平板 + 固定柱 + 鎖附孔的 Solid（不含 transform） */
+function buildBracketSolid(plan: BracketPlan, params: BracketNode['params'], kernel: GeometryKernel): Solid {
+  const { base, floorZ, cornerRadius, standoffs, baseHoles } = plan;
+  const thickness = params.baseThickness;
 
   const width = base.maxX - base.minX;
   const depth = base.maxY - base.minY;
@@ -42,7 +69,7 @@ export function buildBracketNodeSolid(node: BracketNode, kernel: GeometryKernel)
   for (const s of standoffs) {
     const style = s.mountingStyle ?? 'screw';
     if (style === 'hole') {
-      const holeRadius = pilotDiameter(node.params.screwSize, 'through') / 2;
+      const holeRadius = pilotDiameter(params.screwSize, 'through') / 2;
       const hole = kernel.transform(kernel.cylinder(holeRadius, thickness + 2), {
         position: [s.x, s.y, floorZ - 1],
         ...noRotScale,
@@ -92,7 +119,7 @@ export function buildBracketNodeSolid(node: BracketNode, kernel: GeometryKernel)
     solid = kernel.difference(solid, entry);
   }
 
-  const throughRadius = pilotDiameter(node.params.screwSize, 'through') / 2;
+  const throughRadius = pilotDiameter(params.screwSize, 'through') / 2;
   for (const h of baseHoles) {
     const hole = kernel.transform(kernel.cylinder(throughRadius, thickness + 2), {
       position: [h.x, h.y, floorZ - 1],

@@ -27,8 +27,9 @@ NexCAD 已有「外殼」與「智能小車」等由來源零件驅動的生成�
   - Rationale: 支架固定柱與外殼支柱是同一種結構，共用可避免兩套算法 drift（與 `computeChassisDefinition` 的共用理由相同）。
   - Alternative considered: 重寫定位/包覆盒計算。Rejected 因為重複且易出錯。
 
-- 支架以世界座標計算，`BracketNode.transform` 恆為 identity。
-  - Rationale: 與 `EnclosureNode` 一致，幾何直接對齊來源零件世界位置，無需二次 transform。
+- 支架以零件本地座標計算，再套用來源零件的 transform；`BracketNode.transform` 恆為 identity。
+  - Rationale: 在本地座標生成（底座於零件底面下方、固定柱對齊本地安裝孔）後套用 transform，任意旋轉（含繞 X/Y 軸立起）都正確貼合零件；節點本身維持 identity 與外殼一致。
+  - Alternative considered: 以零件世界包覆盒（AABB）計算。Rejected 因為零件繞 X/Y 軸旋轉時，AABB 底座會懸空、固定柱高度異常。
 
 - 產生範圍限「選取的零件」，未選取零件時不動作並提示。
   - Rationale: 使用者明確要求「為選擇中的零件建立支架」。與外殼「選取優先、否則全部」不同，支架不應意外為全部零件各建一個。

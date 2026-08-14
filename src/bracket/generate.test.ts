@@ -27,12 +27,19 @@ beforeAll(async () => {
   registerPartDefinition(boardDef);
 });
 
-function bracketFor(partId: string, params = DEFAULT_BRACKET_PARAMS) {
+function bracketFor(partId: string, params = DEFAULT_BRACKET_PARAMS, rotation: [number, number, number] = [0, 0, 0]) {
   const part = createPartNode(partId, 'Board');
+  part.transform.rotation = rotation;
   const node = createBracketNode(params, '支架', {
     sourceParts: [{ nodeId: part.id, partId: part.partId, transform: part.transform }],
   });
   return node;
+}
+
+function volumeOf(node: ReturnType<typeof bracketFor>): number {
+  const solid = buildBracketNodeSolid(node, kernel);
+  expect(solid).not.toBeNull();
+  return kernel.volume(solid!);
 }
 
 describe('buildBracketNodeSolid', () => {
@@ -42,38 +49,51 @@ describe('buildBracketNodeSolid', () => {
   });
 
   it('screw 模式產生實體且體積大於 0', () => {
-    const solid = buildBracketNodeSolid(bracketFor('test-board'), kernel);
-    expect(solid).not.toBeNull();
-    expect(kernel.volume(solid!)).toBeGreaterThan(0);
+    expect(volumeOf(bracketFor('test-board'))).toBeGreaterThan(0);
   });
 
   it('peg 模式產生實體且體積大於 0', () => {
-    const solid = buildBracketNodeSolid(
-      bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, mountingStyle: 'peg' }),
-      kernel,
-    );
-    expect(solid).not.toBeNull();
-    expect(kernel.volume(solid!)).toBeGreaterThan(0);
+    expect(
+      volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, mountingStyle: 'peg' })),
+    ).toBeGreaterThan(0);
   });
 
   it('hole 模式產生實體且體積大於 0', () => {
-    const solid = buildBracketNodeSolid(
-      bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, mountingStyle: 'hole' }),
-      kernel,
-    );
-    expect(solid).not.toBeNull();
-    expect(kernel.volume(solid!)).toBeGreaterThan(0);
+    expect(
+      volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, mountingStyle: 'hole' })),
+    ).toBeGreaterThan(0);
   });
 
   it('peg 模式體積大於 hole 模式（peg 長實心柱，hole 只貫穿孔）', () => {
-    const peg = buildBracketNodeSolid(
-      bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, mountingStyle: 'peg' }),
-      kernel,
-    );
-    const hole = buildBracketNodeSolid(
-      bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, mountingStyle: 'hole' }),
-      kernel,
-    );
-    expect(kernel.volume(peg!)).toBeGreaterThan(kernel.volume(hole!));
+    const peg = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, mountingStyle: 'peg' }));
+    const hole = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, mountingStyle: 'hole' }));
+    expect(peg).toBeGreaterThan(hole);
+  });
+
+  it('繞 Z 軸旋轉 90° 後支架體積不變（底座隨零件旋轉）', () => {
+    const flat = volumeOf(bracketFor('test-board'));
+    const rotated = volumeOf(bracketFor('test-board', DEFAULT_BRACKET_PARAMS, [0, 0, 90]));
+    expect(Math.abs(rotated - flat) / flat).toBeLessThan(1e-6);
+  });
+
+  it('繞 X 軸旋轉 90°（零件立起）後支架體積不變', () => {
+    const flat = volumeOf(bracketFor('test-board'));
+    const tilted = volumeOf(bracketFor('test-board', DEFAULT_BRACKET_PARAMS, [90, 0, 0]));
+    expect(Math.abs(tilted - flat) / flat).toBeLessThan(1e-6);
+  });
+
+  it('多個來源零件各自生成支架並 union', () => {
+    const a = createPartNode('test-board', 'A');
+    const b = createPartNode('test-board', 'B');
+    b.transform.position = [100, 0, 0];
+    const node = createBracketNode(DEFAULT_BRACKET_PARAMS, '支架', {
+      sourceParts: [
+        { nodeId: a.id, partId: a.partId, transform: a.transform },
+        { nodeId: b.id, partId: b.partId, transform: b.transform },
+      ],
+    });
+    const solid = buildBracketNodeSolid(node, kernel);
+    expect(solid).not.toBeNull();
+    expect(kernel.volume(solid!)).toBeGreaterThan(volumeOf(bracketFor('test-board')));
   });
 });

@@ -16,12 +16,17 @@
 
 ### Requirement: 底座平板尺寸依來源零件自動計算
 
-支架底座 SHALL 依來源零件在世界座標下的俯視包覆盒向外擴張 `baseMargin`，厚度為 `baseThickness`，四邊圓角為 `cornerRadius`。支架以世界座標計算，`BracketNode.transform` 恆為 identity。當來源零件的位置或旋轉改變後，支架 SHALL 顯示過期提示並可重新產生。
+支架 SHALL 在來源零件的本地座標計算：底座＝零件本體俯視尺寸向外擴張 `baseMargin`、厚度 `baseThickness`、四邊圓角 `cornerRadius`，再套用來源零件的 transform 放到世界座標（`BracketNode.transform` 恆為 identity）。因此零件任意旋轉（含繞 X/Y 軸立起）時支架仍貼合零件。當來源零件的位置或旋轉改變後，支架 SHALL 顯示過期提示並可重新產生。
 
 #### Scenario: 底座包住零件俯視範圍
 
-- **WHEN** 為一個零件建立支架
-- **THEN** 底座在 XY 平面的範圍等於零件世界包覆盒向外擴張 `baseMargin`，厚度等於 `baseThickness`
+- **WHEN** 為一個平放的零件建立支架
+- **THEN** 底座在 XY 平面的範圍等於零件本體俯視範圍向外擴張 `baseMargin`，厚度等於 `baseThickness`
+
+#### Scenario: 零件旋轉後支架貼合零件
+
+- **WHEN** 來源零件繞 X 或 Y 軸旋轉（零件立起）後建立支架
+- **THEN** 支架仍以零件本地座標生成並隨零件旋轉，底座與固定柱正確對齊零件安裝孔（不懸空、不產生異常長柱）
 
 #### Scenario: 零件移動後支架可重新產生
 
