@@ -15,6 +15,8 @@ function typeLabel(node: SceneNode): string {
       return 'group';
     case 'enclosure':
       return `enclosure/${node.part}`;
+    case 'bracket':
+      return 'bracket';
     case 'car-anchor':
       return 'anchor';
     default:

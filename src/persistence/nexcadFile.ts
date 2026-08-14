@@ -71,6 +71,30 @@ const enclosureNodeSchema = z.object({
   ),
 });
 
+const bracketNodeSchema = z.object({
+  ...nodeCommonShape,
+  type: z.literal('bracket'),
+  params: z.object({
+    baseThickness: z.number(),
+    baseMargin: z.number(),
+    cornerRadius: z.number(),
+    screwSize: z.enum(['M2', 'M2.5', 'M3', 'M4']),
+    mountingStyle: z.enum(['screw', 'peg', 'hole']).optional(),
+    baseHoles: z.boolean().optional(),
+  }),
+  sourceParts: z.array(
+    z.object({
+      nodeId: z.string(),
+      partId: z.string(),
+      transform: z.object({
+        position: vec3Schema,
+        rotation: vec3Schema,
+        scale: vec3Schema,
+      }),
+    }),
+  ),
+});
+
 const carAnchorNodeSchema = z.object({
   ...nodeCommonShape,
   type: z.literal('car-anchor'),
@@ -89,7 +113,7 @@ const carAnchorNodeSchema = z.object({
 });
 
 const sceneNodeSchema: z.ZodType<SceneNode> = z.lazy(() =>
-  z.union([primitiveNodeSchema, partNodeSchema, groupNodeSchema, enclosureNodeSchema, carAnchorNodeSchema]),
+  z.union([primitiveNodeSchema, partNodeSchema, groupNodeSchema, enclosureNodeSchema, bracketNodeSchema, carAnchorNodeSchema]),
 );
 
 const documentSchema = z.object({

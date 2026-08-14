@@ -44,6 +44,28 @@ test('建立零件、產生外殼、匯出 STL', async ({ page }) => {
   expect(download.suggestedFilename()).toMatch(/\.stl$/);
 });
 
+test('建立零件、建立支架', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto('/');
+
+  // 放一個零件
+  const drawerSearch = page.getByPlaceholder(zh.drawer.search);
+  await expect(drawerSearch).toBeVisible();
+  await drawerSearch.fill('nano');
+  await page.getByRole('button', { name: 'Arduino Nano' }).click();
+  await expect(page.getByLabel(zh.property.name)).toHaveValue('Arduino Nano');
+
+  // 切到工具 Tab，開啟支架面板並產生
+  await page.getByRole('tab', { name: zh.view.sidebarTools }).click();
+  await page.getByTitle(zh.bracket.title).click();
+  await expect(page.getByRole('dialog', { name: zh.bracket.title })).toBeVisible();
+  await page.getByRole('button', { name: zh.bracket.generate, exact: true }).last().click();
+
+  // 切到場景 Tab，確認出現 bracket 節點
+  await page.getByRole('tab', { name: zh.view.sidebarScene }).click();
+  await expect(page.getByText('bracket', { exact: true })).toBeVisible();
+});
+
 test('desktop sidebar tabs expose parts, tools, and scene objects', async ({ page }) => {
   await page.goto('/');
 
@@ -54,6 +76,7 @@ test('desktop sidebar tabs expose parts, tools, and scene objects', async ({ pag
   await expect(page.getByTitle(zh.enclosure.title)).toBeVisible();
   await expect(page.getByTitle(zh.toolbar.smartCar)).toBeVisible();
   await expect(page.getByTitle(zh.tools.title)).toBeVisible();
+  await expect(page.getByTitle(zh.bracket.title)).toBeVisible();
   await page.getByTitle(zh.align.title).click();
   const toolsPanel = page.getByRole('tabpanel', { name: zh.view.sidebarTools });
   await expect(toolsPanel.getByText(zh.align.inlineHint)).toBeVisible();

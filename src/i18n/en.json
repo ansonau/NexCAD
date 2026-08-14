@@ -137,6 +137,24 @@
     "projectNeedsSelection": "Select exactly one part and one plate first",
     "projected": "Projected {{count}} screw holes"
   },
+  "bracket": {
+    "title": "Create bracket",
+    "scope": "Will create a bracket for {{count}} selected part(s)",
+    "needsSelection": "Select a part to create a bracket for first",
+    "baseThickness": "Base thickness (mm)",
+    "baseThicknessShort": "Thickness",
+    "baseMargin": "Base margin (mm)",
+    "baseMarginShort": "Margin",
+    "cornerRadius": "Corner radius (mm)",
+    "cornerRadiusShort": "Radius",
+    "screwSize": "Screw size",
+    "mountingStyle": "Part mounting style",
+    "baseHoles": "Corner mounting holes",
+    "generate": "Create bracket",
+    "regenerate": "Regenerate",
+    "staleWarning": "Part position has changed; the bracket may be out of date, regenerate to update",
+    "params": "Bracket parameters"
+  },
   "align": {
     "title": "Align Tools",
     "center": "Align centers",

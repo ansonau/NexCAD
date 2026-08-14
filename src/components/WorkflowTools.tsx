@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { AlignHorizontalSpaceAround, Car, PackageOpen, Wrench } from 'lucide-react';
+import { AlignHorizontalSpaceAround, Braces, Car, PackageOpen, Wrench } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AlignToolsPanel } from './AlignToolsPanel';
+import { BracketPanel } from './BracketPanel';
 import { CarConfigPanel } from './CarConfigPanel';
 import { EnclosurePanel } from './EnclosurePanel';
 import { ScrewToolsMenu } from './ScrewToolsMenu';
@@ -11,7 +12,7 @@ const buttonClass =
 
 export function WorkflowTools({ showTitle = true, compact = false }: { showTitle?: boolean; compact?: boolean }) {
   const { t } = useTranslation();
-  const [panel, setPanel] = useState<'enclosure' | 'car' | 'screw' | 'align' | null>(null);
+  const [panel, setPanel] = useState<'enclosure' | 'car' | 'bracket' | 'screw' | 'align' | null>(null);
 
   return (
     <section className={`${compact ? 'rounded-xl shadow-sm' : 'rounded-2xl shadow-panel'} border border-line bg-white/72 p-2`}>
@@ -43,6 +44,16 @@ export function WorkflowTools({ showTitle = true, compact = false }: { showTitle
         </button>
         <button
           type="button"
+          title={t('bracket.title')}
+          aria-label={t('bracket.title')}
+          className={buttonClass}
+          onClick={() => setPanel('bracket')}
+        >
+          <Braces size={16} strokeWidth={1.8} />
+          {t('bracket.title')}
+        </button>
+        <button
+          type="button"
           title={t('tools.title')}
           aria-label={t('tools.title')}
           className={buttonClass}
@@ -69,6 +80,7 @@ export function WorkflowTools({ showTitle = true, compact = false }: { showTitle
       )}
       {panel === 'enclosure' && <EnclosurePanel onClose={() => setPanel(null)} />}
       {panel === 'car' && <CarConfigPanel onClose={() => setPanel(null)} />}
+      {panel === 'bracket' && <BracketPanel onClose={() => setPanel(null)} />}
       {panel === 'screw' && <ScrewToolsMenu onClose={() => setPanel(null)} />}
     </section>
   );

@@ -3,6 +3,7 @@ import { buildPartColoredSegments, buildPartSolid } from '../parts/partGeometry'
 import type { NodeRole, SceneNode } from '../types/document';
 import type { GeometryKernel, MeshData, Solid } from './kernel';
 import { buildEnclosureNodeSolid } from '../enclosure/generate';
+import { buildBracketNodeSolid } from '../bracket/generate';
 
 export interface EvaluatedNode {
   nodeId: string;
@@ -35,6 +36,8 @@ function buildSolid(node: SceneNode, kernel: GeometryKernel): Solid | null {
     base = def ? buildPartSolid(def, kernel) : null;
   } else if (node.type === 'enclosure') {
     base = buildEnclosureNodeSolid(node, kernel);
+  } else if (node.type === 'bracket') {
+    base = buildBracketNodeSolid(node, kernel);
   } else if (node.type === 'car-anchor') {
     return null;
   } else {

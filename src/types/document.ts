@@ -79,6 +79,27 @@ export interface EnclosureNode extends NodeCommon {
   sourceParts: EnclosureSourcePart[];
 }
 
+export interface BracketParams {
+  /** 底座平板厚度 */
+  baseThickness: number;
+  /** 底座四周超出零件俯視範圍的邊距 */
+  baseMargin: number;
+  /** 底座四邊圓角半徑 */
+  cornerRadius: number;
+  /** 固定柱導孔與底座鎖附孔的螺絲規格 */
+  screwSize: ScrewSizeLiteral;
+  /** 零件固定方式：螺絲柱、定位柱或螺絲孔；未設定時視為 'screw' */
+  mountingStyle?: MountingStyle;
+  /** 底座四角是否生成貫穿鎖附孔；未設定時視為 true */
+  baseHoles?: boolean;
+}
+
+export interface BracketNode extends NodeCommon {
+  type: 'bracket';
+  params: BracketParams;
+  sourceParts: EnclosureSourcePart[];
+}
+
 export interface CarAnchorNode extends NodeCommon {
   type: 'car-anchor';
   config: CarConfigParams;
@@ -87,7 +108,7 @@ export interface CarAnchorNode extends NodeCommon {
   generatedNodeIds?: string[];
 }
 
-export type SceneNode = PrimitiveNode | GroupNode | PartNode | EnclosureNode | CarAnchorNode;
+export type SceneNode = PrimitiveNode | GroupNode | PartNode | EnclosureNode | BracketNode | CarAnchorNode;
 
 export interface NexcadDocument {
   version: 1;
@@ -149,6 +170,25 @@ export function createPartNode(
     visible: true,
     locked: false,
     partId,
+    ...overrides,
+  };
+}
+
+export function createBracketNode(
+  params: BracketParams,
+  name: string,
+  overrides: Partial<Omit<BracketNode, 'type' | 'params'>> = {},
+): BracketNode {
+  return {
+    type: 'bracket',
+    id: newId(),
+    name,
+    role: 'solid',
+    transform: identityTransform(),
+    visible: true,
+    locked: false,
+    params,
+    sourceParts: [],
     ...overrides,
   };
 }

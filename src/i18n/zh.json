@@ -137,6 +137,24 @@
     "projectNeedsSelection": "請先選取一個零件與一個板件（恰好兩個節點）",
     "projected": "已投影 {{count}} 個螺絲孔"
   },
+  "bracket": {
+    "title": "建立支架",
+    "scope": "將為選取的 {{count}} 個零件建立支架",
+    "needsSelection": "請先選取要建立支架的零件",
+    "baseThickness": "底座厚度 (mm)",
+    "baseThicknessShort": "厚度",
+    "baseMargin": "底座邊距 (mm)",
+    "baseMarginShort": "邊距",
+    "cornerRadius": "圓角半徑 (mm)",
+    "cornerRadiusShort": "圓角",
+    "screwSize": "螺絲規格",
+    "mountingStyle": "零件固定方式",
+    "baseHoles": "底座四角鎖附孔",
+    "generate": "建立支架",
+    "regenerate": "重新產生",
+    "staleWarning": "零件位置已變更，支架可能過期，請重新產生",
+    "params": "支架參數"
+  },
   "align": {
     "title": "對齊工具",
     "center": "中心對齊",

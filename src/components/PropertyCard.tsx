@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { MousePointer2, Move3D, RefreshCw, Rotate3D, SlidersHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { regenerateEnclosure } from '../enclosure/actions';
+import { regenerateBracket } from '../bracket/actions';
 import { buildCarChassisAndGround } from '../parts/presets';
 import type { CarChassisShape, CarConfigParams } from '../parts/presets';
 import { findNode, useDocumentStore } from '../store/documentStore';
 import { useToastStore } from '../store/toastStore';
 import type {
+  BracketNode,
+  BracketParams,
   CarAnchorNode,
   EnclosureNode,
   EnclosureParams,
@@ -81,6 +84,21 @@ export function PropertyCard() {
                 {t('enclosure.regenerate')}
               </OutlineButton>
               <EnclosureParamFields node={node} />
+            </PropertySection>
+          )}
+          {node.type === 'bracket' && (
+            <PropertySection title={t('bracket.params')} icon={<SlidersHorizontal size={14} />}>
+              {isBracketStale(node, doc) && (
+                <p className="mb-2 flex items-start gap-1.5 rounded-lg border border-amber-200/70 bg-amber-50 px-2 py-1.5 text-[11px] leading-snug text-amber-800">
+                  <RefreshCw size={13} className="mt-px shrink-0" />
+                  {t('bracket.staleWarning')}
+                </p>
+              )}
+              <OutlineButton onClick={() => regenerateBracket(node.id)} className="mb-1 w-full">
+                <RefreshCw size={14} />
+                {t('bracket.regenerate')}
+              </OutlineButton>
+              <BracketParamFields node={node} />
             </PropertySection>
           )}
           {node.type === 'car-anchor' && (
@@ -163,6 +181,17 @@ export function replaceCarAnchorGeneratedNodes(
 }
 
 function isEnclosureStale(node: EnclosureNode, doc: NexcadDocument): boolean {
+  return node.sourceParts.some((s) => {
+    const live = findNode(doc.nodes, s.nodeId);
+    if (!live || live.type !== 'part') return false;
+    return (
+      JSON.stringify(live.transform.position) !== JSON.stringify(s.transform.position) ||
+      JSON.stringify(live.transform.rotation) !== JSON.stringify(s.transform.rotation)
+    );
+  });
+}
+
+function isBracketStale(node: BracketNode, doc: NexcadDocument): boolean {
   return node.sourceParts.some((s) => {
     const live = findNode(doc.nodes, s.nodeId);
     if (!live || live.type !== 'part') return false;
@@ -430,6 +459,82 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
           {t('enclosure.lidDisplayCutout')}
         </label>
       )}
+    </>
+  );
+}
+
+function BracketParamFields({ node }: { node: BracketNode }) {
+  const { t } = useTranslation();
+  const updateNode = useDocumentStore((s) => s.updateNode);
+
+  const setParam = <K extends keyof BracketParams>(key: K, value: BracketParams[K]) => {
+    updateNode(node.id, (n) => {
+      if (n.type === 'bracket') n.params = { ...n.params, [key]: value };
+    });
+    regenerateBracket(node.id);
+  };
+
+  const p = node.params;
+  return (
+    <>
+      <div className="grid grid-cols-3 gap-1.5">
+        <StepperField
+          label={t('bracket.baseThicknessShort')}
+          value={p.baseThickness}
+          min={0.5}
+          step={0.5}
+          onChange={(v) => setParam('baseThickness', v)}
+        />
+        <StepperField
+          label={t('bracket.baseMarginShort')}
+          value={p.baseMargin}
+          min={0}
+          step={0.5}
+          onChange={(v) => setParam('baseMargin', v)}
+        />
+        <StepperField
+          label={t('bracket.cornerRadiusShort')}
+          value={p.cornerRadius}
+          min={0}
+          step={0.5}
+          onChange={(v) => setParam('cornerRadius', v)}
+        />
+      </div>
+      <label className="mt-2 block">
+        <FieldLabel>{t('bracket.screwSize')}</FieldLabel>
+        <select
+          className={fieldClass}
+          value={p.screwSize}
+          onChange={(e) => setParam('screwSize', e.target.value as BracketParams['screwSize'])}
+        >
+          {(['M2', 'M2.5', 'M3', 'M4'] as const).map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="mt-2 block">
+        <FieldLabel>{t('bracket.mountingStyle')}</FieldLabel>
+        <select
+          className={fieldClass}
+          value={p.mountingStyle ?? 'screw'}
+          onChange={(e) => setParam('mountingStyle', e.target.value as BracketParams['mountingStyle'])}
+        >
+          <option value="screw">{t('enclosure.mountingScrew')}</option>
+          <option value="peg">{t('enclosure.mountingPeg')}</option>
+          <option value="hole">{t('enclosure.mountingHole')}</option>
+        </select>
+      </label>
+      <label className="mt-2 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
+        <input
+          type="checkbox"
+          className="h-3.5 w-3.5 rounded accent-blue-600"
+          checked={p.baseHoles !== false}
+          onChange={(e) => setParam('baseHoles', e.target.checked)}
+        />
+        {t('bracket.baseHoles')}
+      </label>
     </>
   );
 }
