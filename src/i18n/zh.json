@@ -162,6 +162,7 @@
     "wallClearance": "擋牆間隙 (mm)",
     "wallClearanceShort": "間隙",
     "wallHint": "擋牆沿零件四周定位固定，適合沒有安裝孔的零件。",
+    "autoOrient": "自動把零件轉直立（感測面朝前）",
     "noHolesHint": "此零件沒有安裝孔，支架將只有底座；建議開啟擋牆以固定零件。",
     "generate": "建立支架",
     "regenerate": "重新產生",

@@ -47,9 +47,10 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
   const selectedCount = parts.length;
   const hasHoles = parts.some((p) => (getPartDefinition(p.partId)?.mountingHoles.length ?? 0) > 0);
   const style = params.style ?? 'base';
+  const [autoOrient, setAutoOrient] = useState(true);
 
   const generate = () => {
-    generateBracket(params);
+    generateBracket(params, style !== 'base' && autoOrient);
     onClose();
   };
 
@@ -158,6 +159,15 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
             step={0.5}
             onChange={(v) => set('wallThickness', v)}
           />
+          <label className="mt-3 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5 rounded accent-blue-600"
+              checked={autoOrient}
+              onChange={(e) => setAutoOrient(e.target.checked)}
+            />
+            {t('bracket.autoOrient')}
+          </label>
         </PanelGroup>
       )}
 
@@ -186,6 +196,15 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
               onChange={(v) => set('wallClearance', v)}
             />
           </div>
+          <label className="mt-3 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5 rounded accent-blue-600"
+              checked={autoOrient}
+              onChange={(e) => setAutoOrient(e.target.checked)}
+            />
+            {t('bracket.autoOrient')}
+          </label>
         </PanelGroup>
       )}
 

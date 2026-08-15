@@ -162,6 +162,7 @@
     "wallClearance": "Wall clearance (mm)",
     "wallClearanceShort": "Clearance",
     "wallHint": "The wall wraps the part outline to locate and hold it. Useful for parts without mounting holes.",
+    "autoOrient": "Auto-rotate the part upright (sensing face forward)",
     "noHolesHint": "This part has no mounting holes; the bracket will be a bare base. Enable the retaining wall to hold the part.",
     "generate": "Create bracket",
     "regenerate": "Regenerate",

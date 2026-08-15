@@ -53,6 +53,47 @@ describe('generateBracket', () => {
     const bracket = useDocumentStore.getState().doc.nodes.find((n) => n.type === 'bracket');
     expect(bracket?.type === 'bracket' ? bracket.sourceParts : []).toHaveLength(2);
   });
+
+  it('autoOrient 把平放零件繞 Y 軸轉 90°（保留 Z 旋轉）並記錄轉後 transform', () => {
+    const store = useDocumentStore.getState();
+    const part = createPartNode('arduino-nano', 'Nano');
+    part.transform.rotation = [0, 0, 30];
+    store.addNode(part);
+    store.setSelection([part.id]);
+
+    generateBracket({ ...DEFAULT_BRACKET_PARAMS, style: 'l' }, true);
+
+    const live = findNode(useDocumentStore.getState().doc.nodes, part.id);
+    expect(live?.type === 'part' && live.transform.rotation).toEqual([0, 90, 30]);
+
+    const bracket = useDocumentStore.getState().doc.nodes.find((n) => n.type === 'bracket');
+    expect(bracket?.type === 'bracket' && bracket.sourceParts[0].transform.rotation).toEqual([0, 90, 30]);
+  });
+
+  it('autoOrient 不影響已傾斜的零件', () => {
+    const store = useDocumentStore.getState();
+    const part = createPartNode('arduino-nano', 'Nano');
+    part.transform.rotation = [30, 0, 0];
+    store.addNode(part);
+    store.setSelection([part.id]);
+
+    generateBracket({ ...DEFAULT_BRACKET_PARAMS, style: 'l' }, true);
+
+    const live = findNode(useDocumentStore.getState().doc.nodes, part.id);
+    expect(live?.type === 'part' && live.transform.rotation).toEqual([30, 0, 0]);
+  });
+
+  it('autoOrient=false 時不旋轉零件', () => {
+    const store = useDocumentStore.getState();
+    const part = createPartNode('arduino-nano', 'Nano');
+    store.addNode(part);
+    store.setSelection([part.id]);
+
+    generateBracket({ ...DEFAULT_BRACKET_PARAMS, style: 'l' }, false);
+
+    const live = findNode(useDocumentStore.getState().doc.nodes, part.id);
+    expect(live?.type === 'part' && live.transform.rotation).toEqual([0, 0, 0]);
+  });
 });
 
 describe('regenerateBracket', () => {

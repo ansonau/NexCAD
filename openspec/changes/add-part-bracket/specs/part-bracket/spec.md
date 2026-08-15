@@ -104,6 +104,11 @@
 - **WHEN** `style` 未設定
 - **THEN** 行為等同 `style: 'base'`
 
+#### Scenario: 自動轉直立（L/U 型）
+
+- **WHEN** 使用者以 L 型或 U 型建立支架，且零件平放（rx=ry=0）並勾選「自動把零件轉直立」
+- **THEN** 零件繞 Y 軸轉 90°（感測面朝前 +X、保留原本 Z 軸面內旋轉），支架依轉後朝向生成；已傾斜的零件則保持不動
+
 ### Requirement: 支架節點可序列化與匯入
 
 `bracket` 節點 SHALL 可序列化至 `.nexcad` 檔，且載入時可完整還原其 `params` 與 `sourceParts`。舊版專案檔不包含 `bracket` 節點時 SHALL 仍可正常解析。
