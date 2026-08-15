@@ -477,7 +477,19 @@ function BracketParamFields({ node }: { node: BracketNode }) {
   const p = node.params;
   return (
     <>
-      <div className="grid grid-cols-3 gap-1.5">
+      <label className="block">
+        <FieldLabel>{t('bracket.style')}</FieldLabel>
+        <select
+          className={fieldClass}
+          value={p.style ?? 'base'}
+          onChange={(e) => setParam('style', e.target.value as BracketParams['style'])}
+        >
+          <option value="base">{t('bracket.styleBase')}</option>
+          <option value="l">{t('bracket.styleL')}</option>
+          <option value="u">{t('bracket.styleU')}</option>
+        </select>
+      </label>
+      <div className="mt-2 grid grid-cols-3 gap-1.5">
         <StepperField
           label={t('bracket.baseThicknessShort')}
           value={p.baseThickness}

@@ -4,6 +4,7 @@ import type { PartDefinition } from '../parts/schema';
 import type { BracketParams } from '../types/document';
 
 export const DEFAULT_BRACKET_PARAMS: BracketParams = {
+  style: 'base',
   baseThickness: 3,
   baseMargin: 6,
   cornerRadius: 3,

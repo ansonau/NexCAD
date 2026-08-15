@@ -3,37 +3,50 @@ import { useTranslation } from 'react-i18next';
 import { generateBracket } from '../bracket/actions';
 import { DEFAULT_BRACKET_PARAMS } from '../bracket/plan';
 import { getPartDefinition } from '../parts/library';
-import type { BracketParams } from '../types/document';
+import type { BracketParams, BracketStyle, SceneNode } from '../types/document';
 import { useDocumentStore } from '../store/documentStore';
 import { Dialog, FieldLabel, GhostButton, PrimaryButton, StepperField, fieldClass } from './ui';
 
-function selectedPartsWithHoles(): { hasHoles: boolean; count: number } {
+type PartNode = Extract<SceneNode, { type: 'part' }>;
+
+function selectedParts(): PartNode[] {
   const { selection, doc } = useDocumentStore.getState();
-  const parts = selection
+  return selection
     .map((id) => doc.nodes.find((n) => n.id === id))
-    .filter((n): n is Extract<import('../types/document').SceneNode, { type: 'part' }> => n?.type === 'part');
-  const withHoles = parts.filter((p) => (getPartDefinition(p.partId)?.mountingHoles.length ?? 0) > 0);
-  return { hasHoles: withHoles.length > 0, count: parts.length };
+    .filter((n): n is PartNode => n?.type === 'part');
 }
+
+const STYLES: { value: BracketStyle; key: string }[] = [
+  { value: 'base', key: 'bracket.styleBase' },
+  { value: 'l', key: 'bracket.styleL' },
+  { value: 'u', key: 'bracket.styleU' },
+];
 
 export function BracketPanel({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const initial = selectedPartsWithHoles();
+  const initialParts = selectedParts();
   const [params, setParams] = useState<BracketParams>(() => ({
     ...DEFAULT_BRACKET_PARAMS,
-    wallHeight: initial.count > 0 && !initial.hasHoles ? 3 : DEFAULT_BRACKET_PARAMS.wallHeight,
+    wallHeight: initialParts.length > 0 && !initialParts.some((p) => (getPartDefinition(p.partId)?.mountingHoles.length ?? 0) > 0)
+      ? 3
+      : DEFAULT_BRACKET_PARAMS.wallHeight,
   }));
 
   const set = <K extends keyof BracketParams>(key: K, value: BracketParams[K]) =>
     setParams((p) => ({ ...p, [key]: value }));
 
-  const selection = useDocumentStore((s) => s.selection);
-  const doc = useDocumentStore((s) => s.doc);
-  const selected = selection
-    .map((id) => doc.nodes.find((n) => n.id === id))
-    .filter((n): n is Extract<import('../types/document').SceneNode, { type: 'part' }> => n?.type === 'part');
-  const selectedCount = selected.length;
-  const hasHoles = selected.some((p) => (getPartDefinition(p.partId)?.mountingHoles.length ?? 0) > 0);
+  const setStyle = (style: BracketStyle) =>
+    setParams((p) => ({
+      ...p,
+      style,
+      // 切到 U 型抱箍時若沒設定側牆高度，補一個預設值
+      wallHeight: style === 'u' && (p.wallHeight ?? 0) <= 0 ? 8 : p.wallHeight,
+    }));
+
+  const parts = selectedParts();
+  const selectedCount = parts.length;
+  const hasHoles = parts.some((p) => (getPartDefinition(p.partId)?.mountingHoles.length ?? 0) > 0);
+  const style = params.style ?? 'base';
 
   const generate = () => {
     generateBracket(params);
@@ -52,11 +65,34 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
         </div>
       )}
 
-      {selectedCount > 0 && !hasHoles && (
+      {selectedCount > 0 && !hasHoles && style === 'base' && (
         <p className="mb-3 flex items-start gap-1.5 rounded-xl border border-amber-200/70 bg-amber-50 px-3 py-2 text-[12px] leading-snug text-amber-800">
           {t('bracket.noHolesHint')}
         </p>
       )}
+
+      <PanelGroup title={t('bracket.style')}>
+        <div className="grid grid-cols-3 gap-2">
+          {STYLES.map((s) => {
+            const active = style === s.value;
+            return (
+              <button
+                key={s.value}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setStyle(s.value)}
+                className={`h-10 rounded-2xl border text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                  active
+                    ? 'border-accent bg-accent-soft text-accent shadow-sm'
+                    : 'border-line bg-white text-ink-2 hover:border-accent/50 hover:text-ink'
+                }`}
+              >
+                {t(s.key)}
+              </button>
+            );
+          })}
+        </div>
+      </PanelGroup>
 
       <PanelGroup title={`${t('bracket.params')} (mm)`}>
         <div className="grid grid-cols-3 gap-2">
@@ -84,15 +120,37 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
         </div>
       </PanelGroup>
 
-      <PanelGroup title={t('bracket.wall')}>
-        <div className="grid grid-cols-3 gap-2">
-          <StepperField
-            label={t('bracket.wallHeightShort')}
-            value={params.wallHeight ?? 0}
-            min={0}
-            step={0.5}
-            onChange={(v) => set('wallHeight', v)}
-          />
+      {style === 'base' && (
+        <PanelGroup title={t('bracket.wall')}>
+          <div className="grid grid-cols-3 gap-2">
+            <StepperField
+              label={t('bracket.wallHeightShort')}
+              value={params.wallHeight ?? 0}
+              min={0}
+              step={0.5}
+              onChange={(v) => set('wallHeight', v)}
+            />
+            <StepperField
+              label={t('bracket.wallThicknessShort')}
+              value={params.wallThickness ?? 1.5}
+              min={0.5}
+              step={0.5}
+              onChange={(v) => set('wallThickness', v)}
+            />
+            <StepperField
+              label={t('bracket.wallClearanceShort')}
+              value={params.wallClearance ?? 0.5}
+              min={0}
+              step={0.1}
+              onChange={(v) => set('wallClearance', v)}
+            />
+          </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-ink-3">{t('bracket.wallHint')}</p>
+        </PanelGroup>
+      )}
+
+      {style === 'l' && (
+        <PanelGroup title={t('bracket.styleL')}>
           <StepperField
             label={t('bracket.wallThicknessShort')}
             value={params.wallThickness ?? 1.5}
@@ -100,16 +158,36 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
             step={0.5}
             onChange={(v) => set('wallThickness', v)}
           />
-          <StepperField
-            label={t('bracket.wallClearanceShort')}
-            value={params.wallClearance ?? 0.5}
-            min={0}
-            step={0.1}
-            onChange={(v) => set('wallClearance', v)}
-          />
-        </div>
-        <p className="mt-2 text-[11px] leading-relaxed text-ink-3">{t('bracket.wallHint')}</p>
-      </PanelGroup>
+        </PanelGroup>
+      )}
+
+      {style === 'u' && (
+        <PanelGroup title={t('bracket.styleU')}>
+          <div className="grid grid-cols-3 gap-2">
+            <StepperField
+              label={t('bracket.wallHeightShort')}
+              value={params.wallHeight ?? 0}
+              min={0.5}
+              step={0.5}
+              onChange={(v) => set('wallHeight', v)}
+            />
+            <StepperField
+              label={t('bracket.wallThicknessShort')}
+              value={params.wallThickness ?? 1.5}
+              min={0.5}
+              step={0.5}
+              onChange={(v) => set('wallThickness', v)}
+            />
+            <StepperField
+              label={t('bracket.wallClearanceShort')}
+              value={params.wallClearance ?? 0.5}
+              min={0}
+              step={0.1}
+              onChange={(v) => set('wallClearance', v)}
+            />
+          </div>
+        </PanelGroup>
+      )}
 
       <PanelGroup title={t('bracket.screwSize')}>
         <select

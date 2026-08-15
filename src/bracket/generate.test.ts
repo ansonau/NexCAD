@@ -121,4 +121,30 @@ describe('buildBracketNodeSolid', () => {
     expect(bareBase).toBeGreaterThan(0);
     expect(withWall).toBeGreaterThan(bareBase);
   });
+
+  it('L 型支架產生實體且體積大於 0', () => {
+    expect(volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'l' }))).toBeGreaterThan(0);
+  });
+
+  it('U 型支架產生實體且體積大於 0', () => {
+    expect(volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'u' }))).toBeGreaterThan(0);
+  });
+
+  it('L 型支架繞 Z 軸旋轉 90° 後體積不變', () => {
+    const flat = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'l' }));
+    const rotated = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'l' }, [0, 0, 90]));
+    expect(Math.abs(rotated - flat) / flat).toBeLessThan(1e-6);
+  });
+
+  it('U 型支架繞 Z 軸旋轉 90° 後體積不變', () => {
+    const flat = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'u' }));
+    const rotated = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'u' }, [0, 0, 90]));
+    expect(Math.abs(rotated - flat) / flat).toBeLessThan(1e-6);
+  });
+
+  it('L 型支架繞 X 軸旋轉 90°（零件立起）後體積不變', () => {
+    const flat = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'l' }));
+    const tilted = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'l' }, [90, 0, 0]));
+    expect(Math.abs(tilted - flat) / flat).toBeLessThan(1e-6);
+  });
 });

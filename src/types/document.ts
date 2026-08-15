@@ -80,6 +80,8 @@ export interface EnclosureNode extends NodeCommon {
 }
 
 export interface BracketParams {
+  /** 支架樣式：底座型（零件平放）、L 型立式、U 型抱箍；未設定時視為 'base' */
+  style?: BracketStyle;
   /** 底座平板厚度 */
   baseThickness: number;
   /** 底座四周超出零件俯視範圍的邊距（同時是角鎖附孔的鎖附帶） */
@@ -92,13 +94,15 @@ export interface BracketParams {
   mountingStyle?: MountingStyle;
   /** 底座四角是否生成貫穿鎖附孔；未設定時視為 true */
   baseHoles?: boolean;
-  /** 零件四周定位擋牆高度（0＝不生成擋牆）；未設定時視為 0 */
+  /** 擋牆/側牆高度（0＝不生成）；未設定時視為 0 */
   wallHeight?: number;
-  /** 擋牆壁厚；未設定時視為 1.5 */
+  /** 擋牆/側牆/背板壁厚；未設定時視為 1.5 */
   wallThickness?: number;
   /** 擋牆與零件本體間隙（裝配鬆配）；未設定時視為 0.5 */
   wallClearance?: number;
 }
+
+export type BracketStyle = 'base' | 'l' | 'u';
 
 export interface BracketNode extends NodeCommon {
   type: 'bracket';
