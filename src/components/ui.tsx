@@ -142,6 +142,40 @@ export function FieldLabel({ children }: { children: ReactNode }) {
   return <span className="mb-1 block text-[11px] font-medium text-ink-3">{children}</span>;
 }
 
+/** 分段按鈕群組（2 或 3 個選項） */
+export function Seg<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className={`grid gap-2 ${options.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+      {options.map((o) => {
+        const active = value === o.value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onChange(o.value)}
+            className={`h-9 rounded-xl border text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+              active
+                ? 'border-accent bg-accent-soft text-accent shadow-sm'
+                : 'border-line bg-white text-ink-2 hover:border-accent/50 hover:text-ink'
+            }`}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function Dialog({
   title,
   onClose,

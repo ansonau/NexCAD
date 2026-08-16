@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Cursor, ArrowsOutCardinal, ArrowsClockwise, ArrowsCounterClockwise, SlidersHorizontal } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Cursor, ArrowsOutCardinal, ArrowsClockwise, ArrowsCounterClockwise, SlidersHorizontal } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { regenerateEnclosure } from '../enclosure/actions';
 import { regenerateBracket } from '../bracket/actions';
@@ -17,7 +17,7 @@ import type {
   PrimitiveNode,
   SceneNode,
 } from '../types/document';
-import { FieldLabel, OutlineButton, StepperField, fieldClass, panelClass } from './ui';
+import { FieldLabel, OutlineButton, Seg, StepperField, fieldClass, panelClass } from './ui';
 
 const PARAM_LABELS: Record<string, string> = {
   width: 'property.width',
@@ -445,6 +445,7 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
 function BracketParamFields({ node }: { node: BracketNode }) {
   const { t } = useTranslation();
   const updateNode = useDocumentStore((s) => s.updateNode);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const setParam = <K extends keyof BracketParams>(key: K, value: BracketParams[K]) => {
     updateNode(node.id, (n) => {
@@ -454,21 +455,24 @@ function BracketParamFields({ node }: { node: BracketNode }) {
   };
 
   const p = node.params;
+  const style = p.style ?? 'base';
+
   return (
     <>
       <label className="block">
         <FieldLabel>{t('bracket.style')}</FieldLabel>
-        <select
-          className={fieldClass}
-          value={p.style ?? 'base'}
-          onChange={(e) => setParam('style', e.target.value as BracketParams['style'])}
-        >
-          <option value="base">{t('bracket.styleBase')}</option>
-          <option value="l">{t('bracket.styleL')}</option>
-          <option value="u">{t('bracket.styleU')}</option>
-        </select>
+        <Seg
+          options={[
+            { value: 'base', label: t('bracket.styleBase') },
+            { value: 'l', label: t('bracket.styleL') },
+            { value: 'u', label: t('bracket.styleU') },
+          ]}
+          value={style}
+          onChange={(v) => setParam('style', v)}
+        />
       </label>
-      <div className="mt-2 grid grid-cols-3 gap-1.5">
+
+      <div className="mt-2 grid grid-cols-2 gap-1.5">
         <StepperField
           label={t('bracket.baseThicknessShort')}
           value={p.baseThickness}
@@ -476,212 +480,262 @@ function BracketParamFields({ node }: { node: BracketNode }) {
           step={0.5}
           onChange={(v) => setParam('baseThickness', v)}
         />
-        <StepperField
-          label={t('bracket.baseDepthShort')}
-          value={p.baseDepth ?? p.baseMargin}
-          min={0}
-          step={1}
-          onChange={(v) => setParam('baseDepth', v)}
-        />
-        <StepperField
-          label={t('bracket.baseExpandShort')}
-          value={p.baseExpand ?? p.baseMargin}
-          min={0}
-          step={0.5}
-          onChange={(v) => setParam('baseExpand', v)}
-        />
-        <StepperField
-          label={t('bracket.baseMarginShort')}
-          value={p.baseMargin}
-          min={0}
-          step={0.5}
-          onChange={(v) => setParam('baseMargin', v)}
-        />
-        <StepperField
-          label={t('bracket.cornerRadiusShort')}
-          value={p.cornerRadius}
-          min={0}
-          step={0.5}
-          onChange={(v) => setParam('cornerRadius', v)}
-        />
+        {style === 'base' && (
+          <StepperField
+            label={t('bracket.baseExpandShort')}
+            value={p.baseExpand ?? p.baseMargin}
+            min={0}
+            step={0.5}
+            onChange={(v) => setParam('baseExpand', v)}
+          />
+        )}
+        {style === 'l' && (
+          <StepperField
+            label={t('bracket.baseDepthShort')}
+            value={p.baseDepth ?? p.baseMargin}
+            min={0}
+            step={1}
+            onChange={(v) => setParam('baseDepth', v)}
+          />
+        )}
+        {style === 'u' && (
+          <StepperField
+            label={t('bracket.baseMarginShort')}
+            value={p.baseMargin}
+            min={0}
+            step={0.5}
+            onChange={(v) => setParam('baseMargin', v)}
+          />
+        )}
       </div>
-      <label className="mt-2 block">
-        <FieldLabel>{t('bracket.baseDirection')}</FieldLabel>
-        <div className="grid grid-cols-3 gap-1.5">
-          {(['back', 'front', 'both'] as const).map((dir) => {
-            const active = (p.baseDirection ?? 'back') === dir;
-            return (
-              <button
-                key={dir}
-                type="button"
-                aria-pressed={active}
-                onClick={() => setParam('baseDirection', dir)}
-                className={`h-9 rounded-xl border text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
-                  active
-                    ? 'border-accent bg-accent-soft text-accent shadow-sm'
-                    : 'border-line bg-white text-ink-2 hover:border-accent/50 hover:text-ink'
-                }`}
-              >
-                {dir === 'back' ? t('bracket.baseDirectionBack') : dir === 'front' ? t('bracket.baseDirectionFront') : t('bracket.baseDirectionBoth')}
-              </button>
-            );
-          })}
+
+      {style === 'base' && (
+        <div className="mt-2 grid grid-cols-3 gap-1.5">
+          <StepperField
+            label={t('bracket.wallHeightShort')}
+            value={p.wallHeight ?? 0}
+            min={0}
+            step={0.5}
+            onChange={(v) => setParam('wallHeight', v)}
+          />
+          <StepperField
+            label={t('bracket.wallThicknessShort')}
+            value={p.wallThickness ?? 1.5}
+            min={0.5}
+            step={0.5}
+            onChange={(v) => setParam('wallThickness', v)}
+          />
+          <StepperField
+            label={t('bracket.wallClearanceShort')}
+            value={p.wallClearance ?? 0.5}
+            min={0}
+            step={0.1}
+            onChange={(v) => setParam('wallClearance', v)}
+          />
         </div>
-      </label>
-      <div className="mt-2 grid grid-cols-3 gap-1.5">
-        <StepperField
-          label={t('bracket.wallHeightShort')}
-          value={p.wallHeight ?? 0}
-          min={0}
-          step={0.5}
-          onChange={(v) => setParam('wallHeight', v)}
-        />
-        <StepperField
-          label={t('bracket.wallDepthShort')}
-          value={p.wallDepth ?? 0}
-          min={0}
-          step={0.5}
-          onChange={(v) => setParam('wallDepth', v)}
-        />
-        <StepperField
-          label={t('bracket.wallThicknessShort')}
-          value={p.wallThickness ?? 1.5}
-          min={0.5}
-          step={0.5}
-          onChange={(v) => setParam('wallThickness', v)}
-        />
-        <StepperField
-          label={t('bracket.wallClearanceShort')}
-          value={p.wallClearance ?? 0.5}
-          min={0}
-          step={0.1}
-          onChange={(v) => setParam('wallClearance', v)}
-        />
-      </div>
-      <label className="mt-2 block">
-        <FieldLabel>{t('bracket.screwSize')}</FieldLabel>
-        <select
-          className={fieldClass}
-          value={p.screwSize}
-          onChange={(e) => setParam('screwSize', e.target.value as BracketParams['screwSize'])}
-        >
-          {(['M2', 'M2.5', 'M3', 'M4'] as const).map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="mt-2 block">
-        <FieldLabel>{t('bracket.mountingStyle')}</FieldLabel>
-        <select
-          className={fieldClass}
-          value={p.mountingStyle ?? 'screw'}
-          onChange={(e) => setParam('mountingStyle', e.target.value as BracketParams['mountingStyle'])}
-        >
-          <option value="screw">{t('enclosure.mountingScrew')}</option>
-          <option value="peg">{t('enclosure.mountingPeg')}</option>
-          <option value="hole">{t('enclosure.mountingHole')}</option>
-        </select>
-      </label>
-      <label className="mt-2 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
-        <input
-          type="checkbox"
-          className="h-3.5 w-3.5 rounded accent-blue-600"
-          checked={p.baseHoles !== false}
-          onChange={(e) => setParam('baseHoles', e.target.checked)}
-        />
-        {t('bracket.baseHoles')}
-      </label>
-      <label className="mt-2 block">
-        <FieldLabel>{t('bracket.baseHoleCount')}</FieldLabel>
-        <div className="grid grid-cols-2 gap-1.5">
-          {([2, 4] as const).map((c) => {
-            const active = (p.baseHoleCount ?? 4) === c;
-            return (
-              <button
-                key={c}
-                type="button"
-                aria-pressed={active}
-                onClick={() => setParam('baseHoleCount', c)}
-                className={`h-9 rounded-xl border text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
-                  active
-                    ? 'border-accent bg-accent-soft text-accent shadow-sm'
-                    : 'border-line bg-white text-ink-2 hover:border-accent/50 hover:text-ink'
-                }`}
-              >
-                {c === 2 ? t('bracket.baseHoleCount2') : t('bracket.baseHoleCount4')}
-              </button>
-            );
-          })}
-        </div>
-      </label>
-      {(p.baseHoleCount ?? 4) === 2 && (
-        <label className="mt-2 block">
-          <FieldLabel>{t('bracket.baseHoleAxis')}</FieldLabel>
-          <div className="grid grid-cols-2 gap-1.5">
-            {(['long', 'short'] as const).map((a) => {
-              const active = (p.baseHoleAxis ?? 'long') === a;
-              return (
-                <button
-                  key={a}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setParam('baseHoleAxis', a)}
-                  className={`h-9 rounded-xl border text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
-                    active
-                      ? 'border-accent bg-accent-soft text-accent shadow-sm'
-                      : 'border-line bg-white text-ink-2 hover:border-accent/50 hover:text-ink'
-                  }`}
-                >
-                  {a === 'long' ? t('bracket.baseHoleAxisLong') : t('bracket.baseHoleAxisShort')}
-                </button>
-              );
-            })}
-          </div>
-        </label>
       )}
-      <label className="mt-2 block">
-        <FieldLabel>{t('bracket.baseHoleScrewSize')}</FieldLabel>
-        <select
-          className={fieldClass}
-          value={p.baseHoleScrewSize ?? p.screwSize}
-          onChange={(e) => setParam('baseHoleScrewSize', e.target.value as BracketParams['baseHoleScrewSize'])}
-        >
-          {(['M2', 'M2.5', 'M3', 'M4'] as const).map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="mt-2">
-        <StepperField
-          label={t('bracket.baseHoleSpacingShort')}
-          value={p.baseHoleSpacing ?? 0}
-          min={0}
-          step={1}
-          onChange={(v) => setParam('baseHoleSpacing', v)}
-        />
-      </div>
-      <div className="mt-2">
-        <StepperField
-          label={t('bracket.baseHoleInsetShort')}
-          value={p.baseHoleInset ?? p.baseMargin / 2}
-          min={0.5}
-          step={0.5}
-          onChange={(v) => setParam('baseHoleInset', v)}
-        />
-      </div>
-      <label className="mt-2 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
-        <input
-          type="checkbox"
-          className="h-3.5 w-3.5 rounded accent-blue-600"
-          checked={p.baseHoleCountersink === true}
-          onChange={(e) => setParam('baseHoleCountersink', e.target.checked)}
-        />
-        {t('bracket.baseHoleCountersink')}
-      </label>
+      {style === 'l' && (
+        <>
+          <div className="mt-2">
+            <StepperField
+              label={t('bracket.wallThicknessShort')}
+              value={p.wallThickness ?? 1.5}
+              min={0.5}
+              step={0.5}
+              onChange={(v) => setParam('wallThickness', v)}
+            />
+          </div>
+          <label className="mt-2 block">
+            <FieldLabel>{t('bracket.baseDirection')}</FieldLabel>
+            <Seg
+              options={[
+                { value: 'back', label: t('bracket.baseDirectionBack') },
+                { value: 'front', label: t('bracket.baseDirectionFront') },
+                { value: 'both', label: t('bracket.baseDirectionBoth') },
+              ]}
+              value={p.baseDirection ?? 'back'}
+              onChange={(v) => setParam('baseDirection', v)}
+            />
+          </label>
+        </>
+      )}
+      {style === 'u' && (
+        <>
+          <div className="mt-2 grid grid-cols-3 gap-1.5">
+            <StepperField
+              label={t('bracket.wallHeightShort')}
+              value={p.wallHeight ?? 0}
+              min={0.5}
+              step={0.5}
+              onChange={(v) => setParam('wallHeight', v)}
+            />
+            <StepperField
+              label={t('bracket.wallDepthShort')}
+              value={p.wallDepth ?? 0}
+              min={0}
+              step={0.5}
+              onChange={(v) => setParam('wallDepth', v)}
+            />
+            <StepperField
+              label={t('bracket.wallThicknessShort')}
+              value={p.wallThickness ?? 1.5}
+              min={0.5}
+              step={0.5}
+              onChange={(v) => setParam('wallThickness', v)}
+            />
+          </div>
+          <div className="mt-2">
+            <StepperField
+              label={t('bracket.wallClearanceShort')}
+              value={p.wallClearance ?? 0.5}
+              min={0}
+              step={0.1}
+              onChange={(v) => setParam('wallClearance', v)}
+            />
+          </div>
+        </>
+      )}
+
+      {(style === 'base' || style === 'l') && (
+        <>
+          <label className="mt-2 block">
+            <FieldLabel>{t('bracket.screwSize')}</FieldLabel>
+            <select
+              className={fieldClass}
+              value={p.screwSize}
+              onChange={(e) => setParam('screwSize', e.target.value as BracketParams['screwSize'])}
+            >
+              {(['M2', 'M2.5', 'M3', 'M4'] as const).map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="mt-2 block">
+            <FieldLabel>{t('bracket.mountingStyle')}</FieldLabel>
+            <select
+              className={fieldClass}
+              value={p.mountingStyle ?? 'screw'}
+              onChange={(e) => setParam('mountingStyle', e.target.value as BracketParams['mountingStyle'])}
+            >
+              <option value="screw">{t('enclosure.mountingScrew')}</option>
+              <option value="peg">{t('enclosure.mountingPeg')}</option>
+              <option value="hole">{t('enclosure.mountingHole')}</option>
+            </select>
+          </label>
+        </>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setAdvancedOpen((o) => !o)}
+        className="mt-2 flex h-9 w-full cursor-pointer items-center justify-between rounded-xl px-3 text-[12px] font-semibold text-ink-2 transition-colors hover:bg-slate-900/[0.035] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+      >
+        <span>{t('bracket.advanced')}</span>
+        {advancedOpen ? <CaretUp size={14} /> : <CaretDown size={14} />}
+      </button>
+      {advancedOpen && (
+        <div className="mt-2 space-y-2 rounded-xl border border-line bg-slate-900/[0.018] p-3">
+          <div className="grid grid-cols-2 gap-1.5">
+            <StepperField
+              label={t('bracket.cornerRadiusShort')}
+              value={p.cornerRadius}
+              min={0}
+              step={0.5}
+              onChange={(v) => setParam('cornerRadius', v)}
+            />
+            {style === 'l' && (
+              <StepperField
+                label={t('bracket.baseMarginShort')}
+                value={p.baseMargin}
+                min={0}
+                step={0.5}
+                onChange={(v) => setParam('baseMargin', v)}
+              />
+            )}
+          </div>
+
+          <label className="flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5 rounded accent-blue-600"
+              checked={p.baseHoles !== false}
+              onChange={(e) => setParam('baseHoles', e.target.checked)}
+            />
+            {t('bracket.baseHoles')}
+          </label>
+          {p.baseHoles !== false && (
+            <>
+              <label className="block">
+                <FieldLabel>{t('bracket.baseHoleCount')}</FieldLabel>
+                <Seg
+                  options={[
+                    { value: '2', label: t('bracket.baseHoleCount2') },
+                    { value: '4', label: t('bracket.baseHoleCount4') },
+                  ]}
+                  value={String(p.baseHoleCount ?? 4) as '2' | '4'}
+                  onChange={(v) => setParam('baseHoleCount', Number(v) as 2 | 4)}
+                />
+              </label>
+              {(p.baseHoleCount ?? 4) === 2 && (
+                <label className="block">
+                  <FieldLabel>{t('bracket.baseHoleAxis')}</FieldLabel>
+                  <Seg
+                    options={[
+                      { value: 'long', label: t('bracket.baseHoleAxisLong') },
+                      { value: 'short', label: t('bracket.baseHoleAxisShort') },
+                    ]}
+                    value={p.baseHoleAxis ?? 'long'}
+                    onChange={(v) => setParam('baseHoleAxis', v)}
+                  />
+                </label>
+              )}
+              <label className="block">
+                <FieldLabel>{t('bracket.baseHoleScrewSize')}</FieldLabel>
+                <select
+                  className={fieldClass}
+                  value={p.baseHoleScrewSize ?? p.screwSize}
+                  onChange={(e) => setParam('baseHoleScrewSize', e.target.value as BracketParams['baseHoleScrewSize'])}
+                >
+                  {(['M2', 'M2.5', 'M3', 'M4'] as const).map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div>
+                <StepperField
+                  label={t('bracket.baseHoleSpacingShort')}
+                  value={p.baseHoleSpacing ?? 0}
+                  min={0}
+                  step={1}
+                  onChange={(v) => setParam('baseHoleSpacing', v)}
+                />
+              </div>
+              <div>
+                <StepperField
+                  label={t('bracket.baseHoleInsetShort')}
+                  value={p.baseHoleInset ?? p.baseMargin / 2}
+                  min={0.5}
+                  step={0.5}
+                  onChange={(v) => setParam('baseHoleInset', v)}
+                />
+              </div>
+              <label className="flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
+                <input
+                  type="checkbox"
+                  className="h-3.5 w-3.5 rounded accent-blue-600"
+                  checked={p.baseHoleCountersink === true}
+                  onChange={(e) => setParam('baseHoleCountersink', e.target.checked)}
+                />
+                {t('bracket.baseHoleCountersink')}
+              </label>
+            </>
+          )}
+        </div>
+      )}
     </>
   );
 }
