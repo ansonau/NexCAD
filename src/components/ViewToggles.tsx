@@ -127,7 +127,7 @@ function ToggleButton({
           : 'text-ink-2 hover:bg-slate-900/5 hover:text-ink'
       } ${badge ? 'w-auto gap-1 px-2' : 'w-8'}`}
     >
-      <Icon size={15} weight="regular" />
+      <Icon size={15} weight={active ? 'duotone' : 'regular'} />
       {badge && (
         <span className={`font-mono text-[10px] font-semibold tracking-[-0.02em] ${active ? 'text-accent-strong' : 'text-ink-3'}`}>
           {badge}

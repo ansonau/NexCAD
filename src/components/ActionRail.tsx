@@ -63,6 +63,7 @@ export function ActionRail({ compact = false }: { compact?: boolean }) {
           const active = step.id === activeStep;
           const done = index < activeIndex;
           const Icon = done ? CheckCircle : Circle;
+          const weight = done ? 'fill' : 'regular' as const;
           return (
             <li
               key={step.id}
@@ -73,7 +74,7 @@ export function ActionRail({ compact = false }: { compact?: boolean }) {
               }`}
             >
               <div className="flex items-start gap-2">
-                <Icon size={15} className="mt-0.5 shrink-0" weight="bold" />
+                <Icon size={15} className="mt-0.5 shrink-0" weight={weight} />
                 <div className="min-w-0">
                   <p className="text-[13px] font-semibold leading-tight">{index + 1}. {t(step.label)}</p>
                   <p className="mt-1 text-[11px] leading-snug text-ink-3">{t(step.hint)}</p>

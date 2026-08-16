@@ -40,7 +40,7 @@ export function GlobalActions() {
         <GearSix size={16} weight="regular" />
       </button>
       <button type="button" className={`${controlClass} hidden !bg-ink !text-white hover:!bg-ink hover:!text-white sm:flex`} aria-label={t('view.user')}>
-        <User size={16} weight="regular" />
+        <User size={16} weight="fill" />
       </button>
       {popover && (
         <div className="absolute right-0 top-11 z-50 w-64 rounded-2xl border border-line bg-white/98 p-3 text-left shadow-pop">
