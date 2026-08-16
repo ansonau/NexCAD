@@ -51,6 +51,13 @@ describe('planBracket', () => {
     expect(plan.baseHoles).toHaveLength(0);
   });
 
+  it('baseHoleInset 控制鎖附孔距底座邊緣的內縮量', () => {
+    const plan = planBracket(boardDef, { ...DEFAULT_BRACKET_PARAMS, baseHoleInset: 2 });
+    // 孔心 = 零件半寬 + baseMargin - inset = 20 + 6 - 2 = 24
+    expect(plan.baseHoles[0].x).toBeCloseTo(-24, 6);
+    expect(plan.baseHoles[0].y).toBeCloseTo(-14, 6);
+  });
+
   it('standoff=false 的安裝孔不長固定柱', () => {
     const def: PartDefinition = {
       ...boardDef,

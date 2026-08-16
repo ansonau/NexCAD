@@ -94,6 +94,10 @@ export interface BracketParams {
   mountingStyle?: MountingStyle;
   /** 底座四角是否生成貫穿鎖附孔；未設定時視為 true */
   baseHoles?: boolean;
+  /** 底座鎖附孔的螺絲規格；未設定時沿用 screwSize */
+  baseHoleScrewSize?: ScrewSizeLiteral;
+  /** 角鎖附孔距底座邊緣的內縮量（mm）；未設定時用 baseMargin/2 */
+  baseHoleInset?: number;
   /** 擋牆/側牆高度（0＝不生成）；未設定時視為 0 */
   wallHeight?: number;
   /** 擋牆/側牆/背板壁厚；未設定時視為 1.5 */

@@ -21,6 +21,11 @@ const PEG_HEIGHT = 4;
 // U 型抱箍的預設側牆高度（當使用者未指定 wallHeight 時）
 const U_DEFAULT_WALL_HEIGHT = 8;
 
+/** 底座鎖附孔半徑：使用 baseHoleScrewSize（未設定時沿用 screwSize）的通孔徑。 */
+function baseHoleRadius(params: BracketNode['params']): number {
+  return pilotDiameter(params.baseHoleScrewSize ?? params.screwSize, 'through') / 2;
+}
+
 /** 立式（standing）座標 → 零件本地座標：繞 Y 軸 -90°。立式座標中零件直立、感測面朝 +X。 */
 const STANDING_TO_LOCAL: Transform = { rotation: [0, -90, 0], position: [0, 0, 0], scale: [1, 1, 1] };
 
@@ -198,7 +203,7 @@ function buildBracketSolid(def: PartDefinition, plan: BracketPlan, params: Brack
     solid = kernel.difference(solid, entry);
   }
 
-  const throughRadius = pilotDiameter(params.screwSize, 'through') / 2;
+  const throughRadius = baseHoleRadius(params);
   for (const h of baseHoles) {
     const hole = kernel.transform(kernel.cylinder(throughRadius, thickness + 2), {
       position: [h.x, h.y, floorZ - 1],
@@ -264,9 +269,10 @@ function buildStandingLBracket(def: PartDefinition, bounds: Bounds3, params: Bra
   }
 
   // 底座鎖附孔：底座四角（垂直貫穿）
-  const throughR = pilotDiameter(screwSize, 'through') / 2;
-  const holeXs = [-(m + vt) + m / 2, -m / 2];
-  const holeYs = [bounds.minY - m / 2, bounds.maxY + m / 2];
+  const throughR = baseHoleRadius(params);
+  const inset = params.baseHoleInset ?? m / 2;
+  const holeXs = [-(m + vt) + inset, -inset];
+  const holeYs = [bounds.minY - m + inset, bounds.maxY + m - inset];
   for (const hx of holeXs) {
     for (const hy of holeYs) {
       const hole = kernel.transform(kernel.cylinder(throughR, bt + 2), {
@@ -315,10 +321,10 @@ function buildStandingUBracket(def: PartDefinition, bounds: Bounds3, params: Bra
   }
 
   // 底座鎖附孔：底座四角（垂直貫穿，位於零件外側）
-  const screwSize = params.screwSize;
-  const throughR = pilotDiameter(screwSize, 'through') / 2;
-  const holeXs = [bounds.minX - m / 2, bounds.maxX + m / 2];
-  const holeYs = [bounds.minY - (wc + vt) - m / 2, bounds.maxY + (wc + vt) + m / 2];
+  const throughR = baseHoleRadius(params);
+  const inset = params.baseHoleInset ?? m / 2;
+  const holeXs = [bounds.minX - m + inset, bounds.maxX + m - inset];
+  const holeYs = [bounds.minY - (wc + vt) - m + inset, bounds.maxY + (wc + vt) + m - inset];
   for (const hx of holeXs) {
     for (const hy of holeYs) {
       const hole = kernel.transform(kernel.cylinder(throughR, bt + 2), {

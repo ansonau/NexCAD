@@ -232,7 +232,10 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
             <option value="hole">{t('enclosure.mountingHole')}</option>
           </select>
         </label>
-        <label className="mt-3 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
+      </PanelGroup>
+
+      <PanelGroup title={t('bracket.baseMounting')}>
+        <label className="flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
           <input
             type="checkbox"
             className="h-3.5 w-3.5 rounded accent-blue-600"
@@ -241,6 +244,33 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
           />
           {t('bracket.baseHoles')}
         </label>
+        {params.baseHoles !== false && (
+          <>
+            <label className="mt-2 block">
+              <FieldLabel>{t('bracket.baseHoleScrewSize')}</FieldLabel>
+              <select
+                className={fieldClass}
+                value={params.baseHoleScrewSize ?? params.screwSize}
+                onChange={(e) => set('baseHoleScrewSize', e.target.value as BracketParams['baseHoleScrewSize'])}
+              >
+                {(['M2', 'M2.5', 'M3', 'M4'] as const).map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="mt-2">
+              <StepperField
+                label={t('bracket.baseHoleInsetShort')}
+                value={params.baseHoleInset ?? params.baseMargin / 2}
+                min={0.5}
+                step={0.5}
+                onChange={(v) => set('baseHoleInset', v)}
+              />
+            </div>
+          </>
+        )}
       </PanelGroup>
 
       <div className="sticky bottom-0 -mx-4 -mb-4 mt-4 flex justify-end gap-2 border-t border-line bg-white/98 px-4 py-3">

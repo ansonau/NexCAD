@@ -570,6 +570,29 @@ function BracketParamFields({ node }: { node: BracketNode }) {
         />
         {t('bracket.baseHoles')}
       </label>
+      <label className="mt-2 block">
+        <FieldLabel>{t('bracket.baseHoleScrewSize')}</FieldLabel>
+        <select
+          className={fieldClass}
+          value={p.baseHoleScrewSize ?? p.screwSize}
+          onChange={(e) => setParam('baseHoleScrewSize', e.target.value as BracketParams['baseHoleScrewSize'])}
+        >
+          {(['M2', 'M2.5', 'M3', 'M4'] as const).map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="mt-2">
+        <StepperField
+          label={t('bracket.baseHoleInsetShort')}
+          value={p.baseHoleInset ?? p.baseMargin / 2}
+          min={0.5}
+          step={0.5}
+          onChange={(v) => setParam('baseHoleInset', v)}
+        />
+      </div>
     </>
   );
 }

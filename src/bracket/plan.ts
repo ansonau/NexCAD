@@ -33,12 +33,13 @@ export interface BracketPlan {
 
 /**
  * 底座四角鎖附孔：落在「零件外側的鎖附帶」中央，確保螺絲孔不被零件本體遮住。
- * 位置＝零件半寬 + baseMargin/2；孔徑由呼叫端依 screwSize 決定。
+ * 孔心距底座邊緣的內縮量由 `baseHoleInset` 控制（預設 baseMargin/2）；孔徑由呼叫端依螺絲規格決定。
  */
 function cornerBaseHolePositions(def: PartDefinition, params: BracketParams): { x: number; y: number }[] {
   const [w, d] = def.body.size;
-  const hx = w / 2 + params.baseMargin / 2;
-  const hy = d / 2 + params.baseMargin / 2;
+  const inset = params.baseHoleInset ?? params.baseMargin / 2;
+  const hx = w / 2 + params.baseMargin - inset;
+  const hy = d / 2 + params.baseMargin - inset;
   return [
     { x: -hx, y: -hy },
     { x: -hx, y: hy },

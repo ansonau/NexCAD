@@ -54,12 +54,22 @@
 
 ### Requirement: 底座四角鎖附孔
 
-當 `baseHoles` 為 true（預設）時，支架底座 SHALL 在四角生成貫穿底座的鎖附孔，孔徑依 `screwSize` 的通孔徑決定。鎖附孔 SHALL 落在零件本體外側的鎖附帶（`baseMargin`）內，使螺絲孔不被零件本體遮住。當 `baseHoles` 為 false 時 SHALL 不生成鎖附孔。
+當 `baseHoles` 為 true（預設）時，支架底座 SHALL 在四角生成貫穿底座的鎖附孔。鎖附孔 SHALL 落在零件本體外側的鎖附帶（`baseMargin`）內，使螺絲孔不被零件本體遮住。鎖附孔螺絲規格 SHALL 可由 `baseHoleScrewSize` 指定（未設定時沿用 `screwSize`），孔距底座邊緣的內縮量 SHALL 可由 `baseHoleInset` 指定（未設定時用 `baseMargin/2`）。此規格適用於底座型、L 型與 U 型三種樣式。當 `baseHoles` 為 false 時 SHALL 不生成鎖附孔。
 
 #### Scenario: 預設生成四角鎖附孔且位於零件外側
 
 - **WHEN** `baseHoles` 為 true 或未設定
 - **THEN** 底座四角各有一個貫穿鎖附孔，且孔心位於零件本體俯視範圍之外
+
+#### Scenario: 鎖附孔螺絲規格可獨立指定
+
+- **WHEN** `baseHoleScrewSize` 已設定
+- **THEN** 底座鎖附孔孔徑依 `baseHoleScrewSize` 的通孔徑決定，不影響零件固定柱的 `screwSize`
+
+#### Scenario: 鎖附孔內縮量可調整
+
+- **WHEN** `baseHoleInset` 已設定
+- **THEN** 底座鎖附孔孔心距底座邊緣的距離為 `baseHoleInset`
 
 #### Scenario: 關閉鎖附孔
 
