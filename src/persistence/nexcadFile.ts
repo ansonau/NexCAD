@@ -83,6 +83,8 @@ const bracketNodeSchema = z.object({
     mountingStyle: z.enum(['screw', 'peg', 'hole']).optional(),
     baseHoles: z.boolean().optional(),
     baseHoleCount: z.union([z.literal(2), z.literal(4)]).optional(),
+    baseHoleAxis: z.enum(['long', 'short']).optional(),
+    baseHoleCountersink: z.boolean().optional(),
     baseHoleScrewSize: z.enum(['M2', 'M2.5', 'M3', 'M4']).optional(),
     baseHoleInset: z.number().optional(),
     baseHoleSpacing: z.number().optional(),

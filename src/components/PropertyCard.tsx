@@ -593,6 +593,31 @@ function BracketParamFields({ node }: { node: BracketNode }) {
           })}
         </div>
       </label>
+      {(p.baseHoleCount ?? 4) === 2 && (
+        <label className="mt-2 block">
+          <FieldLabel>{t('bracket.baseHoleAxis')}</FieldLabel>
+          <div className="grid grid-cols-2 gap-1.5">
+            {(['long', 'short'] as const).map((a) => {
+              const active = (p.baseHoleAxis ?? 'long') === a;
+              return (
+                <button
+                  key={a}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setParam('baseHoleAxis', a)}
+                  className={`h-9 rounded-xl border text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                    active
+                      ? 'border-accent bg-accent-soft text-accent shadow-sm'
+                      : 'border-line bg-white text-ink-2 hover:border-accent/50 hover:text-ink'
+                  }`}
+                >
+                  {a === 'long' ? t('bracket.baseHoleAxisLong') : t('bracket.baseHoleAxisShort')}
+                </button>
+              );
+            })}
+          </div>
+        </label>
+      )}
       <label className="mt-2 block">
         <FieldLabel>{t('bracket.baseHoleScrewSize')}</FieldLabel>
         <select
@@ -625,6 +650,15 @@ function BracketParamFields({ node }: { node: BracketNode }) {
           onChange={(v) => setParam('baseHoleInset', v)}
         />
       </div>
+      <label className="mt-2 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
+        <input
+          type="checkbox"
+          className="h-3.5 w-3.5 rounded accent-blue-600"
+          checked={p.baseHoleCountersink === true}
+          onChange={(e) => setParam('baseHoleCountersink', e.target.checked)}
+        />
+        {t('bracket.baseHoleCountersink')}
+      </label>
     </>
   );
 }

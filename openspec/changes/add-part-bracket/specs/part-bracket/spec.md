@@ -79,7 +79,17 @@
 #### Scenario: 鎖附孔中心距可指定
 
 - **WHEN** `baseHoleSpacing` 大於 0
-- **THEN** 鎖附孔置中於底座、以該中心距排列（2 孔沿較長軸、4 孔成方形），取代貼邊內縮排列
+- **THEN** 鎖附孔置中於底座、以該中心距排列（2 孔沿指定軸、4 孔成方形），取代貼邊內縮排列
+
+#### Scenario: 2 孔方向可選長軸或短軸
+
+- **WHEN** `baseHoleCount` 為 2 且 `baseHoleAxis` 為 'short'
+- **THEN** 2 孔沿底座較短軸排列；為 'long' 或未設定時沿較長軸
+
+#### Scenario: 沉頭孔使螺絲頭齊平
+
+- **WHEN** `baseHoleCountersink` 為 true
+- **THEN** 每個底座鎖附孔於底座頂面鑽一個錐形沉頭，深度與直徑依 `baseHoleScrewSize`（或 `screwSize`）查表
 
 #### Scenario: 關閉鎖附孔
 

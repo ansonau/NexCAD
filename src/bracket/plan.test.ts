@@ -84,6 +84,16 @@ describe('planBracket', () => {
     expect(plan.baseHoles[0].y).toBeCloseTo(-10, 6);
   });
 
+  it('baseHoleAxis=short 時 2 孔沿較短軸排列', () => {
+    const plan = planBracket(boardDef, { ...DEFAULT_BRACKET_PARAMS, baseHoleCount: 2, baseHoleAxis: 'short' });
+    expect(plan.baseHoles).toHaveLength(2);
+    // 底座 X 較長（52 vs 32），short 軸為 Y → 2 孔沿 Y 置中於 X=0
+    expect(plan.baseHoles[0].x).toBeCloseTo(0, 6);
+    expect(plan.baseHoles[0].y).toBeCloseTo(-13, 6);
+    expect(plan.baseHoles[1].x).toBeCloseTo(0, 6);
+    expect(plan.baseHoles[1].y).toBeCloseTo(13, 6);
+  });
+
   it('standoff=false 的安裝孔不長固定柱', () => {
     const def: PartDefinition = {
       ...boardDef,

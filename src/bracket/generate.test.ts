@@ -147,4 +147,10 @@ describe('buildBracketNodeSolid', () => {
     const tilted = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'l' }, [90, 0, 0]));
     expect(Math.abs(tilted - flat) / flat).toBeLessThan(1e-6);
   });
+
+  it('沉頭鎖附孔會移除頂面材料（體積略小於非沉頭）', () => {
+    const plain = volumeOf(bracketFor('test-board'));
+    const cs = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, baseHoleCountersink: true }));
+    expect(cs).toBeLessThan(plain);
+  });
 });

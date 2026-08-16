@@ -94,8 +94,12 @@ export interface BracketParams {
   mountingStyle?: MountingStyle;
   /** 底座四角是否生成貫穿鎖附孔；未設定時視為 true */
   baseHoles?: boolean;
-  /** 底座鎖附孔數量（2＝沿長軸兩端、4＝四角）；未設定時視為 4 */
+  /** 底座鎖附孔數量（2＝沿軸兩端、4＝四角）；未設定時視為 4 */
   baseHoleCount?: 2 | 4;
+  /** 2 孔鎖附孔的排列方向：沿底座較長軸或較短軸；未設定時視為 'long' */
+  baseHoleAxis?: 'long' | 'short';
+  /** 底座鎖附孔是否為沉頭孔（螺絲頭與底座表面齊平）；未設定時視為 false */
+  baseHoleCountersink?: boolean;
   /** 底座鎖附孔的螺絲規格；未設定時沿用 screwSize */
   baseHoleScrewSize?: ScrewSizeLiteral;
   /** 角鎖附孔距底座邊緣的內縮量（mm）；未設定時用 baseMargin/2 */

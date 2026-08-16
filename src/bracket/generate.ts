@@ -4,7 +4,7 @@ import { buildPartSolid } from '../parts/partGeometry';
 import type { Transform, BracketNode } from '../types/document';
 import type { PartDefinition } from '../parts/schema';
 import type { PartInstance } from '../enclosure/plan';
-import { pilotDiameter } from '../enclosure/screws';
+import { pilotDiameter, SCREW_TABLE } from '../enclosure/screws';
 import { planBracket, baseHolePositions } from './plan';
 import type { BracketPlan } from './plan';
 
@@ -24,6 +24,40 @@ const U_DEFAULT_WALL_HEIGHT = 8;
 /** 底座鎖附孔半徑：使用 baseHoleScrewSize（未設定時沿用 screwSize）的通孔徑。 */
 function baseHoleRadius(params: BracketNode['params']): number {
   return pilotDiameter(params.baseHoleScrewSize ?? params.screwSize, 'through') / 2;
+}
+
+/** 底座鎖附孔的沉頭尺寸（依 baseHoleScrewSize / screwSize 查表）；未啟用回傳 null。 */
+function baseHoleCountersink(params: BracketNode['params']): { radius: number; depth: number } | null {
+  if (!params.baseHoleCountersink) return null;
+  const spec = SCREW_TABLE[params.baseHoleScrewSize ?? params.screwSize];
+  return { radius: spec.countersinkDiameter / 2, depth: spec.countersinkDepth };
+}
+
+/**
+ * 在底座平板（頂面 baseTopZ、厚度 bt）的 (x, y) 處鑽一個垂直貫穿鎖附孔；
+ * 提供 countersink 時，於頂面額外鑽一個錐形沉頭（螺絲頭齊平）。
+ */
+function drillBaseHole(
+  kernel: GeometryKernel,
+  solid: Solid,
+  x: number,
+  y: number,
+  baseTopZ: number,
+  bt: number,
+  throughR: number,
+  countersink: { radius: number; depth: number } | null,
+): Solid {
+  solid = kernel.difference(solid, kernel.transform(kernel.cylinder(throughR, bt + 2), {
+    position: [x, y, baseTopZ - bt - 1],
+    ...noRotScale,
+  }));
+  if (countersink) {
+    solid = kernel.difference(solid, kernel.transform(kernel.cone(throughR, countersink.radius, countersink.depth), {
+      position: [x, y, baseTopZ - countersink.depth],
+      ...noRotScale,
+    }));
+  }
+  return solid;
 }
 
 /** 立式（standing）座標 → 零件本地座標：繞 Y 軸 -90°。立式座標中零件直立、感測面朝 +X。 */
@@ -203,13 +237,10 @@ function buildBracketSolid(def: PartDefinition, plan: BracketPlan, params: Brack
     solid = kernel.difference(solid, entry);
   }
 
-  const throughRadius = baseHoleRadius(params);
+  const throughR = baseHoleRadius(params);
+  const cs = baseHoleCountersink(params);
   for (const h of baseHoles) {
-    const hole = kernel.transform(kernel.cylinder(throughRadius, thickness + 2), {
-      position: [h.x, h.y, floorZ - 1],
-      ...noRotScale,
-    });
-    solid = kernel.difference(solid, hole);
+    solid = drillBaseHole(kernel, solid, h.x, h.y, base.maxZ, thickness, throughR, cs);
   }
 
   return solid;
@@ -270,14 +301,11 @@ function buildStandingLBracket(def: PartDefinition, bounds: Bounds3, params: Bra
 
   // 底座鎖附孔：底座四角（垂直貫穿）
   const throughR = baseHoleRadius(params);
+  const cs = baseHoleCountersink(params);
   const inset = params.baseHoleInset ?? m / 2;
   const baseBounds = { minX: -(m + vt), maxX: 0, minY: bounds.minY - m, maxY: bounds.maxY + m };
-  for (const h of baseHolePositions(baseBounds, inset, params.baseHoleCount ?? 4, params.baseHoleSpacing)) {
-    const hole = kernel.transform(kernel.cylinder(throughR, bt + 2), {
-      position: [h.x, h.y, plateBottomZ - bt - 1],
-      ...noRotScale,
-    });
-    solid = kernel.difference(solid, hole);
+  for (const h of baseHolePositions(baseBounds, inset, params.baseHoleCount ?? 4, params.baseHoleSpacing, params.baseHoleAxis ?? 'long')) {
+    solid = drillBaseHole(kernel, solid, h.x, h.y, plateBottomZ, bt, throughR, cs);
   }
 
   return solid;
@@ -319,6 +347,7 @@ function buildStandingUBracket(def: PartDefinition, bounds: Bounds3, params: Bra
 
   // 底座鎖附孔：底座四角（垂直貫穿，位於零件外側）
   const throughR = baseHoleRadius(params);
+  const cs = baseHoleCountersink(params);
   const inset = params.baseHoleInset ?? m / 2;
   const baseBounds = {
     minX: bounds.minX - m,
@@ -326,12 +355,8 @@ function buildStandingUBracket(def: PartDefinition, bounds: Bounds3, params: Bra
     minY: bounds.minY - (wc + vt) - m,
     maxY: bounds.maxY + (wc + vt) + m,
   };
-  for (const h of baseHolePositions(baseBounds, inset, params.baseHoleCount ?? 4, params.baseHoleSpacing)) {
-    const hole = kernel.transform(kernel.cylinder(throughR, bt + 2), {
-      position: [h.x, h.y, bottomZ - bt - 1],
-      ...noRotScale,
-    });
-    solid = kernel.difference(solid, hole);
+  for (const h of baseHolePositions(baseBounds, inset, params.baseHoleCount ?? 4, params.baseHoleSpacing, params.baseHoleAxis ?? 'long')) {
+    solid = drillBaseHole(kernel, solid, h.x, h.y, bottomZ, bt, throughR, cs);
   }
 
   return solid;
