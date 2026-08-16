@@ -18,7 +18,7 @@ import type {
   SceneNode,
 } from '../types/document';
 import { FieldLabel, OutlineButton, Seg, StepperField, fieldClass, panelClass } from './ui';
-import { BracketStyleSelector } from './BracketStyleDiagram';
+import { BracketStyleSelector, HoleCountSelector, MountingStyleSelector } from './BracketStyleDiagram';
 
 const PARAM_LABELS: Record<string, string> = {
   width: 'property.width',
@@ -611,15 +611,15 @@ function BracketParamFields({ node }: { node: BracketNode }) {
           </label>
           <label className="mt-2 block">
             <FieldLabel>{t('bracket.mountingStyle')}</FieldLabel>
-            <select
-              className={fieldClass}
+            <MountingStyleSelector
               value={p.mountingStyle ?? 'screw'}
-              onChange={(e) => setParam('mountingStyle', e.target.value as BracketParams['mountingStyle'])}
-            >
-              <option value="screw">{t('enclosure.mountingScrew')}</option>
-              <option value="peg">{t('enclosure.mountingPeg')}</option>
-              <option value="hole">{t('enclosure.mountingHole')}</option>
-            </select>
+              onChange={(v) => setParam('mountingStyle', v)}
+              labels={{
+                screw: t('enclosure.mountingScrew'),
+                peg: t('enclosure.mountingPeg'),
+                hole: t('enclosure.mountingHole'),
+              }}
+            />
           </label>
         </>
       )}
@@ -666,13 +666,10 @@ function BracketParamFields({ node }: { node: BracketNode }) {
             <>
               <label className="block">
                 <FieldLabel>{t('bracket.baseHoleCount')}</FieldLabel>
-                <Seg
-                  options={[
-                    { value: '2', label: t('bracket.baseHoleCount2') },
-                    { value: '4', label: t('bracket.baseHoleCount4') },
-                  ]}
-                  value={String(p.baseHoleCount ?? 4) as '2' | '4'}
-                  onChange={(v) => setParam('baseHoleCount', Number(v) as 2 | 4)}
+                <HoleCountSelector
+                  value={p.baseHoleCount ?? 4}
+                  onChange={(v) => setParam('baseHoleCount', v)}
+                  labels={{ 2: t('bracket.baseHoleCount2'), 4: t('bracket.baseHoleCount4') }}
                 />
               </label>
               {(p.baseHoleCount ?? 4) === 2 && (
