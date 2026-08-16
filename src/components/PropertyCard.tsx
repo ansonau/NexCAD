@@ -609,6 +609,15 @@ function BracketParamFields({ node }: { node: BracketNode }) {
       </label>
       <div className="mt-2">
         <StepperField
+          label={t('bracket.baseHoleSpacingShort')}
+          value={p.baseHoleSpacing ?? 0}
+          min={0}
+          step={1}
+          onChange={(v) => setParam('baseHoleSpacing', v)}
+        />
+      </div>
+      <div className="mt-2">
+        <StepperField
           label={t('bracket.baseHoleInsetShort')}
           value={p.baseHoleInset ?? p.baseMargin / 2}
           min={0.5}

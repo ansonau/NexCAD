@@ -85,6 +85,7 @@ const bracketNodeSchema = z.object({
     baseHoleCount: z.union([z.literal(2), z.literal(4)]).optional(),
     baseHoleScrewSize: z.enum(['M2', 'M2.5', 'M3', 'M4']).optional(),
     baseHoleInset: z.number().optional(),
+    baseHoleSpacing: z.number().optional(),
     wallHeight: z.number().optional(),
     wallThickness: z.number().optional(),
     wallClearance: z.number().optional(),

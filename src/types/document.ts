@@ -100,6 +100,8 @@ export interface BracketParams {
   baseHoleScrewSize?: ScrewSizeLiteral;
   /** 角鎖附孔距底座邊緣的內縮量（mm）；未設定時用 baseMargin/2 */
   baseHoleInset?: number;
+  /** 鎖附孔中心距（mm）：設定後鎖附孔置中於底座、以該間距排列（2 孔沿長軸、4 孔成方形）；未設定時採內縮貼邊排列 */
+  baseHoleSpacing?: number;
   /** 擋牆/側牆高度（0＝不生成）；未設定時視為 0 */
   wallHeight?: number;
   /** 擋牆/側牆/背板壁厚；未設定時視為 1.5 */

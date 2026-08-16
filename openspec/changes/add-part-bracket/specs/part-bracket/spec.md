@@ -76,6 +76,11 @@
 - **WHEN** `baseHoleCount` 為 2
 - **THEN** 底座生成 2 個鎖附孔，沿底座較長軸的兩端、置中於另一軸；為 4 或未設定時生成四角鎖附孔
 
+#### Scenario: 鎖附孔中心距可指定
+
+- **WHEN** `baseHoleSpacing` 大於 0
+- **THEN** 鎖附孔置中於底座、以該中心距排列（2 孔沿較長軸、4 孔成方形），取代貼邊內縮排列
+
 #### Scenario: 關閉鎖附孔
 
 - **WHEN** `baseHoles` 為 false

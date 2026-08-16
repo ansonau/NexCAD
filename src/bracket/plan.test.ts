@@ -68,6 +68,22 @@ describe('planBracket', () => {
     expect(plan.baseHoles[1].y).toBeCloseTo(0, 6);
   });
 
+  it('baseHoleSpacing 讓 2 孔置中於底座以該間距排列', () => {
+    const plan = planBracket(boardDef, { ...DEFAULT_BRACKET_PARAMS, baseHoleCount: 2, baseHoleSpacing: 30 });
+    expect(plan.baseHoles).toHaveLength(2);
+    // 間距 30 → ±15，沿 X 置中於 Y=0
+    expect(plan.baseHoles[0].x).toBeCloseTo(-15, 6);
+    expect(plan.baseHoles[0].y).toBeCloseTo(0, 6);
+    expect(plan.baseHoles[1].x).toBeCloseTo(15, 6);
+  });
+
+  it('baseHoleSpacing=4 孔時成方形排列', () => {
+    const plan = planBracket(boardDef, { ...DEFAULT_BRACKET_PARAMS, baseHoleCount: 4, baseHoleSpacing: 20 });
+    expect(plan.baseHoles).toHaveLength(4);
+    expect(plan.baseHoles[0].x).toBeCloseTo(-10, 6);
+    expect(plan.baseHoles[0].y).toBeCloseTo(-10, 6);
+  });
+
   it('standoff=false 的安裝孔不長固定柱', () => {
     const def: PartDefinition = {
       ...boardDef,

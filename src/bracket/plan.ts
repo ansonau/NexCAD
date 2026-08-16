@@ -33,29 +33,40 @@ export interface BracketPlan {
 }
 
 /**
- * 依底座平板範圍與內縮量計算鎖附孔位置。
- * 4 孔＝四角；2 孔＝沿較長軸的兩端、置中於另一軸（像鉸鏈，穩定性較佳）。
+ * 依底座平板範圍計算鎖附孔位置。
+ * - `spacing` > 0：鎖附孔置中於底座、以該中心距排列（2 孔沿較長軸、4 孔成方形）。
+ * - 否則：4 孔＝四角內縮；2 孔＝沿較長軸兩端、置中於另一軸。
  */
 export function baseHolePositions(
   bounds: Pick<Bounds3, 'minX' | 'maxX' | 'minY' | 'maxY'>,
   inset: number,
   count: 2 | 4,
+  spacing?: number,
 ): { x: number; y: number }[] {
+  const cx = (bounds.minX + bounds.maxX) / 2;
+  const cy = (bounds.minY + bounds.maxY) / 2;
   const w = bounds.maxX - bounds.minX;
   const d = bounds.maxY - bounds.minY;
+
+  if (spacing && spacing > 0) {
+    const half = spacing / 2;
+    if (count === 2) {
+      if (w >= d) return [{ x: cx - half, y: cy }, { x: cx + half, y: cy }];
+      return [{ x: cx, y: cy - half }, { x: cx, y: cy + half }];
+    }
+    return [
+      { x: cx - half, y: cy - half },
+      { x: cx - half, y: cy + half },
+      { x: cx + half, y: cy - half },
+      { x: cx + half, y: cy + half },
+    ];
+  }
+
   if (count === 2) {
     if (w >= d) {
-      const cy = (bounds.minY + bounds.maxY) / 2;
-      return [
-        { x: bounds.minX + inset, y: cy },
-        { x: bounds.maxX - inset, y: cy },
-      ];
+      return [{ x: bounds.minX + inset, y: cy }, { x: bounds.maxX - inset, y: cy }];
     }
-    const cx = (bounds.minX + bounds.maxX) / 2;
-    return [
-      { x: cx, y: bounds.minY + inset },
-      { x: cx, y: bounds.maxY - inset },
-    ];
+    return [{ x: cx, y: bounds.minY + inset }, { x: cx, y: bounds.maxY - inset }];
   }
   return [
     { x: bounds.minX + inset, y: bounds.minY + inset },
@@ -101,7 +112,7 @@ export function planBracket(def: PartDefinition, params: BracketParams): Bracket
 
   const baseHoles = params.baseHoles === false
     ? []
-    : baseHolePositions(base, params.baseHoleInset ?? params.baseMargin / 2, params.baseHoleCount ?? 4);
+    : baseHolePositions(base, params.baseHoleInset ?? params.baseMargin / 2, params.baseHoleCount ?? 4, params.baseHoleSpacing);
 
   const wallHeight = params.wallHeight ?? 0;
   const wallThickness = params.wallThickness ?? 1.5;

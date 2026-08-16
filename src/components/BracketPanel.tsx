@@ -285,6 +285,16 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
             </label>
             <div className="mt-2">
               <StepperField
+                label={t('bracket.baseHoleSpacingShort')}
+                value={params.baseHoleSpacing ?? 0}
+                min={0}
+                step={1}
+                onChange={(v) => set('baseHoleSpacing', v)}
+              />
+              <p className="mt-1 text-[11px] text-ink-3">{t('bracket.baseHoleSpacingHint')}</p>
+            </div>
+            <div className="mt-2">
+              <StepperField
                 label={t('bracket.baseHoleInsetShort')}
                 value={params.baseHoleInset ?? params.baseMargin / 2}
                 min={0.5}
