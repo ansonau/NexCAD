@@ -1,5 +1,6 @@
 import type { GeometryKernel, Solid } from '../geometry/kernel';
 import { getPartDefinition } from '../parts/library';
+import { buildPartSolid } from '../parts/partGeometry';
 import type { Transform, BracketNode } from '../types/document';
 import type { PartDefinition } from '../parts/schema';
 import type { PartInstance } from '../enclosure/plan';
@@ -22,6 +23,29 @@ const U_DEFAULT_WALL_HEIGHT = 8;
 
 /** 立式（standing）座標 → 零件本地座標：繞 Y 軸 -90°。立式座標中零件直立、感測面朝 +X。 */
 const STANDING_TO_LOCAL: Transform = { rotation: [0, -90, 0], position: [0, 0, 0], scale: [1, 1, 1] };
+
+interface Bounds3 { minX: number; maxX: number; minY: number; maxY: number; minZ: number; maxZ: number }
+
+/** 零件在本地座標下的真實包覆盒（含突出 block，透過 mesh 頂點求得）。 */
+function partLocalBounds(def: PartDefinition, kernel: GeometryKernel): Bounds3 {
+  const mesh = kernel.toMesh(buildPartSolid(def, kernel));
+  const b: Bounds3 = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity, minZ: Infinity, maxZ: -Infinity };
+  for (let i = 0; i < mesh.positions.length; i += 3) {
+    b.minX = Math.min(b.minX, mesh.positions[i]);
+    b.maxX = Math.max(b.maxX, mesh.positions[i]);
+    b.minY = Math.min(b.minY, mesh.positions[i + 1]);
+    b.maxY = Math.max(b.maxY, mesh.positions[i + 1]);
+    b.minZ = Math.min(b.minZ, mesh.positions[i + 2]);
+    b.maxZ = Math.max(b.maxZ, mesh.positions[i + 2]);
+  }
+  return b;
+}
+
+/** 立式座標下的真實包覆盒：本地 X→-Z（垂直）、Y→Y、Z→X（向前）。 */
+function standingBounds(def: PartDefinition, kernel: GeometryKernel): Bounds3 {
+  const b = partLocalBounds(def, kernel);
+  return { minX: b.minZ, maxX: b.maxZ, minY: b.minY, maxY: b.maxY, minZ: -b.maxX, maxZ: -b.minX };
+}
 
 function resolveParts(node: BracketNode): PartInstance[] {
   const out: PartInstance[] = [];
@@ -56,12 +80,14 @@ function buildBracketForPart(
 ): Solid {
   const style = params.style ?? 'base';
   let local: Solid;
-  if (style === 'l') {
-    local = kernel.transform(buildStandingLBracket(def, params, kernel), STANDING_TO_LOCAL);
-  } else if (style === 'u') {
-    local = kernel.transform(buildStandingUBracket(def, params, kernel), STANDING_TO_LOCAL);
+  if (style === 'l' || style === 'u') {
+    const bounds = standingBounds(def, kernel);
+    local = kernel.transform(
+      style === 'l' ? buildStandingLBracket(def, bounds, params, kernel) : buildStandingUBracket(def, bounds, params, kernel),
+      STANDING_TO_LOCAL,
+    );
   } else {
-    local = buildBracketSolid(planBracket(def, params), params, kernel);
+    local = buildBracketSolid(def, planBracket(def, params), params, kernel);
   }
   return kernel.transform(local, transform);
 }
@@ -75,8 +101,20 @@ function xCylinder(kernel: GeometryKernel, radius: number, height: number, x: nu
   });
 }
 
+/** 抬高孔（topZ > 0）時，固定柱會伸入本體高度範圍，需把柱半徑夾到「不與本體重疊」。 */
+function postRadiusFor(def: PartDefinition, hx: number, hy: number, topZ: number, baseRadius: number, pilotRadius: number): number {
+  if (topZ <= 0) return baseRadius;
+  const [W, D] = def.body.size;
+  const dx = Math.max(0, Math.abs(hx) - W / 2);
+  const dy = Math.max(0, Math.abs(hy) - D / 2);
+  const dist = Math.hypot(dx, dy);
+  if (dist <= 0) return baseRadius;
+  const minRadius = Math.max(pilotRadius + 0.8, 1);
+  return Math.max(Math.min(baseRadius, dist - 0.1), minRadius);
+}
+
 /** 在本地座標建構底座平板 + 擋牆 + 固定柱 + 鎖附孔的 Solid（不含 transform） */
-function buildBracketSolid(plan: BracketPlan, params: BracketNode['params'], kernel: GeometryKernel): Solid {
+function buildBracketSolid(def: PartDefinition, plan: BracketPlan, params: BracketNode['params'], kernel: GeometryKernel): Solid {
   const { base, floorZ, cornerRadius, standoffs, baseHoles, wall } = plan;
   const thickness = params.baseThickness;
 
@@ -117,7 +155,9 @@ function buildBracketSolid(plan: BracketPlan, params: BracketNode['params'], ker
     if (style === 'peg') {
       const standoffHeight = s.topZ - floorZ;
       if (standoffHeight <= 0) continue;
-      const standoffRadius = s.pilotDiameter / 2 + POST_WALL_PADDING;
+      const standoffRadius = postRadiusFor(
+        def, s.x, s.y, s.topZ, s.pilotDiameter / 2 + POST_WALL_PADDING, s.pilotDiameter / 2,
+      );
       const post = kernel.transform(kernel.cylinder(standoffRadius, standoffHeight), {
         position: [s.x, s.y, floorZ],
         ...noRotScale,
@@ -134,7 +174,9 @@ function buildBracketSolid(plan: BracketPlan, params: BracketNode['params'], ker
     // screw：柱 + 自攻導孔 + 入口
     const standoffHeight = s.topZ - floorZ;
     if (standoffHeight <= 0) continue;
-    const standoffRadius = s.pilotDiameter / 2 + POST_WALL_PADDING;
+    const standoffRadius = postRadiusFor(
+      def, s.x, s.y, s.topZ, s.pilotDiameter / 2 + POST_WALL_PADDING, s.pilotDiameter / 2,
+    );
     const post = kernel.transform(kernel.cylinder(standoffRadius, standoffHeight), {
       position: [s.x, s.y, floorZ],
       ...noRotScale,
@@ -177,28 +219,29 @@ function standingHolePositions(def: PartDefinition): { x: number; y: number; z: 
 
 /**
  * L 型立式支架（立式座標）：垂直背板（零件直立鎖上）+ 水平底座。
- * 立式座標：零件直立於 Y-Z 平面，板長 L 沿 Z、板寬 W 沿 Y，感測面朝 +X。
+ * 立式座標：零件直立於 Y-Z 平面，感測面朝 +X。以零件真實包覆盒（含突出 block）定尺寸。
  */
-function buildStandingLBracket(def: PartDefinition, params: BracketNode['params'], kernel: GeometryKernel): Solid {
-  const [L, W] = def.body.size;
+function buildStandingLBracket(def: PartDefinition, bounds: Bounds3, params: BracketNode['params'], kernel: GeometryKernel): Solid {
   const vt = params.wallThickness ?? 1.5;
   const bt = params.baseThickness;
   const m = params.baseMargin;
-  const r = Math.max(0, Math.min(params.cornerRadius, vt / 2 - 0.1, (W + 2 * m) / 2 - 0.1));
+  const r = Math.max(0, Math.min(params.cornerRadius, vt / 2 - 0.1, (bounds.maxY - bounds.minY + 2 * m) / 2 - 0.1));
 
-  const plateW = W + 2 * m;
-  const plateH = L + 2 * m;
+  const plateW = bounds.maxY - bounds.minY + 2 * m;
+  const plateH = bounds.maxZ - bounds.minZ + 2 * m;
+  const plateBottomZ = bounds.minZ - m;
+  const cy = (bounds.minY + bounds.maxY) / 2;
 
   // 垂直背板：x ∈ [-vt, 0]，貼在板背
   let solid = kernel.transform(kernel.roundedBox(vt, plateW, plateH, r), {
-    position: [-vt / 2, 0, -(L / 2 + m)],
+    position: [-vt / 2, cy, plateBottomZ],
     ...noRotScale,
   });
 
   // 底座：向後（-X）延伸 baseMargin，x ∈ [-(m + vt), 0]
   const baseDepth = m + vt;
   const base = kernel.transform(kernel.roundedBox(baseDepth, plateW, bt, r), {
-    position: [-baseDepth / 2, 0, -(L / 2 + m) - bt],
+    position: [-baseDepth / 2, cy, plateBottomZ - bt],
     ...noRotScale,
   });
   solid = kernel.union(solid, base);
@@ -223,11 +266,11 @@ function buildStandingLBracket(def: PartDefinition, params: BracketNode['params'
   // 底座鎖附孔：底座四角（垂直貫穿）
   const throughR = pilotDiameter(screwSize, 'through') / 2;
   const holeXs = [-(m + vt) + m / 2, -m / 2];
-  const holeYs = [-(W / 2 + m) + m / 2, W / 2 + m - m / 2];
+  const holeYs = [bounds.minY - m / 2, bounds.maxY + m / 2];
   for (const hx of holeXs) {
     for (const hy of holeYs) {
       const hole = kernel.transform(kernel.cylinder(throughR, bt + 2), {
-        position: [hx, hy, -(L / 2 + m) - bt - 1],
+        position: [hx, hy, plateBottomZ - bt - 1],
         ...noRotScale,
       });
       solid = kernel.difference(solid, hole);
@@ -239,9 +282,9 @@ function buildStandingLBracket(def: PartDefinition, params: BracketNode['params'
 
 /**
  * U 型抱箍（立式座標）：兩片側牆 + 底座，零件直立夾在中間、感測面朝 +X 露出。
+ * 以零件真實包覆盒（含突出 block）定尺寸，避免側牆/底座與突出 block 相交。
  */
-function buildStandingUBracket(def: PartDefinition, params: BracketNode['params'], kernel: GeometryKernel): Solid {
-  const [L, W, T] = def.body.size;
+function buildStandingUBracket(def: PartDefinition, bounds: Bounds3, params: BracketNode['params'], kernel: GeometryKernel): Solid {
   const vt = params.wallThickness ?? 1.5;
   const wc = params.wallClearance ?? 0.5;
   const bt = params.baseThickness;
@@ -249,34 +292,37 @@ function buildStandingUBracket(def: PartDefinition, params: BracketNode['params'
   const wallH = (params.wallHeight ?? 0) > 0 ? params.wallHeight! : U_DEFAULT_WALL_HEIGHT;
   const r = Math.max(0, Math.min(params.cornerRadius, vt / 2 - 0.1));
 
-  const baseDepth = T + 2 * m;
-  const baseW = W + 2 * (wc + vt) + 2 * m;
+  const fwdDepth = bounds.maxX - bounds.minX;
+  const baseW = bounds.maxY - bounds.minY + 2 * (wc + vt) + 2 * m;
+  const bottomZ = bounds.minZ;
+  const cx = (bounds.minX + bounds.maxX) / 2;
+  const cy = (bounds.minY + bounds.maxY) / 2;
 
-  // 底座（水平，位在板底下方；中心對齊板中心 x=T/2）
-  let solid = kernel.transform(kernel.roundedBox(baseDepth, baseW, bt, r), {
-    position: [T / 2, 0, -L / 2 - bt],
+  // 底座（水平，位在零件真實底緣下方）
+  let solid = kernel.transform(kernel.roundedBox(fwdDepth + 2 * m, baseW, bt, r), {
+    position: [cx, cy, bottomZ - bt],
     ...noRotScale,
   });
 
-  // 兩片側牆：x ∈ [0, T]，夾住板左右兩側（Y 邊），自底座頂向上長 wallH
+  // 兩片側牆：夾住零件真實左右（Y）邊緣，自底座頂向上長 wallH
   for (const side of [-1, 1]) {
-    const wallY = side * (W / 2 + wc + vt / 2);
-    const wall = kernel.transform(kernel.roundedBox(T, vt, wallH, r), {
-      position: [T / 2, wallY, -L / 2],
+    const wallY = side >= 0 ? bounds.maxY + wc + vt / 2 : bounds.minY - wc - vt / 2;
+    const wall = kernel.transform(kernel.roundedBox(fwdDepth, vt, wallH, r), {
+      position: [cx, wallY, bottomZ],
       ...noRotScale,
     });
     solid = kernel.union(solid, wall);
   }
 
-  // 底座鎖附孔：底座四角（垂直貫穿，位於板外側）
+  // 底座鎖附孔：底座四角（垂直貫穿，位於零件外側）
   const screwSize = params.screwSize;
   const throughR = pilotDiameter(screwSize, 'through') / 2;
-  const holeXs = [-m + m / 2, T + m - m / 2];
-  const holeYs = [-baseW / 2 + m / 2, baseW / 2 - m / 2];
+  const holeXs = [bounds.minX - m / 2, bounds.maxX + m / 2];
+  const holeYs = [bounds.minY - (wc + vt) - m / 2, bounds.maxY + (wc + vt) + m / 2];
   for (const hx of holeXs) {
     for (const hy of holeYs) {
       const hole = kernel.transform(kernel.cylinder(throughR, bt + 2), {
-        position: [hx, hy, -L / 2 - bt - 1],
+        position: [hx, hy, bottomZ - bt - 1],
         ...noRotScale,
       });
       solid = kernel.difference(solid, hole);
