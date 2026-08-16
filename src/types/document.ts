@@ -84,6 +84,8 @@ export interface BracketParams {
   style?: BracketStyle;
   /** 底座平板厚度 */
   baseThickness: number;
+  /** L 型支架底座向後的長度（深度）；未設定時用 baseMargin */
+  baseDepth?: number;
   /** 底座四周超出零件俯視範圍的邊距（同時是角鎖附孔的鎖附帶） */
   baseMargin: number;
   /** 底座四邊圓角半徑 */

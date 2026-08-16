@@ -498,6 +498,13 @@ function BracketParamFields({ node }: { node: BracketNode }) {
           onChange={(v) => setParam('baseThickness', v)}
         />
         <StepperField
+          label={t('bracket.baseDepthShort')}
+          value={p.baseDepth ?? p.baseMargin}
+          min={0}
+          step={1}
+          onChange={(v) => setParam('baseDepth', v)}
+        />
+        <StepperField
           label={t('bracket.baseMarginShort')}
           value={p.baseMargin}
           min={0}

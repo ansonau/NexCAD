@@ -143,6 +143,8 @@
     "needsSelection": "Select a part to create a bracket for first",
     "baseThickness": "Base thickness (mm)",
     "baseThicknessShort": "Thickness",
+    "baseDepth": "Base length (mm)",
+    "baseDepthShort": "Base length",
     "baseMargin": "Base margin (mm)",
     "baseMarginShort": "Margin",
     "cornerRadius": "Corner radius (mm)",

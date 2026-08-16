@@ -152,13 +152,22 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
 
       {style === 'l' && (
         <PanelGroup title={t('bracket.styleL')}>
-          <StepperField
-            label={t('bracket.wallThicknessShort')}
-            value={params.wallThickness ?? 1.5}
-            min={0.5}
-            step={0.5}
-            onChange={(v) => set('wallThickness', v)}
-          />
+          <div className="grid grid-cols-2 gap-2">
+            <StepperField
+              label={t('bracket.baseDepthShort')}
+              value={params.baseDepth ?? params.baseMargin}
+              min={0}
+              step={1}
+              onChange={(v) => set('baseDepth', v)}
+            />
+            <StepperField
+              label={t('bracket.wallThicknessShort')}
+              value={params.wallThickness ?? 1.5}
+              min={0.5}
+              step={0.5}
+              onChange={(v) => set('wallThickness', v)}
+            />
+          </div>
           <label className="mt-3 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
             <input
               type="checkbox"

@@ -143,6 +143,8 @@
     "needsSelection": "請先選取要建立支架的零件",
     "baseThickness": "底座厚度 (mm)",
     "baseThicknessShort": "厚度",
+    "baseDepth": "底座長度 (mm)",
+    "baseDepthShort": "底座長度",
     "baseMargin": "底座邊距 (mm)",
     "baseMarginShort": "邊距",
     "cornerRadius": "圓角半徑 (mm)",
