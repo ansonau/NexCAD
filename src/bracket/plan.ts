@@ -29,7 +29,7 @@ export interface BracketPlan {
   /** 底座四角鎖附孔位置（XY，落在零件外側的鎖附帶） */
   baseHoles: { x: number; y: number }[];
   /** 零件四周定位擋牆；height<=0 表示不生成 */
-  wall: { outerW: number; outerD: number; innerW: number; innerD: number; height: number; cornerRadius: number };
+  wall: { outerW: number; outerD: number; innerW: number; innerD: number; height: number; cornerRadius: number; cx: number; cy: number };
 }
 
 /**
@@ -81,19 +81,27 @@ export function baseHolePositions(
 }
 
 /**
- * 在零件本地座標（底面中心原點、Z 向上）計算支架：
- * 底座＝零件本體俯視尺寸向外擴張 baseMargin；固定柱＝零件安裝孔本地位置；
+ * 在零件本地座標（Z 向上）計算底座型支架：
+ * 底座＝零件俯視範圍向外擴張 baseExpand；固定柱＝零件安裝孔本地位置；
  * 擋牆＝零件四周定位牆（wallHeight > 0 時）。
+ * `footprint` 為零件真實俯視包覆盒（含突出 block）；未提供時用本體尺寸（供純函式測試）。
  * 此函式不考慮零件在世界座標的旋轉，呼叫端負責套用 transform。
  */
-export function planBracket(def: PartDefinition, params: BracketParams): BracketPlan {
+export function planBracket(
+  def: PartDefinition,
+  params: BracketParams,
+  footprint?: Pick<Bounds3, 'minX' | 'maxX' | 'minY' | 'maxY'>,
+): BracketPlan {
   const [w, d] = def.body.size;
+  const fx = footprint ?? { minX: -w / 2, maxX: w / 2, minY: -d / 2, maxY: d / 2 };
+  const fcx = (fx.minX + fx.maxX) / 2;
+  const fcy = (fx.minY + fx.maxY) / 2;
   const expand = params.baseExpand ?? params.baseMargin;
   const base: Bounds3 = {
-    minX: -w / 2 - expand,
-    maxX: w / 2 + expand,
-    minY: -d / 2 - expand,
-    maxY: d / 2 + expand,
+    minX: fx.minX - expand,
+    maxX: fx.maxX + expand,
+    minY: fx.minY - expand,
+    maxY: fx.maxY + expand,
     minZ: -params.baseThickness,
     maxZ: 0,
   };
@@ -121,13 +129,17 @@ export function planBracket(def: PartDefinition, params: BracketParams): Bracket
   const wallHeight = params.wallHeight ?? 0;
   const wallThickness = params.wallThickness ?? 1.5;
   const wallClearance = params.wallClearance ?? 0.5;
+  const fw = fx.maxX - fx.minX;
+  const fd = fx.maxY - fx.minY;
   const wall: BracketPlan['wall'] = {
-    outerW: w + 2 * wallClearance + 2 * wallThickness,
-    outerD: d + 2 * wallClearance + 2 * wallThickness,
-    innerW: w + 2 * wallClearance,
-    innerD: d + 2 * wallClearance,
+    outerW: fw + 2 * wallClearance + 2 * wallThickness,
+    outerD: fd + 2 * wallClearance + 2 * wallThickness,
+    innerW: fw + 2 * wallClearance,
+    innerD: fd + 2 * wallClearance,
     height: wallHeight,
     cornerRadius: Math.max(0, cornerRadius - wallThickness),
+    cx: fcx,
+    cy: fcy,
   };
 
   return { base, floorZ: base.minZ, cornerRadius, standoffs, baseHoles, wall };

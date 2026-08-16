@@ -41,7 +41,7 @@ describe('bracket 不與零件相交（全零件庫 × 三種樣式）', () => {
         const rotation = style === 'base' ? [0, 0, 0] : [0, 90, 0];
         const transform: Transform = { position: [0, 0, 0], rotation: rotation as [number, number, number], scale: [1, 1, 1] };
         const partSolid = kernel.transform(buildPartSolid(def, kernel), transform);
-        const node = createBracketNode({ ...DEFAULT_BRACKET_PARAMS, style }, 'b', {
+        const node = createBracketNode({ ...DEFAULT_BRACKET_PARAMS, style, wallHeight: style === 'base' ? 3 : 0 }, 'b', {
           sourceParts: [{ nodeId: 'x', partId: def.id, transform }],
         });
         const bracket = buildBracketNodeSolid(node, kernel);

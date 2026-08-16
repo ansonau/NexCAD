@@ -126,7 +126,8 @@ function buildBracketForPart(
       STANDING_TO_LOCAL,
     );
   } else {
-    local = buildBracketSolid(def, planBracket(def, params), params, kernel);
+    const footprint = partLocalBounds(def, kernel);
+    local = buildBracketSolid(def, planBracket(def, params, footprint), params, kernel);
   }
   return kernel.transform(local, transform);
 }
@@ -169,12 +170,12 @@ function buildBracketSolid(def: PartDefinition, plan: BracketPlan, params: Brack
     const wallThickness = params.wallThickness ?? 1.5;
     const rOuter = Math.max(0, Math.min(wall.cornerRadius + wallThickness, wall.outerW / 2 - 0.1, wall.outerD / 2 - 0.1));
     const outer = kernel.transform(kernel.roundedBox(wall.outerW, wall.outerD, wall.height, rOuter), {
-      position: [0, 0, 0],
+      position: [wall.cx, wall.cy, 0],
       ...noRotScale,
     });
     const rInner = Math.max(0, Math.min(wall.cornerRadius, wall.innerW / 2 - 0.1, wall.innerD / 2 - 0.1));
     const inner = kernel.transform(kernel.roundedBox(wall.innerW, wall.innerD, wall.height, rInner), {
-      position: [0, 0, 0],
+      position: [wall.cx, wall.cy, 0],
       ...noRotScale,
     });
     solid = kernel.union(solid, kernel.difference(outer, inner));
