@@ -7,6 +7,7 @@ import { getPartDefinition } from '../parts/library';
 import type { BracketParams, BracketStyle, SceneNode } from '../types/document';
 import { useDocumentStore } from '../store/documentStore';
 import { Dialog, FieldLabel, GhostButton, PrimaryButton, Seg, StepperField, fieldClass } from './ui';
+import { BracketStyleSelector } from './BracketStyleDiagram';
 
 type PartNode = Extract<SceneNode, { type: 'part' }>;
 
@@ -17,10 +18,10 @@ function selectedParts(): PartNode[] {
     .filter((n): n is PartNode => n?.type === 'part');
 }
 
-const STYLES: { value: BracketStyle; key: string; hintKey: string }[] = [
-  { value: 'base', key: 'bracket.styleBase', hintKey: 'bracket.styleBaseHint' },
-  { value: 'l', key: 'bracket.styleL', hintKey: 'bracket.styleLHint' },
-  { value: 'u', key: 'bracket.styleU', hintKey: 'bracket.styleUHint' },
+const STYLES: { value: BracketStyle; hintKey: string }[] = [
+  { value: 'base', hintKey: 'bracket.styleBaseHint' },
+  { value: 'l', hintKey: 'bracket.styleLHint' },
+  { value: 'u', hintKey: 'bracket.styleUHint' },
 ];
 
 export function BracketPanel({ onClose }: { onClose: () => void }) {
@@ -89,10 +90,10 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
 
       {/* 樣式 */}
       <PanelGroup title={t('bracket.style')}>
-        <Seg
-          options={STYLES.map((s) => ({ value: s.value, label: t(s.key) }))}
+        <BracketStyleSelector
           value={style}
           onChange={setStyle}
+          labels={{ base: t('bracket.styleBase'), l: t('bracket.styleL'), u: t('bracket.styleU') }}
         />
         <p className="mt-2 text-[11px] leading-relaxed text-ink-3">{t(styleInfo.hintKey)}</p>
       </PanelGroup>

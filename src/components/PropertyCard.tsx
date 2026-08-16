@@ -18,6 +18,7 @@ import type {
   SceneNode,
 } from '../types/document';
 import { FieldLabel, OutlineButton, Seg, StepperField, fieldClass, panelClass } from './ui';
+import { BracketStyleSelector } from './BracketStyleDiagram';
 
 const PARAM_LABELS: Record<string, string> = {
   width: 'property.width',
@@ -461,14 +462,10 @@ function BracketParamFields({ node }: { node: BracketNode }) {
     <>
       <label className="block">
         <FieldLabel>{t('bracket.style')}</FieldLabel>
-        <Seg
-          options={[
-            { value: 'base', label: t('bracket.styleBase') },
-            { value: 'l', label: t('bracket.styleL') },
-            { value: 'u', label: t('bracket.styleU') },
-          ]}
+        <BracketStyleSelector
           value={style}
           onChange={(v) => setParam('style', v)}
+          labels={{ base: t('bracket.styleBase'), l: t('bracket.styleL'), u: t('bracket.styleU') }}
         />
       </label>
 
