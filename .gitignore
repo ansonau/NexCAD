@@ -14,3 +14,6 @@ playwright/.cache
 .impeccable/
 .superpowers/brainstorm/
 .worktrees/
+
+# 大型 3D 二進位資產（超過 GitHub 100MB 限制，留在本機不進 git）
+*.glb
