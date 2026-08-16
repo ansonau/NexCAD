@@ -88,16 +88,6 @@ export function PropertyCard() {
           )}
           {node.type === 'bracket' && (
             <PropertySection title={t('bracket.params')} icon={<SlidersHorizontal size={14} />}>
-              {isBracketStale(node, doc) && (
-                <p className="mb-2 flex items-start gap-1.5 rounded-lg border border-amber-200/70 bg-amber-50 px-2 py-1.5 text-[11px] leading-snug text-amber-800">
-                  <RefreshCw size={13} className="mt-px shrink-0" />
-                  {t('bracket.staleWarning')}
-                </p>
-              )}
-              <OutlineButton onClick={() => regenerateBracket(node.id)} className="mb-1 w-full">
-                <RefreshCw size={14} />
-                {t('bracket.regenerate')}
-              </OutlineButton>
               <BracketParamFields node={node} />
             </PropertySection>
           )}
@@ -181,17 +171,6 @@ export function replaceCarAnchorGeneratedNodes(
 }
 
 function isEnclosureStale(node: EnclosureNode, doc: NexcadDocument): boolean {
-  return node.sourceParts.some((s) => {
-    const live = findNode(doc.nodes, s.nodeId);
-    if (!live || live.type !== 'part') return false;
-    return (
-      JSON.stringify(live.transform.position) !== JSON.stringify(s.transform.position) ||
-      JSON.stringify(live.transform.rotation) !== JSON.stringify(s.transform.rotation)
-    );
-  });
-}
-
-function isBracketStale(node: BracketNode, doc: NexcadDocument): boolean {
   return node.sourceParts.some((s) => {
     const live = findNode(doc.nodes, s.nodeId);
     if (!live || live.type !== 'part') return false;

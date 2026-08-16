@@ -1,6 +1,6 @@
 import { getPartDefinition } from '../parts/library';
 import { buildPartColoredSegments, buildPartSolid } from '../parts/partGeometry';
-import type { NodeRole, SceneNode } from '../types/document';
+import type { NodeRole, SceneNode, Transform } from '../types/document';
 import type { GeometryKernel, MeshData, Solid } from './kernel';
 import { buildEnclosureNodeSolid } from '../enclosure/generate';
 import { buildBracketNodeSolid } from '../bracket/generate';
@@ -13,7 +13,20 @@ export interface EvaluatedNode {
   color?: string;
 }
 
-function buildSolid(node: SceneNode, kernel: GeometryKernel): Solid | null {
+/** 收集所有 part 節點的即時 transform（nodeId → transform），供支架自動跟隨零件。 */
+function collectPartTransforms(nodes: SceneNode[]): Map<string, Transform> {
+  const map = new Map<string, Transform>();
+  const visit = (list: SceneNode[]) => {
+    for (const n of list) {
+      if (n.type === 'part') map.set(n.id, n.transform);
+      else if (n.type === 'group') visit(n.children);
+    }
+  };
+  visit(nodes);
+  return map;
+}
+
+function buildSolid(node: SceneNode, kernel: GeometryKernel, liveParts: Map<string, Transform>): Solid | null {
   let base: Solid | null;
   if (node.type === 'primitive') {
     const p = node.params;
@@ -37,22 +50,27 @@ function buildSolid(node: SceneNode, kernel: GeometryKernel): Solid | null {
   } else if (node.type === 'enclosure') {
     base = buildEnclosureNodeSolid(node, kernel);
   } else if (node.type === 'bracket') {
-    base = buildBracketNodeSolid(node, kernel);
+    base = buildBracketNodeSolid(node, kernel, liveParts);
   } else if (node.type === 'car-anchor') {
     return null;
   } else {
-    base = combineScope(node.children, kernel);
+    base = combineScope(node.children, kernel, liveParts);
   }
   return base ? kernel.transform(base, node.transform) : null;
 }
 
 /** 同一層：所有 solid union 起來，再減去該層所有 hole */
-export function combineScope(nodes: SceneNode[], kernel: GeometryKernel): Solid | null {
+export function combineScope(
+  nodes: SceneNode[],
+  kernel: GeometryKernel,
+  liveParts?: Map<string, Transform>,
+): Solid | null {
+  const parts = liveParts ?? collectPartTransforms(nodes);
   const solids: Solid[] = [];
   const holes: Solid[] = [];
   for (const n of nodes) {
     if (!n.visible) continue;
-    const s = buildSolid(n, kernel);
+    const s = buildSolid(n, kernel, parts);
     if (!s) continue;
     (n.role === 'hole' ? holes : solids).push(s);
   }
@@ -66,6 +84,7 @@ export function combineScope(nodes: SceneNode[], kernel: GeometryKernel): Solid 
 function buildRenderSolids(
   node: SceneNode,
   kernel: GeometryKernel,
+  liveParts: Map<string, Transform>,
 ): { solid: Solid; color?: string }[] | null {
   if (node.type === 'part') {
     const def = getPartDefinition(node.partId);
@@ -75,18 +94,19 @@ function buildRenderSolids(
       color: seg.color,
     }));
   }
-  const s = buildSolid(node, kernel);
+  const s = buildSolid(node, kernel, liveParts);
   return s ? [{ solid: s }] : null;
 }
 
 /** 渲染用：每個頂層節點一至多個 mesh（part 色段）。solid 段被同層 hole 減料；hole 回傳自身形狀 */
 export function evaluateForRender(nodes: SceneNode[], kernel: GeometryKernel): EvaluatedNode[] {
+  const liveParts = collectPartTransforms(nodes);
   const out: EvaluatedNode[] = [];
   // 每個 hole 只建一次 Solid（Manifold 布林運算不會消耗輸入，把手可重複使用）
   const holeSolids = new Map<string, Solid>();
   for (const n of nodes) {
     if (n.visible && n.role === 'hole') {
-      const s = buildSolid(n, kernel);
+      const s = buildSolid(n, kernel, liveParts);
       if (s) holeSolids.set(n.id, s);
     }
   }
@@ -97,7 +117,7 @@ export function evaluateForRender(nodes: SceneNode[], kernel: GeometryKernel): E
       if (s) out.push({ nodeId: node.id, role: node.role, mesh: kernel.toMesh(s) });
       continue;
     }
-    for (const seg of buildRenderSolids(node, kernel) ?? []) {
+    for (const seg of buildRenderSolids(node, kernel, liveParts) ?? []) {
       let s = seg.solid;
       for (const h of holeSolids.values()) s = kernel.difference(s, h);
       out.push({ nodeId: node.id, role: node.role, mesh: kernel.toMesh(s), color: seg.color });

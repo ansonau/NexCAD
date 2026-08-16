@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createBracketNode, createPartNode } from '../types/document';
+import type { Transform } from '../types/document';
 import { ManifoldKernel } from '../geometry/manifoldKernel';
 import { registerPartDefinition } from '../parts/library';
 import type { PartDefinition } from '../parts/schema';
@@ -164,5 +165,24 @@ describe('buildBracketNodeSolid', () => {
     const back = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'l', baseDirection: 'back' }));
     const both = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'l', baseDirection: 'both' }));
     expect(both).toBeGreaterThan(back);
+  });
+
+  it('liveParts 讓支架跟隨零件即時位置', () => {
+    const part = createPartNode('test-board', 'Board');
+    const node = createBracketNode(DEFAULT_BRACKET_PARAMS, 'b', {
+      sourceParts: [{ nodeId: part.id, partId: part.partId, transform: part.transform }],
+    });
+    const liveParts = new Map([[part.id, { position: [100, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] } as Transform]]);
+    const solid = buildBracketNodeSolid(node, kernel, liveParts)!;
+    const mesh = kernel.toMesh(solid);
+    let minX = Infinity;
+    let maxX = -Infinity;
+    for (let i = 0; i < mesh.positions.length; i += 3) {
+      minX = Math.min(minX, mesh.positions[i]);
+      maxX = Math.max(maxX, mesh.positions[i]);
+    }
+    // 支架應位於 x≈100（寬約 52），而非原點附近
+    expect(minX).toBeGreaterThan(60);
+    expect(maxX).toBeLessThan(140);
   });
 });

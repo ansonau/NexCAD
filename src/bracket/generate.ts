@@ -86,11 +86,11 @@ function standingBounds(def: PartDefinition, kernel: GeometryKernel): Bounds3 {
   return { minX: b.minZ, maxX: b.maxZ, minY: b.minY, maxY: b.maxY, minZ: -b.maxX, maxZ: -b.minX };
 }
 
-function resolveParts(node: BracketNode): PartInstance[] {
+function resolveParts(node: BracketNode, liveParts?: Map<string, Transform>): PartInstance[] {
   const out: PartInstance[] = [];
   for (const s of node.sourceParts) {
     const def = getPartDefinition(s.partId);
-    if (def) out.push({ def, transform: s.transform });
+    if (def) out.push({ def, transform: liveParts?.get(s.nodeId) ?? s.transform });
   }
   return out;
 }
@@ -99,9 +99,14 @@ function resolveParts(node: BracketNode): PartInstance[] {
  * 由 BracketNode 組裝出 Solid；worker-safe（不依賴 store）。找不到來源零件時回傳 null。
  * 每個來源零件各自在「本地座標」生成支架，再套用其 transform 後 union，
  * 因此零件任意旋轉（含繞 X/Y 軸立起）時支架仍正確貼合零件。
+ * `liveParts`（nodeId → 即時 transform）可讓支架自動跟隨零件目前位置；未提供時用快照。
  */
-export function buildBracketNodeSolid(node: BracketNode, kernel: GeometryKernel): Solid | null {
-  const parts = resolveParts(node);
+export function buildBracketNodeSolid(
+  node: BracketNode,
+  kernel: GeometryKernel,
+  liveParts?: Map<string, Transform>,
+): Solid | null {
+  const parts = resolveParts(node, liveParts);
   if (parts.length === 0) return null;
   let result: Solid | null = null;
   for (const part of parts) {
