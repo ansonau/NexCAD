@@ -134,6 +134,16 @@
 - **WHEN** `style` 未設定
 - **THEN** 行為等同 `style: 'base'`
 
+#### Scenario: 底座型外擴量可獨立調整
+
+- **WHEN** `baseExpand` 已設定
+- **THEN** 底座型底座平板超出零件本體俯視範圍的距離為 `baseExpand`（未設定時用 `baseMargin`）
+
+#### Scenario: U 型側牆深度可獨立調整
+
+- **WHEN** `wallDepth` 大於 0
+- **THEN** U 型抱箍的兩片側牆深度（X 向）為 `wallDepth`；為 0 或未設定時自動覆蓋零件完整前後範圍
+
 #### Scenario: 自動轉直立（L/U 型）
 
 - **WHEN** 使用者以 L 型或 U 型建立支架，且零件平放（rx=ry=0）並勾選「自動把零件轉直立」

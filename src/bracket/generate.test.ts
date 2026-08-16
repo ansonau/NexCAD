@@ -153,4 +153,10 @@ describe('buildBracketNodeSolid', () => {
     const cs = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, baseHoleCountersink: true }));
     expect(cs).toBeLessThan(plain);
   });
+
+  it('wallDepth 收窄 U 型側牆後體積變小', () => {
+    const full = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'u' }));
+    const narrow = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'u', wallDepth: 1 }));
+    expect(narrow).toBeLessThan(full);
+  });
 });

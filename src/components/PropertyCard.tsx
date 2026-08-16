@@ -505,6 +505,13 @@ function BracketParamFields({ node }: { node: BracketNode }) {
           onChange={(v) => setParam('baseDepth', v)}
         />
         <StepperField
+          label={t('bracket.baseExpandShort')}
+          value={p.baseExpand ?? p.baseMargin}
+          min={0}
+          step={0.5}
+          onChange={(v) => setParam('baseExpand', v)}
+        />
+        <StepperField
           label={t('bracket.baseMarginShort')}
           value={p.baseMargin}
           min={0}
@@ -526,6 +533,13 @@ function BracketParamFields({ node }: { node: BracketNode }) {
           min={0}
           step={0.5}
           onChange={(v) => setParam('wallHeight', v)}
+        />
+        <StepperField
+          label={t('bracket.wallDepthShort')}
+          value={p.wallDepth ?? 0}
+          min={0}
+          step={0.5}
+          onChange={(v) => setParam('wallDepth', v)}
         />
         <StepperField
           label={t('bracket.wallThicknessShort')}

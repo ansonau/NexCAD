@@ -105,6 +105,13 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
             onChange={(v) => set('baseThickness', v)}
           />
           <StepperField
+            label={t('bracket.baseExpandShort')}
+            value={params.baseExpand ?? params.baseMargin}
+            min={0}
+            step={0.5}
+            onChange={(v) => set('baseExpand', v)}
+          />
+          <StepperField
             label={t('bracket.baseMarginShort')}
             value={params.baseMargin}
             min={0}
@@ -191,6 +198,13 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
               onChange={(v) => set('wallHeight', v)}
             />
             <StepperField
+              label={t('bracket.wallDepthShort')}
+              value={params.wallDepth ?? 0}
+              min={0}
+              step={0.5}
+              onChange={(v) => set('wallDepth', v)}
+            />
+            <StepperField
               label={t('bracket.wallThicknessShort')}
               value={params.wallThickness ?? 1.5}
               min={0.5}
@@ -205,6 +219,7 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
               onChange={(v) => set('wallClearance', v)}
             />
           </div>
+          <p className="mt-2 text-[11px] text-ink-3">{t('bracket.wallDepthHint')}</p>
           <label className="mt-3 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
             <input
               type="checkbox"

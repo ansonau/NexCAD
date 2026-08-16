@@ -325,6 +325,7 @@ function buildStandingUBracket(def: PartDefinition, bounds: Bounds3, params: Bra
   const r = Math.max(0, Math.min(params.cornerRadius, vt / 2 - 0.1));
 
   const fwdDepth = bounds.maxX - bounds.minX;
+  const wallDepth = (params.wallDepth ?? 0) > 0 ? params.wallDepth! : fwdDepth;
   const baseW = bounds.maxY - bounds.minY + 2 * (wc + vt) + 2 * m;
   const bottomZ = bounds.minZ;
   const cx = (bounds.minX + bounds.maxX) / 2;
@@ -339,7 +340,7 @@ function buildStandingUBracket(def: PartDefinition, bounds: Bounds3, params: Bra
   // 兩片側牆：夾住零件真實左右（Y）邊緣，自底座頂向上長 wallH
   for (const side of [-1, 1]) {
     const wallY = side >= 0 ? bounds.maxY + wc + vt / 2 : bounds.minY - wc - vt / 2;
-    const wall = kernel.transform(kernel.roundedBox(fwdDepth, vt, wallH, r), {
+    const wall = kernel.transform(kernel.roundedBox(wallDepth, vt, wallH, r), {
       position: [cx, wallY, bottomZ],
       ...noRotScale,
     });

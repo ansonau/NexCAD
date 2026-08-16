@@ -86,6 +86,8 @@ export interface BracketParams {
   baseThickness: number;
   /** L 型支架底座向後的長度（深度）；未設定時用 baseMargin */
   baseDepth?: number;
+  /** 底座型支架底座外擴量（底座超出零件本體俯視範圍的距離）；未設定時用 baseMargin */
+  baseExpand?: number;
   /** 底座四周超出零件俯視範圍的邊距（同時是角鎖附孔的鎖附帶） */
   baseMargin: number;
   /** 底座四邊圓角半徑 */
@@ -114,6 +116,8 @@ export interface BracketParams {
   wallThickness?: number;
   /** 擋牆與零件本體間隙（裝配鬆配）；未設定時視為 0.5 */
   wallClearance?: number;
+  /** U 型抱箍側牆深度（X 向，覆蓋零件前後範圍）；0＝自動（零件完整前後範圍） */
+  wallDepth?: number;
 }
 
 export type BracketStyle = 'base' | 'l' | 'u';

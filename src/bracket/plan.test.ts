@@ -94,6 +94,12 @@ describe('planBracket', () => {
     expect(plan.baseHoles[1].y).toBeCloseTo(13, 6);
   });
 
+  it('baseExpand 獨立控制底座外擴量', () => {
+    const plan = planBracket(boardDef, { ...DEFAULT_BRACKET_PARAMS, baseExpand: 10 });
+    expect(plan.base.minX).toBeCloseTo(-20 - 10, 6);
+    expect(plan.base.maxX).toBeCloseTo(20 + 10, 6);
+  });
+
   it('standoff=false 的安裝孔不長固定柱', () => {
     const def: PartDefinition = {
       ...boardDef,

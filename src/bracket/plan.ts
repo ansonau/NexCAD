@@ -88,12 +88,12 @@ export function baseHolePositions(
  */
 export function planBracket(def: PartDefinition, params: BracketParams): BracketPlan {
   const [w, d] = def.body.size;
-  const m = params.baseMargin;
+  const expand = params.baseExpand ?? params.baseMargin;
   const base: Bounds3 = {
-    minX: -w / 2 - m,
-    maxX: w / 2 + m,
-    minY: -d / 2 - m,
-    maxY: d / 2 + m,
+    minX: -w / 2 - expand,
+    maxX: w / 2 + expand,
+    minY: -d / 2 - expand,
+    maxY: d / 2 + expand,
     minZ: -params.baseThickness,
     maxZ: 0,
   };
