@@ -86,6 +86,8 @@ export interface BracketParams {
   baseThickness: number;
   /** L 型支架底座向後的長度（深度）；未設定時用 baseMargin */
   baseDepth?: number;
+  /** L 型支架底座方向：向後、向前或雙向；未設定時視為 'back' */
+  baseDirection?: 'back' | 'front' | 'both';
   /** 底座型支架底座外擴量（底座超出零件本體俯視範圍的距離）；未設定時用 baseMargin */
   baseExpand?: number;
   /** 底座四周超出零件俯視範圍的邊距（同時是角鎖附孔的鎖附帶） */

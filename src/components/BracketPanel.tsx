@@ -175,6 +175,29 @@ export function BracketPanel({ onClose }: { onClose: () => void }) {
               onChange={(v) => set('wallThickness', v)}
             />
           </div>
+          <label className="mt-2 block">
+            <FieldLabel>{t('bracket.baseDirection')}</FieldLabel>
+            <div className="grid grid-cols-3 gap-2">
+              {(['back', 'front', 'both'] as const).map((dir) => {
+                const active = (params.baseDirection ?? 'back') === dir;
+                return (
+                  <button
+                    key={dir}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => set('baseDirection', dir)}
+                    className={`h-9 rounded-xl border text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                      active
+                        ? 'border-accent bg-accent-soft text-accent shadow-sm'
+                        : 'border-line bg-white text-ink-2 hover:border-accent/50 hover:text-ink'
+                    }`}
+                  >
+                    {dir === 'back' ? t('bracket.baseDirectionBack') : dir === 'front' ? t('bracket.baseDirectionFront') : t('bracket.baseDirectionBoth')}
+                  </button>
+                );
+              })}
+            </div>
+          </label>
           <label className="mt-3 flex cursor-pointer items-center gap-2 text-[12px] text-ink-2">
             <input
               type="checkbox"

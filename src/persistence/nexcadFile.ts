@@ -78,6 +78,7 @@ const bracketNodeSchema = z.object({
     style: z.enum(['base', 'l', 'u']).optional(),
     baseThickness: z.number(),
     baseDepth: z.number().optional(),
+    baseDirection: z.enum(['back', 'front', 'both']).optional(),
     baseExpand: z.number().optional(),
     baseMargin: z.number(),
     cornerRadius: z.number(),

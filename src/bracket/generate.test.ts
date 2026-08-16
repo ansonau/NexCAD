@@ -159,4 +159,10 @@ describe('buildBracketNodeSolid', () => {
     const narrow = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'u', wallDepth: 1 }));
     expect(narrow).toBeLessThan(full);
   });
+
+  it('L 型底座雙向延伸比單向體積大', () => {
+    const back = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'l', baseDirection: 'back' }));
+    const both = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'l', baseDirection: 'both' }));
+    expect(both).toBeGreaterThan(back);
+  });
 });

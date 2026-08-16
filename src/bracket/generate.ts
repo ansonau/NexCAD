@@ -275,11 +275,25 @@ function buildStandingLBracket(def: PartDefinition, bounds: Bounds3, params: Bra
     ...noRotScale,
   });
 
-  // 底座：向後（-X）延伸 baseDepth，x ∈ [-(baseDepth + vt), 0]
+  // 底座：向後/向前/雙向延伸 baseDepth
   const extendDepth = params.baseDepth ?? m;
-  const totalDepth = extendDepth + vt;
+  const dir = params.baseDirection ?? 'back';
+  let baseMinX: number;
+  let baseMaxX: number;
+  if (dir === 'front') {
+    baseMinX = -vt;
+    baseMaxX = extendDepth;
+  } else if (dir === 'both') {
+    baseMinX = -(extendDepth + vt);
+    baseMaxX = extendDepth;
+  } else {
+    baseMinX = -(extendDepth + vt);
+    baseMaxX = 0;
+  }
+  const totalDepth = baseMaxX - baseMinX;
+  const baseCx = (baseMinX + baseMaxX) / 2;
   const base = kernel.transform(kernel.roundedBox(totalDepth, plateW, bt, r), {
-    position: [-totalDepth / 2, cy, plateBottomZ - bt],
+    position: [baseCx, cy, plateBottomZ - bt],
     ...noRotScale,
   });
   solid = kernel.union(solid, base);
@@ -305,7 +319,7 @@ function buildStandingLBracket(def: PartDefinition, bounds: Bounds3, params: Bra
   const throughR = baseHoleRadius(params);
   const cs = baseHoleCountersink(params);
   const inset = params.baseHoleInset ?? m / 2;
-  const baseBounds = { minX: -totalDepth, maxX: 0, minY: bounds.minY - m, maxY: bounds.maxY + m };
+  const baseBounds = { minX: baseMinX, maxX: baseMaxX, minY: bounds.minY - m, maxY: bounds.maxY + m };
   for (const h of baseHolePositions(baseBounds, inset, params.baseHoleCount ?? 4, params.baseHoleSpacing, params.baseHoleAxis ?? 'long')) {
     solid = drillBaseHole(kernel, solid, h.x, h.y, plateBottomZ, bt, throughR, cs);
   }
