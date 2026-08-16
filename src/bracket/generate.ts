@@ -158,6 +158,43 @@ function postRadiusFor(def: PartDefinition, hx: number, hy: number, topZ: number
   return Math.max(Math.min(baseRadius, dist - 0.1), minRadius);
 }
 
+/** 在擋牆上為零件側面接口（USB/接線口等）開缺口，避免擋牆擋住接口。 */
+function cutWallPortGaps(
+  solid: Solid,
+  wall: { outerW: number; outerD: number; innerW: number; innerD: number; height: number; cx: number; cy: number },
+  def: PartDefinition,
+  kernel: GeometryKernel,
+): Solid {
+  const bodyT = def.body.size[2];
+  const tol = 0.4;
+  let result = solid;
+  for (const port of def.ports) {
+    if (port.face === 'top') continue;
+    const zBottom = Math.max(0, bodyT + port.z);
+    const zTop = Math.min(wall.height, bodyT + port.z + port.h);
+    const gapH = zTop - zBottom;
+    if (gapH <= 0.1) continue;
+
+    const thicknessX = (wall.outerW - wall.innerW) / 2;
+    const thicknessY = (wall.outerD - wall.innerD) / 2;
+    let box: Solid;
+    let position: [number, number, number];
+    if (port.face === 'east' || port.face === 'west') {
+      const sign = port.face === 'east' ? 1 : -1;
+      const wallCx = wall.cx + sign * (wall.innerW / 2 + thicknessX / 2);
+      box = kernel.box(thicknessX + 2, port.w + tol * 2, gapH);
+      position = [wallCx, wall.cy + port.x, zBottom];
+    } else {
+      const sign = port.face === 'north' ? 1 : -1;
+      const wallCy = wall.cy + sign * (wall.innerD / 2 + thicknessY / 2);
+      box = kernel.box(port.w + tol * 2, thicknessY + 2, gapH);
+      position = [wall.cx + port.x, wallCy, zBottom];
+    }
+    result = kernel.difference(result, kernel.transform(box, { position, rotation: [0, 0, 0], scale: [1, 1, 1] }));
+  }
+  return result;
+}
+
 /** 在本地座標建構底座平板 + 擋牆 + 固定柱 + 鎖附孔的 Solid（不含 transform） */
 function buildBracketSolid(def: PartDefinition, plan: BracketPlan, params: BracketNode['params'], kernel: GeometryKernel): Solid {
   const { base, floorZ, cornerRadius, standoffs, baseHoles, wall } = plan;
@@ -184,6 +221,8 @@ function buildBracketSolid(def: PartDefinition, plan: BracketPlan, params: Brack
       ...noRotScale,
     });
     solid = kernel.union(solid, kernel.difference(outer, inner));
+    // 為零件側面接口開缺口
+    solid = cutWallPortGaps(solid, wall, def, kernel);
   }
 
   for (const s of standoffs) {

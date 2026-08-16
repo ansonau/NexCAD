@@ -34,10 +34,17 @@ const ledDef: PartDefinition = {
   clearanceHeight: 8.6,
 };
 
+const portBoardDef: PartDefinition = {
+  ...boardDef,
+  id: 'test-board-port',
+  ports: [{ face: 'west', shape: 'rect', x: 0, z: 0, w: 10, h: 5, label: 'USB' }],
+};
+
 beforeAll(async () => {
   await kernel.init();
   registerPartDefinition(boardDef);
   registerPartDefinition(ledDef);
+  registerPartDefinition(portBoardDef);
 });
 
 function bracketFor(partId: string, params = DEFAULT_BRACKET_PARAMS, rotation: [number, number, number] = [0, 0, 0]) {
@@ -159,6 +166,12 @@ describe('buildBracketNodeSolid', () => {
     const full = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'u' }));
     const narrow = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, style: 'u', wallDepth: 1 }));
     expect(narrow).toBeLessThan(full);
+  });
+
+  it('底座型擋牆為側面接口開缺口（有接口者體積較小）', () => {
+    const withPort = volumeOf(bracketFor('test-board-port', { ...DEFAULT_BRACKET_PARAMS, wallHeight: 5 }));
+    const withoutPort = volumeOf(bracketFor('test-board', { ...DEFAULT_BRACKET_PARAMS, wallHeight: 5 }));
+    expect(withPort).toBeLessThan(withoutPort);
   });
 
   it('L 型底座雙向延伸比單向體積大', () => {
