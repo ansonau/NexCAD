@@ -71,6 +71,11 @@
 - **WHEN** `baseHoleInset` 已設定
 - **THEN** 底座鎖附孔孔心距底座邊緣的距離為 `baseHoleInset`
 
+#### Scenario: 鎖附孔數量可選 2 或 4
+
+- **WHEN** `baseHoleCount` 為 2
+- **THEN** 底座生成 2 個鎖附孔，沿底座較長軸的兩端、置中於另一軸；為 4 或未設定時生成四角鎖附孔
+
 #### Scenario: 關閉鎖附孔
 
 - **WHEN** `baseHoles` 為 false

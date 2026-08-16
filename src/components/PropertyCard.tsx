@@ -571,6 +571,29 @@ function BracketParamFields({ node }: { node: BracketNode }) {
         {t('bracket.baseHoles')}
       </label>
       <label className="mt-2 block">
+        <FieldLabel>{t('bracket.baseHoleCount')}</FieldLabel>
+        <div className="grid grid-cols-2 gap-1.5">
+          {([2, 4] as const).map((c) => {
+            const active = (p.baseHoleCount ?? 4) === c;
+            return (
+              <button
+                key={c}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setParam('baseHoleCount', c)}
+                className={`h-9 rounded-xl border text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                  active
+                    ? 'border-accent bg-accent-soft text-accent shadow-sm'
+                    : 'border-line bg-white text-ink-2 hover:border-accent/50 hover:text-ink'
+                }`}
+              >
+                {c === 2 ? t('bracket.baseHoleCount2') : t('bracket.baseHoleCount4')}
+              </button>
+            );
+          })}
+        </div>
+      </label>
+      <label className="mt-2 block">
         <FieldLabel>{t('bracket.baseHoleScrewSize')}</FieldLabel>
         <select
           className={fieldClass}

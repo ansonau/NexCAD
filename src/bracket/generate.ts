@@ -5,7 +5,7 @@ import type { Transform, BracketNode } from '../types/document';
 import type { PartDefinition } from '../parts/schema';
 import type { PartInstance } from '../enclosure/plan';
 import { pilotDiameter } from '../enclosure/screws';
-import { planBracket } from './plan';
+import { planBracket, baseHolePositions } from './plan';
 import type { BracketPlan } from './plan';
 
 const noRotScale = {
@@ -271,16 +271,13 @@ function buildStandingLBracket(def: PartDefinition, bounds: Bounds3, params: Bra
   // 底座鎖附孔：底座四角（垂直貫穿）
   const throughR = baseHoleRadius(params);
   const inset = params.baseHoleInset ?? m / 2;
-  const holeXs = [-(m + vt) + inset, -inset];
-  const holeYs = [bounds.minY - m + inset, bounds.maxY + m - inset];
-  for (const hx of holeXs) {
-    for (const hy of holeYs) {
-      const hole = kernel.transform(kernel.cylinder(throughR, bt + 2), {
-        position: [hx, hy, plateBottomZ - bt - 1],
-        ...noRotScale,
-      });
-      solid = kernel.difference(solid, hole);
-    }
+  const baseBounds = { minX: -(m + vt), maxX: 0, minY: bounds.minY - m, maxY: bounds.maxY + m };
+  for (const h of baseHolePositions(baseBounds, inset, params.baseHoleCount ?? 4)) {
+    const hole = kernel.transform(kernel.cylinder(throughR, bt + 2), {
+      position: [h.x, h.y, plateBottomZ - bt - 1],
+      ...noRotScale,
+    });
+    solid = kernel.difference(solid, hole);
   }
 
   return solid;
@@ -323,16 +320,18 @@ function buildStandingUBracket(def: PartDefinition, bounds: Bounds3, params: Bra
   // 底座鎖附孔：底座四角（垂直貫穿，位於零件外側）
   const throughR = baseHoleRadius(params);
   const inset = params.baseHoleInset ?? m / 2;
-  const holeXs = [bounds.minX - m + inset, bounds.maxX + m - inset];
-  const holeYs = [bounds.minY - (wc + vt) - m + inset, bounds.maxY + (wc + vt) + m - inset];
-  for (const hx of holeXs) {
-    for (const hy of holeYs) {
-      const hole = kernel.transform(kernel.cylinder(throughR, bt + 2), {
-        position: [hx, hy, bottomZ - bt - 1],
-        ...noRotScale,
-      });
-      solid = kernel.difference(solid, hole);
-    }
+  const baseBounds = {
+    minX: bounds.minX - m,
+    maxX: bounds.maxX + m,
+    minY: bounds.minY - (wc + vt) - m,
+    maxY: bounds.maxY + (wc + vt) + m,
+  };
+  for (const h of baseHolePositions(baseBounds, inset, params.baseHoleCount ?? 4)) {
+    const hole = kernel.transform(kernel.cylinder(throughR, bt + 2), {
+      position: [h.x, h.y, bottomZ - bt - 1],
+      ...noRotScale,
+    });
+    solid = kernel.difference(solid, hole);
   }
 
   return solid;

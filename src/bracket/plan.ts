@@ -11,6 +11,7 @@ export const DEFAULT_BRACKET_PARAMS: BracketParams = {
   screwSize: 'M3',
   mountingStyle: 'screw',
   baseHoles: true,
+  baseHoleCount: 4,
   wallHeight: 0,
   wallThickness: 1.5,
   wallClearance: 0.5,
@@ -32,19 +33,35 @@ export interface BracketPlan {
 }
 
 /**
- * 底座四角鎖附孔：落在「零件外側的鎖附帶」中央，確保螺絲孔不被零件本體遮住。
- * 孔心距底座邊緣的內縮量由 `baseHoleInset` 控制（預設 baseMargin/2）；孔徑由呼叫端依螺絲規格決定。
+ * 依底座平板範圍與內縮量計算鎖附孔位置。
+ * 4 孔＝四角；2 孔＝沿較長軸的兩端、置中於另一軸（像鉸鏈，穩定性較佳）。
  */
-function cornerBaseHolePositions(def: PartDefinition, params: BracketParams): { x: number; y: number }[] {
-  const [w, d] = def.body.size;
-  const inset = params.baseHoleInset ?? params.baseMargin / 2;
-  const hx = w / 2 + params.baseMargin - inset;
-  const hy = d / 2 + params.baseMargin - inset;
+export function baseHolePositions(
+  bounds: Pick<Bounds3, 'minX' | 'maxX' | 'minY' | 'maxY'>,
+  inset: number,
+  count: 2 | 4,
+): { x: number; y: number }[] {
+  const w = bounds.maxX - bounds.minX;
+  const d = bounds.maxY - bounds.minY;
+  if (count === 2) {
+    if (w >= d) {
+      const cy = (bounds.minY + bounds.maxY) / 2;
+      return [
+        { x: bounds.minX + inset, y: cy },
+        { x: bounds.maxX - inset, y: cy },
+      ];
+    }
+    const cx = (bounds.minX + bounds.maxX) / 2;
+    return [
+      { x: cx, y: bounds.minY + inset },
+      { x: cx, y: bounds.maxY - inset },
+    ];
+  }
   return [
-    { x: -hx, y: -hy },
-    { x: -hx, y: hy },
-    { x: hx, y: -hy },
-    { x: hx, y: hy },
+    { x: bounds.minX + inset, y: bounds.minY + inset },
+    { x: bounds.minX + inset, y: bounds.maxY - inset },
+    { x: bounds.maxX - inset, y: bounds.minY + inset },
+    { x: bounds.maxX - inset, y: bounds.maxY - inset },
   ];
 }
 
@@ -82,7 +99,9 @@ export function planBracket(def: PartDefinition, params: BracketParams): Bracket
       holeDiameter: hole.diameter,
     }));
 
-  const baseHoles = params.baseHoles === false ? [] : cornerBaseHolePositions(def, params);
+  const baseHoles = params.baseHoles === false
+    ? []
+    : baseHolePositions(base, params.baseHoleInset ?? params.baseMargin / 2, params.baseHoleCount ?? 4);
 
   const wallHeight = params.wallHeight ?? 0;
   const wallThickness = params.wallThickness ?? 1.5;
