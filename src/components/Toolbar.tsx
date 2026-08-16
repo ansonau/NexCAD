@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
-  Download,
-  Move,
-  Redo2,
-  Rotate3D,
-  Trash2,
-  Undo2,
-} from 'lucide-react';
+  DownloadSimple,
+  ArrowsOutCardinal,
+  ArrowClockwise,
+  ArrowsClockwise,
+  Trash,
+  ArrowCounterClockwise,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { ExportDialog } from './ExportDialog';
 import { panelClass } from './ui';
@@ -75,7 +75,7 @@ export function Toolbar({ docked = false }: { docked?: boolean }) {
             onClick={() => setGizmoMode('translate')}
             active={gizmoMode === 'translate'}
           >
-            <Move size={16} strokeWidth={1.8} />
+            <ArrowsOutCardinal size={16} weight="regular" />
           </ToolButton>
           <ToolButton
             title={t('view.rotate')}
@@ -83,25 +83,25 @@ export function Toolbar({ docked = false }: { docked?: boolean }) {
             onClick={() => setGizmoMode('rotate')}
             active={gizmoMode === 'rotate'}
           >
-            <Rotate3D size={16} strokeWidth={1.8} />
+            <ArrowsClockwise size={16} weight="regular" />
           </ToolButton>
         </ToolGroup>
         <Divider />
         <ToolGroup>
           <ToolButton title={t('toolbar.undo')} onClick={undo} disabled={!canUndo}>
-            <Undo2 size={16} strokeWidth={1.8} />
+            <ArrowCounterClockwise size={16} weight="regular" />
           </ToolButton>
           <ToolButton title={t('toolbar.redo')} onClick={redo} disabled={!canRedo}>
-            <Redo2 size={16} strokeWidth={1.8} />
+            <ArrowClockwise size={16} weight="regular" />
           </ToolButton>
           <ToolButton title={t('toolbar.delete')} onClick={removeSelected} disabled={selection.length === 0}>
-            <Trash2 size={16} strokeWidth={1.8} />
+            <Trash size={16} weight="regular" />
           </ToolButton>
         </ToolGroup>
         <Divider />
         <ToolGroup>
           <ToolButton title={t('toolbar.export')} label={t('toolbar.export')} onClick={() => setShowExport(true)}>
-            <Download size={16} strokeWidth={1.8} />
+            <DownloadSimple size={16} weight="regular" />
           </ToolButton>
         </ToolGroup>
       </div>

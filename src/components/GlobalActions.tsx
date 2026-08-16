@@ -1,4 +1,4 @@
-import { HelpCircle, Settings, UserRound } from 'lucide-react';
+import { Question, GearSix, User } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -19,7 +19,7 @@ export function GlobalActions() {
         aria-expanded={popover === 'help'}
         onClick={() => setPopover((value) => (value === 'help' ? null : 'help'))}
       >
-        <HelpCircle size={16} strokeWidth={1.9} />
+        <Question size={16} weight="regular" />
       </button>
       <select
         className={`${controlClass} cursor-pointer pr-6`}
@@ -37,10 +37,10 @@ export function GlobalActions() {
         aria-expanded={popover === 'settings'}
         onClick={() => setPopover((value) => (value === 'settings' ? null : 'settings'))}
       >
-        <Settings size={16} strokeWidth={1.9} />
+        <GearSix size={16} weight="regular" />
       </button>
       <button type="button" className={`${controlClass} hidden !bg-ink !text-white hover:!bg-ink hover:!text-white sm:flex`} aria-label={t('view.user')}>
-        <UserRound size={16} strokeWidth={1.9} />
+        <User size={16} weight="regular" />
       </button>
       {popover && (
         <div className="absolute right-0 top-11 z-50 w-64 rounded-2xl border border-line bg-white/98 p-3 text-left shadow-pop">

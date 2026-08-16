@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { CaretDown, CaretUp } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { generateEnclosure } from '../enclosure/actions';
 import { DEFAULT_ENCLOSURE_PARAMS } from '../enclosure/plan';
@@ -121,7 +121,7 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
         className="mb-2 flex h-9 w-full cursor-pointer items-center justify-between rounded-xl px-3 text-[12px] font-semibold text-ink-2 transition-colors hover:bg-slate-900/[0.035] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
       >
         <span>{t('enclosure.advanced')}</span>
-        {advancedOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        {advancedOpen ? <CaretUp size={14} /> : <CaretDown size={14} />}
       </button>
       {advancedOpen && (
         <div className="mb-3 space-y-2 rounded-2xl border border-line bg-slate-900/[0.018] p-3">

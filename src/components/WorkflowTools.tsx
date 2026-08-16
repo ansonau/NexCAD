@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlignHorizontalSpaceAround, Braces, Car, PackageOpen, Wrench } from 'lucide-react';
+import { AlignCenterHorizontal, BracketsSquare, Car, Package, Wrench } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { AlignToolsPanel } from './AlignToolsPanel';
 import { BracketPanel } from './BracketPanel';
@@ -29,7 +29,7 @@ export function WorkflowTools({ showTitle = true, compact = false }: { showTitle
           className={buttonClass}
           onClick={() => setPanel('enclosure')}
         >
-          <PackageOpen size={16} strokeWidth={1.8} />
+          <Package size={16} weight="regular" />
           {t('enclosure.title')}
         </button>
         <button
@@ -39,7 +39,7 @@ export function WorkflowTools({ showTitle = true, compact = false }: { showTitle
           className={buttonClass}
           onClick={() => setPanel('car')}
         >
-          <Car size={16} strokeWidth={1.8} />
+          <Car size={16} weight="regular" />
           {t('toolbar.smartCar')}
         </button>
         <button
@@ -49,7 +49,7 @@ export function WorkflowTools({ showTitle = true, compact = false }: { showTitle
           className={buttonClass}
           onClick={() => setPanel('bracket')}
         >
-          <Braces size={16} strokeWidth={1.8} />
+          <BracketsSquare size={16} weight="regular" />
           {t('bracket.title')}
         </button>
         <button
@@ -59,7 +59,7 @@ export function WorkflowTools({ showTitle = true, compact = false }: { showTitle
           className={buttonClass}
           onClick={() => setPanel('screw')}
         >
-          <Wrench size={16} strokeWidth={1.8} />
+          <Wrench size={16} weight="regular" />
           {t('tools.title')}
         </button>
         <button
@@ -69,7 +69,7 @@ export function WorkflowTools({ showTitle = true, compact = false }: { showTitle
           className={`${buttonClass} ${panel === 'align' ? 'border-accent-line bg-accent-soft/60 text-accent-strong' : ''}`}
           onClick={() => setPanel(panel === 'align' ? null : 'align')}
         >
-          <AlignHorizontalSpaceAround size={16} strokeWidth={1.8} />
+          <AlignCenterHorizontal size={16} weight="regular" />
           {t('align.title')}
         </button>
       </div>

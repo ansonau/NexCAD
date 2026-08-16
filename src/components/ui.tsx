@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Minus, Plus, X } from 'lucide-react';
+import { Minus, Plus, X } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -275,7 +275,7 @@ export function StepperField({
           onClick={(e) => e.preventDefault()}
           className="flex w-6 shrink-0 cursor-pointer items-center justify-center rounded-l-[10px] border border-line bg-white/80 text-ink-2 transition-colors duration-100 hover:bg-slate-900/5 hover:text-ink active:bg-slate-900/8 disabled:pointer-events-none disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/40"
         >
-          <Minus size={11} strokeWidth={2} />
+          <Minus size={11} weight="bold" />
         </button>
         <input
           type="number"
@@ -313,7 +313,7 @@ export function StepperField({
           onClick={(e) => e.preventDefault()}
           className="flex w-6 shrink-0 cursor-pointer items-center justify-center rounded-r-[10px] border border-line bg-white/80 text-ink-2 transition-colors duration-100 hover:bg-slate-900/5 hover:text-ink active:bg-slate-900/8 disabled:pointer-events-none disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/40"
         >
-          <Plus size={11} strokeWidth={2} />
+          <Plus size={11} weight="bold" />
         </button>
       </div>
     </label>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronUp, Eye, EyeOff, Group, ListTree, Trash2 } from 'lucide-react';
+import { CaretUp, Eye, EyeSlash, SquaresFour, TreeStructure, Trash } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useDocumentStore } from '../store/documentStore';
 import type { SceneNode } from '../types/document';
@@ -89,7 +89,7 @@ function SceneTreeRow({ node, depth }: { node: SceneNode; depth: number }) {
           aria-label={node.visible === false ? `Show ${node.name}` : `Hide ${node.name}`}
           className="ml-auto flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-ink-3 transition-colors duration-100 hover:bg-slate-900/[0.06] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
         >
-          {node.visible === false ? <EyeOff size={13} /> : <Eye size={13} />}
+          {node.visible === false ? <EyeSlash size={13} /> : <Eye size={13} />}
         </button>
         <button
           type="button"
@@ -97,7 +97,7 @@ function SceneTreeRow({ node, depth }: { node: SceneNode; depth: number }) {
           aria-label={`Delete ${node.name}`}
           className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-ink-3 transition-colors duration-100 hover:bg-red-500/10 hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40"
         >
-          <Trash2 size={13} />
+          <Trash size={13} />
         </button>
       </div>
       {children.map((child) => (
@@ -120,7 +120,7 @@ export function SceneTreePanel({ docked = false, onAddPart }: { docked?: boolean
         onClick={() => setOpen(true)}
         className={`flex h-9 cursor-pointer items-center gap-2 px-3 text-[13px] font-medium text-ink-2 transition-colors duration-150 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${panelClass}`}
       >
-        <ListTree size={16} strokeWidth={1.8} />
+        <TreeStructure size={16} weight="regular" />
         {t('view.sceneTree')}
       </button>
     );
@@ -141,12 +141,12 @@ export function SceneTreePanel({ docked = false, onAddPart }: { docked?: boolean
             onClick={() => useDocumentStore.getState().groupSelected(t('view.group'))}
             className="flex h-7 cursor-pointer items-center gap-1 rounded-lg px-2 text-[11px] font-semibold text-ink-2 transition-colors hover:bg-slate-900/[0.05] hover:text-ink disabled:pointer-events-none disabled:opacity-35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
           >
-            <Group size={13} strokeWidth={1.8} />
+            <SquaresFour size={13} weight="regular" />
             {t('view.group')}
           </button>
           {!docked && (
             <IconButton title={t('view.sceneTree')} onClick={() => setOpen(false)} className="h-7 w-7">
-              <ChevronUp size={15} />
+              <CaretUp size={15} />
             </IconButton>
           )}
         </div>

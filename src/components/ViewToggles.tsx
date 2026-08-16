@@ -1,4 +1,5 @@
-import { BoxSelect, ChevronDown, Ruler, ScanLine, Sparkles } from 'lucide-react';
+import { Selection, CaretDown, Ruler, Scan, Sparkle } from '@phosphor-icons/react';
+import type { Icon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { panelClass } from './ui';
@@ -18,8 +19,8 @@ export function ViewToggles() {
 
   return (
     <div className={`flex items-center gap-1 p-1 ${panelClass}`}>
-      <ToggleButton active={shellXray} onClick={toggleShellXray} label={t('view.xray')} icon={ScanLine} />
-      <ToggleButton active={wireframe} onClick={toggleWireframe} label={t('view.wireframe')} icon={BoxSelect} />
+      <ToggleButton active={shellXray} onClick={toggleShellXray} label={t('view.xray')} icon={Scan} />
+      <ToggleButton active={wireframe} onClick={toggleWireframe} label={t('view.wireframe')} icon={Selection} />
       <DimensionDropdown
         mode={dimensionMode}
         onChange={setDimensionMode}
@@ -35,7 +36,7 @@ export function ViewToggles() {
         active={highResModels}
         onClick={toggleHighResModels}
         label={t('view.highRes')}
-        icon={Sparkles}
+        icon={Sparkle}
       />
     </div>
   );
@@ -70,9 +71,9 @@ function DimensionDropdown({
           active ? 'bg-accent-soft text-accent' : 'text-ink-2 hover:bg-slate-900/5 hover:text-ink'
         }`}
       >
-        <Ruler size={15} strokeWidth={1.8} />
+        <Ruler size={15} weight="regular" />
         <span className={`font-mono text-[10px] font-semibold tracking-[-0.02em] ${active ? 'text-accent-strong' : 'text-ink-3'}`}>mm</span>
-        <ChevronDown size={12} strokeWidth={1.8} />
+        <CaretDown size={12} weight="regular" />
       </button>
       {open && (
         <div role="menu" className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-line bg-white p-1 shadow-pop">
@@ -111,7 +112,7 @@ function ToggleButton({
   active: boolean;
   onClick: () => void;
   label: string;
-  icon: typeof ScanLine;
+  icon: Icon;
   badge?: string;
 }) {
   return (
@@ -126,7 +127,7 @@ function ToggleButton({
           : 'text-ink-2 hover:bg-slate-900/5 hover:text-ink'
       } ${badge ? 'w-auto gap-1 px-2' : 'w-8'}`}
     >
-      <Icon size={15} strokeWidth={1.8} />
+      <Icon size={15} weight="regular" />
       {badge && (
         <span className={`font-mono text-[10px] font-semibold tracking-[-0.02em] ${active ? 'text-accent-strong' : 'text-ink-3'}`}>
           {badge}

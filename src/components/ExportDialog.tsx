@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TriangleAlert } from 'lucide-react';
+import { Warning } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { analyzeMesh, collectThinFeatures, MAX_PRINT_MM, type MeshStats } from '../export/analyze';
 import { writeBinaryStl } from '../export/stl';
@@ -92,7 +92,7 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
       {warnings.length > 0 && (
         <div className="mb-3 rounded-xl border border-amber-200/70 bg-amber-50 p-3">
           <p className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold text-amber-800">
-            <TriangleAlert size={13} />
+            <Warning size={13} />
             {t('export.warnings')}
           </p>
           {warnings.map((w) => (

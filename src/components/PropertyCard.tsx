@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MousePointer2, Move3D, RefreshCw, Rotate3D, SlidersHorizontal } from 'lucide-react';
+import { Cursor, ArrowsOutCardinal, ArrowsClockwise, ArrowsCounterClockwise, SlidersHorizontal } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { regenerateEnclosure } from '../enclosure/actions';
 import { regenerateBracket } from '../bracket/actions';
@@ -50,7 +50,7 @@ export function PropertyCard() {
       {!node ? (
         <div className="flex min-h-40 flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-slate-900/[0.018] px-4 py-8 text-center">
           <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-soft text-accent">
-            <MousePointer2 size={18} strokeWidth={1.8} />
+            <Cursor size={18} weight="regular" />
           </span>
           <p className="text-[13px] font-semibold text-ink-2">{t('property.selectHint')}</p>
         </div>
@@ -75,12 +75,12 @@ export function PropertyCard() {
             <PropertySection title={t('enclosure.params')} icon={<SlidersHorizontal size={14} />}>
               {isEnclosureStale(node, doc) && (
                 <p className="mb-2 flex items-start gap-1.5 rounded-lg border border-amber-200/70 bg-amber-50 px-2 py-1.5 text-[11px] leading-snug text-amber-800">
-                  <RefreshCw size={13} className="mt-px shrink-0" />
+                  <ArrowsClockwise size={13} className="mt-px shrink-0" />
                   {t('enclosure.staleWarning')}
                 </p>
               )}
               <OutlineButton onClick={() => regenerateEnclosure(node.id)} className="mb-1 w-full">
-                <RefreshCw size={14} />
+                <ArrowsClockwise size={14} />
                 {t('enclosure.regenerate')}
               </OutlineButton>
               <EnclosureParamFields node={node} />
@@ -97,7 +97,7 @@ export function PropertyCard() {
             </PropertySection>
           )}
 
-          <PropertySection title={t('property.position')} icon={<Move3D size={14} />}>
+          <PropertySection title={t('property.position')} icon={<ArrowsOutCardinal size={14} />}>
             <div className="grid grid-cols-3 gap-1.5">
               {AXIS_LABELS.map((axis, i) => (
                 <StepperField
@@ -113,7 +113,7 @@ export function PropertyCard() {
             </div>
           </PropertySection>
 
-          <PropertySection title={t('property.rotation')} icon={<Rotate3D size={14} />}>
+          <PropertySection title={t('property.rotation')} icon={<ArrowsCounterClockwise size={14} />}>
             <div className="grid grid-cols-3 gap-1.5">
               {AXIS_LABELS.map((axis, i) => (
                 node.type === 'car-anchor' && axis !== 'Z' ? null : (

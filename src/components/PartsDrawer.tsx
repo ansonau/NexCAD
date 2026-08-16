@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import {
   BatteryCharging,
-  Box,
-  ChevronDown,
-  ChevronUp,
-  Circle,
-  CircuitBoard,
-  Cone,
+  Cube,
+  CaretDown,
+  CaretUp,
+  Sphere,
+  Circuitry,
+  Triangle,
   Cylinder,
   Package,
-  Radar,
-  Search,
+  Broadcast,
+  MagnifyingGlass,
   Shapes,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+} from '@phosphor-icons/react';
+import type { Icon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { PART_CATEGORIES, PART_LIBRARY } from '../parts/library';
 import type { PartCategory, PartDefinition } from '../parts/schema';
@@ -24,16 +24,16 @@ import { IconButton, panelClass } from './ui';
 
 type DrawerCategory = PartCategory | 'basicShapes';
 
-const PRIMITIVES: { kind: PrimitiveKind; label: string; icon: LucideIcon }[] = [
-  { kind: 'box', label: 'toolbar.box', icon: Box },
+const PRIMITIVES: { kind: PrimitiveKind; label: string; icon: Icon }[] = [
+  { kind: 'box', label: 'toolbar.box', icon: Cube },
   { kind: 'cylinder', label: 'toolbar.cylinder', icon: Cylinder },
-  { kind: 'sphere', label: 'toolbar.sphere', icon: Circle },
-  { kind: 'cone', label: 'toolbar.cone', icon: Cone },
+  { kind: 'sphere', label: 'toolbar.sphere', icon: Sphere },
+  { kind: 'cone', label: 'toolbar.cone', icon: Triangle },
 ];
 
-const CATEGORY_ICONS: Record<DrawerCategory, LucideIcon> = {
-  board: CircuitBoard,
-  sensor: Radar,
+const CATEGORY_ICONS: Record<DrawerCategory, Icon> = {
+  board: Circuitry,
+  sensor: Broadcast,
   power: BatteryCharging,
   component: Package,
   basicShapes: Shapes,
@@ -92,7 +92,7 @@ export function PartsDrawer({
         </div>
         <div className={docked ? 'flex shrink-0 items-center gap-1.5' : 'ml-auto flex shrink-0 items-center gap-1.5'}>
           <div className="flex h-8 min-w-0 flex-1 items-center gap-1.5 rounded-[10px] border border-line bg-white/80 px-2.5 transition-colors duration-150 focus-within:border-accent-line focus-within:ring-2 focus-within:ring-accent/25">
-            <Search size={13} className="shrink-0 text-ink-3" />
+            <MagnifyingGlass size={13} className="shrink-0 text-ink-3" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -107,7 +107,7 @@ export function PartsDrawer({
               onClick={() => setOpen(false)}
               className="h-8 w-8 rounded-full"
             >
-              <ChevronDown size={16} />
+              <CaretDown size={16} />
             </IconButton>
           )}
         </div>
@@ -126,7 +126,7 @@ export function PartsDrawer({
                 className="group flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-white/70 p-3 text-left transition-colors duration-150 hover:border-accent-line hover:bg-accent-soft/50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               >
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900/[0.05] text-ink-2 group-hover:text-accent">
-                  <Icon size={16} strokeWidth={1.8} />
+                  <Icon size={16} weight="regular" />
                 </span>
                 <span className="text-[13px] font-medium text-ink group-hover:text-accent-strong">
                   {t(label)}
@@ -165,7 +165,7 @@ export function PartsDrawer({
           </div>
         )}
         <div className="flex h-10 shrink-0 items-center gap-1.5 border-b border-line px-3">
-          <Search size={13} className="shrink-0 text-ink-3" />
+          <MagnifyingGlass size={13} className="shrink-0 text-ink-3" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -214,12 +214,12 @@ export function PartsDrawer({
                       }`}
                     >
                       <span className="flex min-w-0 items-center gap-2">
-                        <CategoryIcon size={14} strokeWidth={1.8} className={active ? 'text-accent' : 'text-ink-3'} />
+                        <CategoryIcon size={14} weight="regular" className={active ? 'text-accent' : 'text-ink-3'} />
                         <span className="min-w-0 truncate">{t(`drawer.${c}`)}</span>
                       </span>
                       <span className="ml-2 flex shrink-0 items-center gap-1.5">
                         <span className="font-mono text-[10px] font-medium tabular-nums text-ink-3">{count}</span>
-                        <ChevronDown size={14} className={`transition-transform ${active ? 'rotate-180' : ''}`} />
+                        <CaretDown size={14} className={`transition-transform ${active ? 'rotate-180' : ''}`} />
                       </span>
                     </button>
                     {active && (
@@ -232,7 +232,7 @@ export function PartsDrawer({
                               onClick={() => addPrimitive(kind)}
                               className="group flex cursor-pointer items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors duration-150 hover:bg-white active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                             >
-                              <Icon size={15} strokeWidth={1.8} className="text-ink-3 group-hover:text-accent" />
+                              <Icon size={15} weight="regular" className="text-ink-3 group-hover:text-accent" />
                               <span className="text-[12px] font-medium text-ink group-hover:text-accent-strong">
                                 {t(label)}
                               </span>
@@ -274,7 +274,7 @@ export function PartsDrawer({
         onClick={() => setOpen(true)}
         className={`absolute bottom-3 left-1/2 flex h-9 -translate-x-1/2 cursor-pointer items-center gap-2 px-3.5 text-[13px] font-medium text-ink-2 transition-colors duration-150 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${panelClass}`}
       >
-        <ChevronUp size={16} strokeWidth={1.8} />
+        <CaretUp size={16} weight="regular" />
         {t('drawer.title')}
       </button>
     );

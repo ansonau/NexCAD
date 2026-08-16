@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { FolderOpen, Plus, Trash2, Upload } from 'lucide-react';
+import { FolderOpen, Plus, Trash, UploadSimple } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import {
   deleteProject,
@@ -114,7 +114,7 @@ export function ProjectsPanel() {
       <div className="flex items-center gap-2">
         <div className={`flex p-0.5 ${panelClass}`}>
           <IconButton title={t('projects.title')} onClick={() => setOpen(true)}>
-            <FolderOpen size={18} strokeWidth={1.8} />
+            <FolderOpen size={18} weight="regular" />
           </IconButton>
         </div>
         <div className={`hidden h-9 items-center px-2.5 sm:flex ${panelClass}`}>
@@ -130,10 +130,10 @@ export function ProjectsPanel() {
         <Dialog title={t('projects.title')} onClose={() => setOpen(false)} width="w-96">
           <div className="mb-3 flex items-center gap-1.5">
             <IconButton title={t('projects.new')} onClick={() => void newProject()}>
-              <Plus size={18} strokeWidth={1.8} />
+              <Plus size={18} weight="regular" />
             </IconButton>
             <IconButton title={t('projects.import')} onClick={() => fileRef.current?.click()}>
-              <Upload size={18} strokeWidth={1.8} />
+              <UploadSimple size={18} weight="regular" />
             </IconButton>
             <GhostButton onClick={exportFile} className="ml-auto h-8 px-2.5 text-[12px]">
               {t('projects.exportFile')}
@@ -167,7 +167,7 @@ export function ProjectsPanel() {
                     aria-label={t('projects.delete')}
                     className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-ink-3 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                   >
-                    <Trash2 size={15} />
+                    <Trash size={15} />
                   </button>
                 </div>
               </div>

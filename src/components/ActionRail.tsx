@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Route } from 'lucide-react';
+import { CheckCircle, Circle, Path } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useDocumentStore } from '../store/documentStore';
 import type { SceneNode } from '../types/document';
@@ -28,7 +28,7 @@ export function ActionRail({ compact = false }: { compact?: boolean }) {
       <section className="rounded-2xl border border-line bg-white/72 p-3 shadow-panel">
         <div className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft text-accent">
-            <Route size={16} strokeWidth={2} />
+            <Path size={16} weight="bold" />
           </span>
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
@@ -47,7 +47,7 @@ export function ActionRail({ compact = false }: { compact?: boolean }) {
     <section className="rounded-2xl border border-line bg-white/72 p-3 shadow-panel">
       <div className="mb-3 flex items-center gap-2">
         <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft text-accent">
-          <Route size={16} strokeWidth={2} />
+          <Path size={16} weight="bold" />
         </span>
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
@@ -62,7 +62,7 @@ export function ActionRail({ compact = false }: { compact?: boolean }) {
         {STEP_KEYS.map((step, index) => {
           const active = step.id === activeStep;
           const done = index < activeIndex;
-          const Icon = done ? CheckCircle2 : Circle;
+          const Icon = done ? CheckCircle : Circle;
           return (
             <li
               key={step.id}
@@ -73,7 +73,7 @@ export function ActionRail({ compact = false }: { compact?: boolean }) {
               }`}
             >
               <div className="flex items-start gap-2">
-                <Icon size={15} className="mt-0.5 shrink-0" strokeWidth={2} />
+                <Icon size={15} className="mt-0.5 shrink-0" weight="bold" />
                 <div className="min-w-0">
                   <p className="text-[13px] font-semibold leading-tight">{index + 1}. {t(step.label)}</p>
                   <p className="mt-1 text-[11px] leading-snug text-ink-3">{t(step.hint)}</p>

@@ -1,4 +1,4 @@
-import { Crosshair, Undo2, X } from 'lucide-react';
+import { Crosshair, ArrowCounterClockwise, X } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useDocumentStore } from '../store/documentStore';
 import type { AlignTarget } from '../store/documentStore';
@@ -35,7 +35,7 @@ export function AlignToolsPanel({ onClose }: { onClose: () => void }) {
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <IconButton title={t('align.undo')} onClick={() => useDocumentStore.getState().undo()} disabled={!canUndo} className="h-8 w-8">
-            <Undo2 size={14} />
+            <ArrowCounterClockwise size={14} />
           </IconButton>
           <IconButton title={t('common.close')} onClick={onClose} className="h-8 w-8">
             <X size={14} />
@@ -69,7 +69,7 @@ export function AlignToolsPanel({ onClose }: { onClose: () => void }) {
                   onClick={() => align(axis, target)}
                   className="flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line bg-white text-[12px] font-semibold text-ink-2 transition-colors hover:border-accent/50 hover:bg-accent-soft hover:text-accent disabled:pointer-events-none disabled:opacity-35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 >
-                  <Crosshair size={14} strokeWidth={1.8} />
+                  <Crosshair size={14} weight="regular" />
                   {label}
                 </button>
               ))}
