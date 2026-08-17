@@ -19,6 +19,7 @@ import type {
 } from '../types/document';
 import { FieldLabel, OutlineButton, Seg, StepperField, fieldClass, panelClass } from './ui';
 import { BracketStyleSelector, HoleCountSelector, MountingStyleSelector } from './BracketStyleDiagram';
+import { LidTypeSelector, ScrewLidProfileSelector } from './EnclosureSelectors';
 
 const PARAM_LABELS: Record<string, string> = {
   width: 'property.width',
@@ -351,15 +352,7 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
       </div>
       <label className="mt-2 block">
         <FieldLabel>{t('enclosure.lidType')}</FieldLabel>
-        <select
-          className={fieldClass}
-          value={p.lidType}
-          onChange={(e) => setParam('lidType', e.target.value as EnclosureParams['lidType'])}
-        >
-          <option value="screw">{t('enclosure.lidScrew')}</option>
-          <option value="slide">{t('enclosure.lidSlide')}</option>
-          <option value="open">{t('enclosure.lidOpen')}</option>
-        </select>
+        <LidTypeSelector value={p.lidType} onChange={(v) => setParam('lidType', v)} />
       </label>
       <label className="mt-2 block">
         <FieldLabel>{t('enclosure.screwSize')}</FieldLabel>
@@ -392,16 +385,10 @@ function EnclosureParamFields({ node }: { node: EnclosureNode }) {
       {p.lidType === 'screw' && (
         <label className="mt-2 block">
           <FieldLabel>{t('enclosure.screwLidProfile')}</FieldLabel>
-          <select
-            className={fieldClass}
+          <ScrewLidProfileSelector
             value={p.screwLidProfile ?? 'flatRecessed'}
-            onChange={(e) =>
-              setParam('screwLidProfile', e.target.value as EnclosureParams['screwLidProfile'])
-            }
-          >
-            <option value="flatExposed">{t('enclosure.lidFlatExposed')}</option>
-            <option value="flatRecessed">{t('enclosure.lidFlatRecessed')}</option>
-          </select>
+            onChange={(v) => setParam('screwLidProfile', v)}
+          />
         </label>
       )}
       {p.lidType === 'screw' && (

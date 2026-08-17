@@ -6,6 +6,7 @@ import { DEFAULT_ENCLOSURE_PARAMS } from '../enclosure/plan';
 import type { EnclosureParams, SceneNode } from '../types/document';
 import { useDocumentStore } from '../store/documentStore';
 import { Dialog, FieldLabel, GhostButton, PrimaryButton, StepperField, fieldClass } from './ui';
+import { LidTypeSelector, ScrewLidProfileSelector } from './EnclosureSelectors';
 
 export function EnclosurePanel({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
@@ -75,31 +76,7 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
       </PanelGroup>
 
       <PanelGroup title={t('enclosure.lidType')}>
-        <div className="grid grid-cols-3 gap-2">
-          {([
-            { value: 'screw', label: t('enclosure.lidScrew'), image: '/enclosure-lid-type-screw.png' },
-            { value: 'slide', label: t('enclosure.lidSlide'), image: '/enclosure-lid-type-slide.png' },
-            { value: 'open', label: t('enclosure.lidOpen'), image: '/enclosure-lid-type-open.png' },
-          ] as const).map((option) => {
-            const active = params.lidType === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                aria-pressed={active}
-                onClick={() => set('lidType', option.value)}
-                className={`overflow-hidden rounded-2xl border text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
-                  active ? 'border-accent bg-accent-soft shadow-sm' : 'border-line bg-white hover:border-accent/50'
-                }`}
-              >
-                <img src={option.image} alt="" className="aspect-[4/3] w-full bg-slate-900/[0.025] object-contain p-1" />
-                <span className={`block px-2 py-2 text-[11px] font-semibold ${active ? 'text-accent' : 'text-ink-2'}`}>
-                  {option.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <LidTypeSelector value={params.lidType} onChange={(v) => set('lidType', v)} />
         <label className="mt-3 block">
           <FieldLabel>{t('enclosure.screwSize')}</FieldLabel>
           <select
@@ -174,38 +151,10 @@ export function EnclosurePanel({ onClose }: { onClose: () => void }) {
             <>
               <div>
                 <FieldLabel>{t('enclosure.screwLidProfile')}</FieldLabel>
-                <div className="grid grid-cols-2 gap-2">
-                  {([
-                    {
-                      value: 'flatExposed',
-                      label: t('enclosure.lidFlatExposed'),
-                      image: '/enclosure-lid-head-exposed.png',
-                    },
-                    {
-                      value: 'flatRecessed',
-                      label: t('enclosure.lidFlatRecessed'),
-                      image: '/enclosure-lid-head-recessed.png',
-                    },
-                  ] as const).map((option) => {
-                    const active = (params.screwLidProfile ?? 'flatRecessed') === option.value;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        aria-pressed={active}
-                        onClick={() => set('screwLidProfile', option.value)}
-                        className={`overflow-hidden rounded-2xl border text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
-                          active ? 'border-accent bg-accent-soft shadow-sm' : 'border-line bg-white hover:border-accent/50'
-                        }`}
-                      >
-                        <img src={option.image} alt="" className="mx-auto aspect-[4/3] w-3/4 bg-slate-900/[0.025] object-contain p-1" />
-                        <span className={`block px-2 py-2 text-[11px] font-semibold ${active ? 'text-accent' : 'text-ink-2'}`}>
-                          {option.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <ScrewLidProfileSelector
+                  value={params.screwLidProfile ?? 'flatRecessed'}
+                  onChange={(v) => set('screwLidProfile', v)}
+                />
               </div>
               <label className="block">
                 <FieldLabel>{t('enclosure.screwEntry')}</FieldLabel>
